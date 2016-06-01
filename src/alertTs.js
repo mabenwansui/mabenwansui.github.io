@@ -67,10 +67,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       this._visible = false;
       this._timeout = false;
       this._timer = false;
+      this._helper = false; //_helper代表helper是否已经插入到dom结构中
       this._off = false;
       this.initialAttr();
       this.mergeOptions();
       this.toNumber();
+      this.createUi();
       this.bindEvent();
       this.options.callback.init.call(this);
     }
@@ -80,7 +82,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function createUi() {
         var _this = this;
 
-        var helper = $('<div class="' + className + '"></div>').css(this.options.css).appendTo('body');
+        var helper = $('<div class="' + className + '"></div>').css(this.options.css);
         this.$content = $('<div>' + this.options.content + '</div>').appendTo(helper);
         if (this.options.arrow) {
           this.$arrow = $('<div class="arrow"><i></i><i class="a1"></i></div>').appendTo(helper);
@@ -88,10 +90,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         if (this.options.closex) {
           helper.css('padding-right', Number.parseInt(helper.css('padding-right'), 10) + 8);
           this.closex = $("<span class='closex'>×</span>").appendTo(helper);
-
-          if (this.options.css['close-size']) this.closex.css({
-            'font-size': this.options.css['close-size']
-          });
+          if (this.options.css['close-size']) this.closex.css('font-size', this.options.css['close-size']);
           if (this.options.css['close-color']) this.closex.css('color', this.options.css['close-color']);
           if (this.options.position === 'left') {
             helper.css({
@@ -121,7 +120,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'createLoading',
       value: function createLoading() {
-        this.loading = $('<div class="loading"><div><i/><i/><i/></div></div>').appendTo(this.$content);
+        this.loading = this.$content.html('<div class="loading"><div><i/><i/><i/></div></div>').children('.loading');
         var box = this.loading.find('div');
         box.css({
           'margin-left': -box.innerWidth() / 2,
@@ -139,11 +138,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         this.options.callback.beforeshow.call(this);
         if (this._visible) return this;
         this._visible = true;
-        if (this.helper) {
+        if (this._helper) {
           this.helper.show();
         } else {
-          this.createUi();
-          this.helper.css('display', 'block');
+          this.helper.appendTo('body').css('display', 'block');
+          this._helper = true;
         }
         !this.options.content && this.createLoading();
         this.setZindex().reArrow().rePosition();
@@ -162,7 +161,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function hide() {
         this._visible = false;
         this.options.callback.hide.call(this);
-        if (!this.helper) return this;
         this.helper.removeClass('animated-zoomin');
         this.options.cache ? this.helper.hide() : this.removeTag();
         return this;
@@ -170,10 +168,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'removeTag',
       value: function removeTag() {
-        if (!this.helper) return this;
         this.stop();
-        this.helper.remove();
-        this.helper = false;
+        this.helper.detach();
+        this._helper = false;
       }
     }, {
       key: 'destroy',
@@ -187,7 +184,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function reArrow() {
         var _this3 = this;
 
-        if (!this.element || !this.helper || !this.helper.is(':visible')) return this;
+        if (!this.element || !this.helper.is(':visible')) return this;
         var that = this,
             size = this.options.arrow.size,
             position = this.options.position,
@@ -283,7 +280,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'rePosition',
       value: function rePosition() {
-        if (!this.element || !this.helper || !this.helper.is(':visible')) return this;
+        if (!this.element || !this.helper.is(':visible')) return this;
         var $ele = this.element,
             that = this,
             x = 0,
@@ -353,7 +350,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           this.initialAttr().mergeOptions().toNumber();
           options.content && this.$content.html(this.options.content);
         }
-        if (!this.helper) return this;
         this.helper.css(this.options.css);
         this.options.cssStyle && this.helper.addClass(className + '-' + this.options.cssStyle);
         this.setZindex();

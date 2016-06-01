@@ -166,6 +166,10 @@
       </thead>
       <tbody>
         <tr>
+          <th>init</th>
+          <td>初始化执行的回调</td>
+        </tr>      
+        <tr>
           <th>show</th>
           <td>弹框展示时执行的回调</td>
         </tr>
@@ -555,10 +559,9 @@
           cssStyle: 'warning',
           content: '你是不是记得多久没说爱我'+
                    ' <a>点我alert</a>',
-          show : function(){
-            this.helper
-                .off('click')
-                .on('click', function(){
+          init : function(){
+            this.helper.find('a')
+              .on('click', function(){
               alert('点我alert');
             });
           }
@@ -943,7 +946,7 @@
       }
   $('ul', $nav).on('click', 'li', function(){
     var page = $(this).data('page');
-    $('body').off('click');
+    $('body').off('click').removeData('plugin_AlertTs');
     location.hash = $(this).data('page') || '';
     $(this).addClass('active').siblings().removeClass('active');
     page === 'rule' ? $aside.width(0) : $aside.width(asideWidth);
