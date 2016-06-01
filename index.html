@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<script src="src/jquery.js"></script>
+<script src="src/alertTs.js"></script>
+<link href="../css/style.css" rel="stylesheet">
+<link href="src/style.css" rel="stylesheet">
+
+<script src="src/scripts/shCore.js"></script>
+<script src="src/scripts/shBrushJScript.js"></script>
+<link href="src/styles/shCoreDefault.css" rel="stylesheet" />
+</head>
+<body>
+
+<div id="box">
+  <nav id="nav">
+    <div class="logo">Alert<span>Ts</span></div>
+    <ul>
+      <li data-page="rule">语法</li>
+      <li data-page="content">定义内容</li>
+      <li data-page="position">定义位置</li>
+      <li data-page="event">插件事件</li>
+      <li data-page="skin">定义外观</li>
+      <li data-page="method">插件方法</li>
+    </ul>
+  </nav>
+  <article id="article">
+    <div class="wrap"></div>
+  </article>
+  <aside id="aside"></aside>
+</div>
+
+<script type="text/template" id="rule">
+  <section class="template-info">
+    <h2>语法</h2>
+    <ul>
+      <li>
+        $(element).AlertTs({<br/>
+          &nbsp;&nbsp;&nbsp;content : '吃一堑长一智'<br/>
+        });
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>基本属性</h2>
+    <table>
+      <thead>
+        <tr>
+          <th width="100">属性</th>
+          <th width="80">默认值</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>position</th>
+          <td>'top'</td>
+          <td>对齐方向 &nbsp; 值分别为'top', 'right', 'bottom', 'left'</td>
+        </tr>
+        <tr>
+          <th>left</th>
+          <td>0</td>
+          <td>弹框左偏移</td>
+        </tr>
+        <tr>
+          <th>top</th>
+          <td>3</td>
+          <td>弹框上偏移</td>
+        </tr>
+        <tr>
+          <th>content</th>
+          <td>''</td>
+          <td>弹框显示的内容</td>
+        </tr>      
+        <tr>
+          <th>act</th>
+          <td>'hover'</td>
+          <td>鼠标事件 &nbsp; 'hover', 'click', false(直接弹框，没有事件)</td>
+        </tr>
+        <tr>
+          <th>arrow</th>
+          <td>'left, 0, 8'</td>
+          <td>
+            角的对齐方式<br>
+            第1个参数是对齐的方式 分为'left', 'center', 'right'<br>
+            第2个参数为角的偏移<br>
+            第3个参数为角的大小<br>
+            若不需要设置，可以用空代表，如:<br>
+            arrow : ',,20'     设置角大小为20像素<br>
+            arrow : 'left'     设置角左对齐<br>
+            arrow : 'left,30' 设置角左对齐, 并向左偏移30像素
+          </td>
+        </tr>
+        <tr>
+          <th>closex</th>
+          <td>false</td>
+          <td>是否显示显示x按钮, 值为true, 或者一个回调函数。</td>
+        </tr>
+        <tr>
+          <th>width</th>
+          <td>'auto'</td>
+          <td>宽度设置</td>
+        </tr>
+        <tr>
+          <th>height</th>
+          <td>'auto'</td>
+          <td>高度设置</td>
+        </tr>
+        <tr>
+          <th>cache</th>
+          <td>false</td>
+          <td>缓存, 值为true或false。 当弹层关闭时是否会删除插件创建的dom</td>
+        </tr>
+        <tr>
+          <th>css</th>
+          <td>{}</td>
+          <td>可个性化设置你的样式 如: { border: '2px solid #ccc', background: '#fff' }</td>
+        </tr>
+        <tr>
+          <th>cssStyle</th>
+          <td>'default'</td>
+          <td>皮肤  值为 'default', 'info', 'warning', 'error'</td>
+        </tr>
+        <tr>
+          <th>zindex</th>
+          <td>'auto'</td>
+          <td>z轴层级，auto时，会自动获取，建议auto</td>
+        </tr>
+        <tr>
+          <th>animation</th>
+          <td>'fadein'</td>
+          <td>动画效果  '值为fadein', 'zoomin', 'bounceout'</td>
+        </tr>
+        <tr>
+          <th>proxy</th>
+          <td>false</td>
+          <td>
+            事件代理, 可将事件代理到指定元素上。 写法上跟正常的有所区别。<br />
+            代理 $('body').AlertTs({ proxy : 'btn'});<br />
+            普通 $('btn').AlertTs({});
+          </td>
+        </tr>
+        <tr>
+          <th>timeout</th>
+          <td>false</td>
+          <td>多少毫秒后弹框消失</td>
+        </tr>        
+      </tbody>   
+    </table>
+  </section>
+
+  <section>
+    <h2>回调函数</h2>
+    <table>
+      <thead>
+        <tr>
+          <th width="150">属性</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>show</th>
+          <td>弹框展示时执行的回调</td>
+        </tr>
+        <tr>
+          <th>beforeshow</th>
+          <td>弹框展示前时执行的回调</td>
+        </tr>
+        <tr>
+          <th>hide</th>
+          <td>弹框隐藏时执行的回调</td>
+        </tr>
+        <tr>
+          <th>windowborder</th>
+          <td>当弹框遇到浏览器边界时会处发的回调</td>
+        </tr>
+      </tbody>     
+    </table>
+  </section>
+
+  <script>refresh();</script>
+</script>
+
+<script type="text/template" id="content">
+  <section class="template-info">
+    <h2>设置内容</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-a">点击显示一段html</a> 
+        <a data-selector="btn-a" class="btn small">源码</a>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a data-title="我若不笑的猖狂谁替我坚强" data-selector="bind-b">通过标签上的data-title设置内容</a> 
+        <a data-selector="btn-b" class="btn small">源码</a>
+        <small>如果标签上有data-title属性, 插件会自动将data-title里的值覆盖到options.content里</small>
+        <div class="pre">
+        <a data-title="我若不笑的猖狂谁替我坚强">
+          通过data-title设置内容
+        </a>
+          &nbsp;
+          $snippet
+        </div>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-c">缓存内容</a>
+        <a data-selector="btn-c" class="btn small">源码</a>
+        <small>默认是不缓存的，即当弹框隐藏时，相应的dom会删除。<br />通过设置cache为true来设置缓存</small>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-d">通过ajax设置内容</a> 
+        <a data-selector="btn-d" class="btn small">源码</a>
+        <small>
+          利用show回调，等异步请求后，回填内容。这里用setTimeou来模拟异步请求。
+        </small>
+      </li>
+    </ul>
+    <h2>获取弹框内容</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-j">获取弹框内容</a> 
+        <a data-selector="btn-j" class="btn small">源码</a>
+        <small>
+          通过this.helper获取弹框生成的内容
+        </small>
+      </li>
+    </ul>
+    <h2>定义关闭按钮</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-e">显示关闭按钮</a> 
+        <a data-selector="btn-e" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-f">关闭按钮回调</a> 
+        <a data-selector="btn-f" class="btn small">源码</a>
+      </li>
+    </ul>    
+  </section>
+  <script>
+    var obj = {
+      a : function(){
+        $('[data-selector="bind-a"]').AlertTs({
+          act: 'click',
+          cssStyle: 'warning',
+          content: [
+            '<div>',
+            '别再我坟前哭弄脏我轮回',
+            '<span class="text-wraning">路</span>？',
+            '</div>'
+          ].join('')
+        });
+      },
+      b : function(){
+        $('[data-selector="bind-b"]').AlertTs({
+          act: 'click',
+          cssStyle: 'warning'
+        });
+      },
+      c : function(){
+        $('[data-selector="bind-c"]').AlertTs({
+          act: 'click',
+          cssStyle: 'warning',
+          content : '<input type="text" />',
+          cache : true
+        });
+      },
+      d : function(){
+        $('[data-selector="bind-d"]').AlertTs({
+          act: 'click',
+          cssStyle: 'warning',
+          show : function(){
+            var that = this;
+            setTimeout(function(){
+              //refresh是刷新方法，可以传options
+              //等同开始调用alertTs传的options
+              that.refresh({
+                content : '你是我心里永远解不开的结'
+              });
+            }, 1000);
+          },
+          hide : function(){
+            var that = this;
+            that.refresh({
+              content : ''
+            });
+          }
+        });
+      },
+      e : function(){
+        $('[data-selector="bind-e"]').AlertTs({
+          act: 'click',
+          content : '我有故事和啤酒所以不孤独',
+          closex : true,
+          cssStyle: 'warning'
+        });
+      },
+      f : function(){
+        $('[data-selector="bind-f"]').AlertTs({
+          act: 'click',
+          content : '我有故事和啤酒所以不孤独',
+          closex : function(){
+            alert('骄傲治愈不了岁月的旧伤痕');
+          },
+          cssStyle: 'warning'
+        });
+      },
+      j : function(){
+        $('[data-selector="bind-j"]').AlertTs({
+          act: 'click',
+          content : '我有故事和啤酒所以不孤独',
+          cssStyle: 'warning',
+          show : function(){
+            alert( this.helper.html() );
+          }
+        });
+      } 
+    }
+    bindEvent(obj);
+  </script>  
+</script>
+
+<script type="text/template" id="position">
+  <section class="template-info">
+    <h2>定义弹框的方向</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-a">点击 下弹框</a>
+        <a data-selector="btn-a" class="btn small">源码</a>
+        <small>通过设置position来定义弹框方向，值分别为 top, right, bottom, left</small>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-b">动态改变弹框方向</a>
+        <a data-selector="btn-b" class="btn small">源码</a>
+        <small>通过show回调,  及refresh方法实现动态改变</small>
+      </li>      
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-c">判断浏览器边界</a>
+        <a data-selector="btn-c" class="btn small">源码</a>
+        <small>通过windowborder回调, 监控是否到达浏览器边界</small>
+      </li>      
+    </ul>
+    <h2>定义角的位置</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-d">定义居中显示</a>
+        <a data-selector="btn-d" class="btn small">源码</a>
+        <small>设置arrow:'center',让角居中对齐，值为left(默认), center, right</small>
+      </li>      
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-e">定义角的偏移</a>
+        <a data-selector="btn-e" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-f">定义角的大小</a>
+        <a data-selector="btn-f" class="btn small">源码</a>
+      </li>   
+    </ul>
+
+  </section>
+  <script>
+    var obj = {
+      a : function(){
+        $('[data-selector="bind-a"]').AlertTs({
+          act: 'click',
+          /*
+           * position值为
+           * top,right,bottom,left
+           * 默认为top
+           */
+          position : 'bottom', 
+          cssStyle: 'warning',
+          content: '你住在我心脏最温暖的位置'
+        });
+      },
+      b : function(){
+        $('[data-selector="bind-b"]').AlertTs({
+          act : 'click',
+          position : 'top',
+          cssStyle: 'warning',
+          content : '她不知道我也看了她好久',
+          show : function(){
+            this.refresh({
+              position : 'right'
+            })
+          }
+        });
+      },
+      c : function(){
+        $('[data-selector="bind-c"]').AlertTs({
+          act : 'click',
+          position : 'left',
+          cssStyle: 'warning',
+          content : [
+            '你的名字是我久治不愈的病',
+            '我以为避而不见就不再想念',
+            '你住在我心脏最温暖的位置',
+            '无言的陪伴胜过虚有的情话'
+          ].join(),
+          windowborder : function(result){
+            /*
+             result 长这个样子
+             {
+                top: false, 
+                right: false, 
+                bottom: false, 
+                left: 416
+              }
+              代表左边界超出416px
+            */
+            if(result.left){
+              this.refresh({ position: 'bottom' })
+            }
+          }
+        });
+      },
+      d : function(){
+        $('[data-selector="bind-d"]').AlertTs({
+          act : 'click',
+          position : 'top',
+          arrow : 'center',
+          cssStyle: 'warning',
+          content : '好感怎会永保新鲜毕竟热情'
+        });
+      },
+      e : function(){
+        $('[data-selector="bind-e"]').AlertTs({
+          act : 'click',
+          position : 'top',
+          /*
+            arrow:'center,30,20'最多可以有三个参数
+            30 代表 居中对齐后，再向右移动30个像素
+            20 代表 角的大小
+            参数顺序可以类css随意调整，
+            但第一个出现的数字一定代表角的偏移
+            例: 可以改成arrow: '30,center,20'
+            不需要的参数可以省略
+          */
+          arrow : 'center, 30',
+          cssStyle: 'warning',
+          content : '好感怎会永保新鲜毕竟热情'
+        });
+      },
+      f : function(){
+        $('[data-selector="bind-f"]').AlertTs({
+          act : 'click',
+          position : 'top',
+          arrow : {
+            align :'center',
+            left : 30,
+            size : 20
+          },
+          cssStyle: 'warning',
+          content : '好感怎会永保新鲜毕竟热情'
+        });
+      }
+    }         
+    bindEvent(obj);
+  </script>  
+</script>
+
+<script type="text/template" id="event">
+  <section class="template-info">
+    <h2>鼠标事件</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-a">click事件</a>
+        <a data-selector="btn-a" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-b">hover事件</a>
+        <a data-selector="btn-b" class="btn small">源码</a>
+      </li>      
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-j">为弹框内容绑定事件</a>
+        <a data-selector="btn-j" class="btn small">源码</a>        
+      </li>
+    </ul>
+    <h2>事件代理</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-c">事件代理proxy</a>
+        <a data-selector="btn-c" class="btn small">源码</a>
+        <small>
+          通过事件代理, 将事件代理到其它元素上，跟jquery的delegate同理。<br />
+          以实现后加入的元素依然有事件的效果。
+        </small>
+      </li>
+    </ul>
+    <h2>直接显示内容</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-d">无事件, 直接显示内容</a>
+        <a data-selector="btn-d" class="btn small">源码</a>
+      </li>
+    </ul>
+  </section>
+  <script>
+    var obj = {
+      a : function(){
+        $('[data-selector="bind-a"]').AlertTs({
+          act: 'click',
+          cssStyle: 'warning',
+          content: '时光总嘲笑我的痴心妄想'
+        });
+      },
+      b : function(){
+        $('[data-selector="bind-b"]').AlertTs({
+          act : 'hover',  //hove为默认事件可以不写
+          cssStyle: 'warning',
+          content: '如果什么都可以随心所欲怎'
+        });   
+      },
+      c : function(){
+        $('body').AlertTs({
+          proxy : '[data-selector="bind-c"]',
+          act : 'click',
+          cssStyle: 'warning',
+          content: '陌上花开丶谁许我一世流年'
+        }); 
+      },
+      d : function(){
+        $('[data-selector="bind-d"]').AlertTs({
+          act : false,
+          cssStyle: 'warning',
+          position: 'bottom',
+          closex: true,
+          content: '你是不是记得多久没说爱我'
+        });  
+      },
+      j : function(){
+        $('[data-selector="bind-j"]').AlertTs({
+          act : 'click',
+          cssStyle: 'warning',
+          content: '你是不是记得多久没说爱我'+
+                   ' <a>点我alert</a>',
+          show : function(){
+            this.helper
+                .off('click')
+                .on('click', function(){
+              alert('点我alert');
+            });
+          }
+        });  
+      }
+    }
+    bindEvent(obj);
+  </script>
+</script>
+
+<script type="text/template" id="skin">
+  <section class="template-info">
+    <h2>外观样式</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-a">default(默认)</a>
+        <a data-selector="btn-a" class="btn small">源码</a>
+      </li>    
+      <li>
+        <a data-selector="bind-b">warning</a>
+        <a data-selector="btn-b" class="btn small">源码</a>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-c">info</a>
+        <a data-selector="btn-c" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-d">error</a>
+        <a data-selector="btn-d" class="btn small">源码</a>
+      </li>           
+    </ul>
+    <h2>自定义外观</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-e">自定义外观</a>
+        <a data-selector="btn-e" class="btn small">源码</a>
+        <small>
+          通过设置css属性可以实现自定义弹框外观的效果
+        </small>
+      </li>
+    </ul>
+    <h2>动画效果 <small>(不写为默认)</small></h2>
+    <ul>   
+      <li>
+        <a data-selector="bind-f">zoomin</a>
+        <a data-selector="btn-f" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-g">bounceout</a>
+        <a data-selector="btn-g" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-h">fadein(默认)</a>
+        <a data-selector="btn-h" class="btn small">源码</a>
+      </li>           
+    </ul> 
+  </section>
+  <script>
+    var obj = {
+      a : function(){
+        $('[data-selector="bind-a"]').AlertTs({
+          act: 'click',
+          content: '我以为避而不见就不再思念'
+        });
+      },
+      b : function(){
+        $('[data-selector="bind-b"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          content: '衣服再美不还是败给了校服'
+        });
+      },
+      c : function(){
+        $('[data-selector="bind-c"]').AlertTs({
+          act: 'click',
+          cssStyle : 'info',
+          content: '我这样低调、又不会撒娇'
+        });
+      },
+      d : function(){
+        $('[data-selector="bind-d"]').AlertTs({
+          act: 'click',
+          cssStyle : 'error',
+          content: '自己哭自己闹自己笑自己看'
+        });
+      },
+      e : function(){
+        $('[data-selector="bind-e"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          css : {
+            border : '1px solid #72beff',
+            background: '#72beff',
+            color: '#fff',
+            fontSize : '14px',
+            padding : '10px'
+          },
+          content: '自己哭自己闹自己笑自己看'
+        });
+      },
+      f : function(){
+        $('[data-selector="bind-f"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          animation : 'zoomin',
+          content: '你初心不浅为何还伤我心'
+        });
+      },
+      g : function(){
+        $('[data-selector="bind-g"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          animation : 'bounceout',
+          content: '菇凉我冷血薄情你功不可没'
+        });
+      },
+      h : function(){
+        $('[data-selector="bind-h"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          content: '别说我变了是你不懂我好吗'
+        });
+      }      
+    }
+    bindEvent(obj);
+  </script>  
+</script>
+
+<script type="text/template" id="method">
+  <section class="template-info">
+    <h2>插件的方法</h2>
+    <ul>
+      <li>
+        以下方法均可以这样调用
+        <small>
+          $('element').alertTs('refresh', {});<br />
+          $('element').alertTs('refresh');<br />
+          $('element').alertTs('show');<br />
+          ...
+        </small>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-a">refresh方法</a>
+        <a data-selector="btn-a" class="btn small">源码</a>
+        <small>
+          提供刷新的方法, 只有一个参数options<br>
+          等同开始调用AlertTs传的options<br>
+          注: 并不是所有值都能刷新的, 一些我认为没必要的则不能刷新。
+        </small>
+      </li>    
+    </ul>
+    <ul>
+      <li>
+        show方法
+        <small>
+          通过$(element).AlertTs('show') 来显示弹层<br>
+          也可以在回调中通过this.show()来调用
+        </small>
+      </li>    
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-b">hide方法</a>
+        <a data-selector="btn-b" class="btn small">源码</a>
+        <small>
+          通过$(element).AlertTs('hide') 来隐藏弹层<br>
+          也可以在回调中通过this.hide()来调用
+        </small>
+      </li>    
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-c">play方法</a>
+        <a data-selector="btn-c" class="btn small">源码</a>
+        <small>
+          自动对齐方法<br>
+          因为弹框是创建在body上的, 所以不能根据dom的变动，而产生变化, 用play可以解决此问题。<br>
+        </small>
+      </li>    
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-m">destroy 销毁</a>
+        <a data-selector="btn-m" class="btn small">源码</a>
+        <small>
+          会销毁所有插件产生的事件及dom
+        </small>
+      </li>    
+    </ul>             
+    <h2>回调</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-d">show</a>
+        <a data-selector="btn-d" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-e">hide</a>
+        <a data-selector="btn-e" class="btn small">源码</a>
+      </li>
+      <li>
+        <a data-selector="bind-f">beforeshow</a>
+        <a data-selector="btn-f" class="btn small">源码</a>
+      </li>      
+    </ul>
+    <ul>
+      <li>
+        <a data-selector="bind-g">windowborder(判断浏览器边界)</a>
+        <a data-selector="btn-g" class="btn small">源码</a>
+      </li>
+    </ul>
+    <h2>其它</h2>
+    <ul>
+      <li>
+        获取AlertTs的类
+        <small>
+          通过 var alert_ts = $.AlertTs.parent('element') 获取<br />
+          获取后可调用各种方法(相当于回调里的this)，如:<br />
+          alert_ts.refresh();<br />
+          alert_ts.hide();<br />
+          ...
+        </small>
+      </li>
+    </ul>
+  </section>
+  <script>
+    var obj = {
+      a : function(){
+        $('[data-selector="bind-a"]').AlertTs({
+          act: 'click',
+          content: '我以为避而不见就不再思念',
+          show : function(){
+            this.refresh({
+              position : 'bottom',
+              css : {
+                border : '2px solid #ffae00',
+                background: '#ffae00',
+                color: '#fff',
+                fontSize : '16px',
+                padding : '20px'
+              },
+              arrow : 'center',
+              content : '别拿时光当借口抱怨谁先走'
+            })
+          }
+        });
+      },
+      b : function(){
+        $('[data-selector="bind-b"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          content: '我以为避而不见就不再思念',
+          show : function(){
+            var that = this;
+            setTimeout(function(){
+              that.hide();
+            },1500);
+          }
+        });
+      },
+      c : function(){
+        $('[data-selector="bind-c"]').AlertTs({
+          act: 'click',
+          cssStyle : 'info',
+          content: '我这样低调、又不会撒娇',
+          show : function(){
+            this.play();
+          }
+        });
+      },
+      d : function(){
+        $('[data-selector="bind-d"]').AlertTs({
+          act: 'click',
+          cssStyle : 'error',
+          content: '我们没有更多的青春用来伤',
+          show : function(){
+            alert('show');
+          }
+        });
+      },
+      e : function(){
+        $('[data-selector="bind-e"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          content: '离开的时候有些话没亲口说',
+          hide : function(){
+            alert('hide');
+          }
+        });
+      },
+      f : function(){
+        $('[data-selector="bind-f"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          content: '♪他失去生命丢下无言的她',
+          beforeshow : function(){
+            alert('beforeshow');
+          }
+        });
+      },
+      g : function(){
+        $('[data-selector="bind-g"]').AlertTs({
+          act : 'click',
+          position : 'left',
+          cssStyle: 'warning',
+          content : [
+            '你的名字是我久治不愈的病',
+            '我以为避而不见就不再想念',
+            '你住在我心脏最温暖的位置',
+            '无言的陪伴胜过虚有的情话'
+          ].join(),
+          windowborder : function(result){
+            /*
+             result 长这个样子
+             {
+                top: false, 
+                right: false, 
+                bottom: false, 
+                left: 416
+              }
+              代表左边界超出416px
+            */
+            if(result.left){
+              this.refresh({ position: 'top' })
+            }
+          }
+        });
+      },
+      m : function(){
+        $('[data-selector="bind-m"]').AlertTs({
+          act: 'click',
+          cssStyle : 'warning',
+          content: '♪他失去生命丢下无言的她 <a>销毁</a>',
+          show : function(){
+            var that = this;
+            this.helper.find('a')
+                .off('click')
+                .on('click', function(){
+              that.destroy();
+            });
+          }
+        });
+      }
+    }
+    bindEvent(obj);
+  </script>    
+</script>
+
+<script>
+  var $nav = $('#nav'),
+      $article = $('#article'),
+      $aside = $('#aside'),
+      asideWidth = $aside.width(),
+      refresh = function(){
+        SyntaxHighlighter.highlight();
+      },
+      showSnippet = function(snippet, content){
+        $pre = $('#aside pre');
+        if(typeof snippet === 'function') snippet = snippet.toString();
+        if(/^\s+function/i) snippet = snippet.replace(/^\s*function.*\n/, '').replace(/\s*}.*\n?$/, '');      
+        if(content) snippet = content.replace(/^\s*\$snippet.*$/m, snippet);
+        snippet = snippet.replace(/\</g,'&lt;').replace(/\>/g,'&gt;');
+        $aside.html('<pre class="brush: js;">' + snippet + '</pre>');
+        refresh();
+      },
+      bindEvent = function(obj){
+        for(var i in obj) obj[i]();
+        $('[data-selector^="btn"]', '.template-info').on('click', function(){
+          $('.template-info .btn').removeClass('active');
+          $(this).addClass('active');
+          var li = $(this).closest('li');
+          var eleName = li.find('[data-selector^="bind"]').attr('data-selector').replace('bind-','');
+          if( li.find('.pre').length > 0 ){
+            showSnippet( obj[eleName], li.find('.pre').html() );
+          }else{
+            showSnippet( obj[eleName] );       
+          }
+        });
+      }
+  $('ul', $nav).on('click', 'li', function(){
+    var page = $(this).data('page');
+    $('body').off('click');
+    location.hash = $(this).data('page') || '';
+    $(this).addClass('active').siblings().removeClass('active');
+    page === 'rule' ? $aside.width(0) : $aside.width(asideWidth);
+    $('.wrap', $article).html( $('#'+page).html() );
+    $aside.empty();
+  });
+  $('[data-page="'+ location.hash.replace(/^#/,'') +'"]', $nav).trigger('click');
+  $article.on('scroll', function(){ $(this).find('[data-selector^="bind"]').AlertTs('rePosition') });
+</script>
+</body>
+</html>
