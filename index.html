@@ -446,13 +446,14 @@
           act : 'click',
           position : 'top',
           /*
-            arrow:'center,30,20'最多可以有三个参数
+            arrow : 'center,30,20'
             30 代表 居中对齐后，再向右移动30个像素
             20 代表 角的大小
-            参数顺序可以类css随意调整，
-            但第一个出现的数字一定代表角的偏移
-            例: 可以改成arrow: '30,center,20'
-            不需要的参数可以省略
+            如果没有可以用空代表
+            例: 
+            arrow : ',,20'     设置角大小为20像素
+            arrow : 'left'     设置角左对齐
+            arrow : 'left,30'  设置角左对齐, 并向左偏移30像素
           */
           arrow : 'center, 30',
           cssStyle: 'warning',
