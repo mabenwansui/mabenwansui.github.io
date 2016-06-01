@@ -8,7 +8,7 @@
 <meta name="keywords" content="">
 <script src="src/jquery.js"></script>
 <script src="src/alertTs.js"></script>
-<link href="../css/style.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
 <link href="src/style.css" rel="stylesheet">
 
 <script src="src/scripts/shCore.js"></script>
@@ -949,7 +949,7 @@
     $('.wrap', $article).html( $('#'+page).html() );
     $aside.empty();
   });
-  $('[data-page="'+ location.hash.replace(/^#/,'') +'"]', $nav).trigger('click');
+  $('[data-page="'+ (location.hash.replace(/^#/,'') || 'rule') +'"]', $nav).trigger('click');
   $article.on('scroll', function(){ $(this).find('[data-selector^="bind"]').AlertTs('rePosition') });
 </script>
 </body>

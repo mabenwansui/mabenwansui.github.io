@@ -525,7 +525,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             });
           })();
         }
-        console.log(options.arrow);
       }
     }, {
       key: '_windowborder',
