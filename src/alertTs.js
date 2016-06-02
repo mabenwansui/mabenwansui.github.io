@@ -132,12 +132,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function show() {
         var _this2 = this;
 
+        if (this._visible) return this;
+        this._visible = true;
+        this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, function (event) {
+          if (_this2.helper && _this2.helper.has(event.target).length === 0 && _this2.helper[0] != event.target && _this2.element[0] != event.target && _this2.element.has(event.target).length === 0) {
+            _this2.hide();
+          };
+        });
+
         this.options.timeout && setTimeout(function () {
           return _this2.hide();
         }, this.options.timeout);
         this.options.callback.beforeshow.call(this);
-        if (this._visible) return this;
-        this._visible = true;
         if (this._helper) {
           this.helper.show();
         } else {
@@ -159,6 +165,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'hide',
       value: function hide() {
+        if (!this._visible) return this;
         this._visible = false;
         this.options.callback.hide.call(this);
         this.helper.removeClass('animated-zoomin');
@@ -177,7 +184,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function destroy() {
         this._off && this._off();
         this.removeTag();
-        this.element.removeData('plugin_' + pluginName);
+        if (this.options.proxy) {
+          this.options.proxy.removeData('plugin_' + pluginName);
+        } else {
+          this.element.removeData('plugin_' + pluginName);
+        }
       }
     }, {
       key: 'reArrow',
@@ -191,7 +202,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             _left = this.options.arrow.left,
             a1 = this.$arrow.find('i:eq(0)'),
             a2 = this.$arrow.find('i:eq(1)'),
-            aw = Number.parseInt(this.helper.css('border-left-width'), 10);
+            aw = parseInt(this.helper.css('border-left-width'), 10);
         this.$arrow.add(a1).add(a2).removeAttr('style');
         this._top = 0;
         this._left = 0;
@@ -365,16 +376,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var proxy = this.options.proxy;
         switch (this.options.act) {
           case 'click':
-            $(document).on('click.' + pluginName + this._id, function (event) {
-              if (that.helper && that.helper.has(event.target).length === 0 && that.helper[0] != event.target && that.element[0] != event.target && that.element.has(event.target).length === 0) {
-                that.hide();
-              };
-            });
             var eventFunc = function eventFunc() {
               that.show();
             };
             if (proxy) {
               $ele.on('click.' + pluginName, proxy, function () {
+                that.options.proxy = $ele;
                 that.element = $(this);
                 eventFunc.call(this);
               });
@@ -415,9 +422,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             };
             if (this.options.proxy) {
               $ele.on('mouseenter.' + pluginName, this.options.proxy, function () {
+                that.options.proxy = $ele;
                 that.element = $(this);
                 mouseenterFunc.call(this);
               }).on('mouseleave.' + pluginName, this.options.proxy, function () {
+                that.options.proxy = $ele;
                 that.element = $(this);
                 mouseleaveFunc.call(this);
               });
@@ -458,9 +467,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           var arr = v.split('>');
           if (arr.length > 1) {
             var key = _this5.options[arr[0]][arr[1]];
-            if (!key) _this5.options[arr[0]][arr[1]] = 0;else if (reg.test(key)) _this5.options[arr[0]][arr[1]] = Number.parseInt(key, 10);
+            if (!key) _this5.options[arr[0]][arr[1]] = 0;else if (reg.test(key)) _this5.options[arr[0]][arr[1]] = parseInt(key, 10);
           } else {
-            if (!_this5.options[v]) _this5.options[v] = 0;else if (reg.test(_this5.options[v])) _this5.options[v] = Number.parseInt(_this5.options[v], 10);
+            if (!_this5.options[v]) _this5.options[v] = 0;else if (reg.test(_this5.options[v])) _this5.options[v] = parseInt(_this5.options[v], 10);
           }
         });
         return this;
@@ -498,7 +507,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         if (zindex.indexOf('auto') > -1) {
           this.helper.css('z-index', getAutoIndex());
         } else if (typeof zindex === 'string' && /^(\-|\+)/.test(zindex)) {
-          this.helper.css('z-index', getAutoIndex() + Number.parseInt(zindex, 10));
+          this.helper.css('z-index', getAutoIndex() + parseInt(zindex, 10));
         } else {
           this.helper.css('z-index', zindex);
         }
