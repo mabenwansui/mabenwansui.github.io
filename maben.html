@@ -42,8 +42,10 @@
 
 
 <script>
-$('.btn').AlertTs({
-  act : 'hover',
+var i = 0;
+$('body').AlertTs({
+  act : 'click',
+  proxy : '.btn',
   arrow : 'center',
   content : '我很好<a>点击</a>',
   closex : function(){
@@ -57,9 +59,13 @@ $('.btn').AlertTs({
     });
   },
   show : function(){
-    //this.refresh({
-    //  content : '我很好' 
-    //})
+    if(i==0){
+      this.refresh({
+        content : '我很好' 
+      });
+      i++;
+      console.log('==========');
+    }
   }
 });
 

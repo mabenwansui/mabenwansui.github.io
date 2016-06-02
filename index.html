@@ -217,13 +217,6 @@
     </ul>
     <ul>
       <li>
-        <a data-selector="bind-c">缓存内容</a>
-        <a data-selector="btn-c" class="btn small">源码</a>
-        <small>默认是不缓存的，即当弹框隐藏时，相应的dom会删除。<br />通过设置cache为true来设置缓存</small>
-      </li>
-    </ul>
-    <ul>
-      <li>
         <a data-selector="bind-d">通过ajax设置内容</a> 
         <a data-selector="btn-d" class="btn small">源码</a>
         <small>
@@ -271,14 +264,6 @@
         $('[data-selector="bind-b"]').AlertTs({
           act: 'click',
           cssStyle: 'warning'
-        });
-      },
-      c : function(){
-        $('[data-selector="bind-c"]').AlertTs({
-          act: 'click',
-          cssStyle: 'warning',
-          content : '<input type="text" />',
-          cache : true
         });
       },
       d : function(){

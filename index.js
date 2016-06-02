@@ -94,8 +94,7 @@
         this.closex.on('click', () => {
           if(typeof this.options.closex === 'function') this.options.closex.call(this);
           this.hide()
-        });
-      }
+        });}
       this.options.cssStyle && helper.addClass(className + '-' + this.options.cssStyle);
       this.helper = helper;
     }
@@ -108,10 +107,20 @@
       });
     }
     show(){
+      if(this._visible) return this;
+      this._visible = true;
+      this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
+        if (this.helper &&
+          this.helper.has(event.target).length === 0 &&
+          this.helper[0] != event.target &&
+          this.element[0] != event.target &&
+          this.element.has(event.target).length === 0) {
+          this.hide();
+        };
+      });
+
       this.options.timeout && setTimeout( ()=> this.hide(), this.options.timeout );
       this.options.callback.beforeshow.call(this);
-      if (this._visible) return this;
-      this._visible = true;
       if(this._helper){
         this.helper.show();
       }else{
@@ -131,6 +140,7 @@
       return this;
     }
     hide(){
+      if(!this._visible) return this;
       this._visible = false;
       this.options.callback.hide.call(this);
       this.helper.removeClass('animated-zoomin');
@@ -145,7 +155,11 @@
     destroy() {
       this._off && this._off();
       this.removeTag();
-      this.element.removeData('plugin_' + pluginName);
+      if(this.options.proxy){
+        this.options.proxy.removeData('plugin_' + pluginName);
+      }else{
+        this.element.removeData('plugin_' + pluginName);
+      }     
     }
     reArrow(){
       if(!this.element || !this.helper.is(':visible')) return this;
@@ -155,7 +169,7 @@
           left = this.options.arrow.left,
           a1 = this.$arrow.find('i:eq(0)'),
           a2 = this.$arrow.find('i:eq(1)'),
-          aw = Number.parseInt(this.helper.css('border-left-width'),10);
+          aw = parseInt(this.helper.css('border-left-width'),10);
       this.$arrow.add(a1).add(a2).removeAttr('style');
       this._top = 0;
       this._left = 0;
@@ -319,18 +333,10 @@
       let proxy = this.options.proxy;
       switch(this.options.act){
         case 'click' :
-          $(document).on('click.' + pluginName + this._id, event => {
-            if (that.helper &&
-              that.helper.has(event.target).length === 0 &&
-              that.helper[0] != event.target &&
-              that.element[0] != event.target &&
-              that.element.has(event.target).length === 0) {
-              that.hide();
-            };
-          });
           let eventFunc = function(){ that.show() }
           if(proxy){
             $ele.on('click.' + pluginName, proxy, function(){
+              that.options.proxy = $ele;
               that.element = $(this);
               eventFunc.call(this);
             });
@@ -368,9 +374,11 @@
           };
           if(this.options.proxy){
             $ele.on('mouseenter.' + pluginName, this.options.proxy, function(){
+              that.options.proxy = $ele;
               that.element = $(this);
               mouseenterFunc.call(this);
             }).on('mouseleave.' + pluginName, this.options.proxy, function(){
+              that.options.proxy = $ele;
               that.element = $(this);
               mouseleaveFunc.call(this);
             });
@@ -410,12 +418,12 @@
           if(!key)
             this.options[arr[0]][arr[1]] = 0;
           else if(reg.test(key))
-            this.options[arr[0]][arr[1]] = Number.parseInt(key, 10);
+            this.options[arr[0]][arr[1]] = parseInt(key, 10);
         }else{
           if(!this.options[v])
             this.options[v] = 0;
           else if(reg.test(this.options[v]))
-            this.options[v] = Number.parseInt(this.options[v], 10);
+            this.options[v] = parseInt(this.options[v], 10);
         }
       });
       return this;
@@ -445,7 +453,7 @@
       if (zindex.indexOf('auto') > -1) {
         this.helper.css('z-index', getAutoIndex());
       }else if(typeof zindex === 'string' && /^(\-|\+)/.test(zindex)){
-        this.helper.css('z-index', getAutoIndex() + Number.parseInt(zindex, 10));
+        this.helper.css('z-index', getAutoIndex() + parseInt(zindex, 10));
       }else{
         this.helper.css('z-index', zindex);
       }
