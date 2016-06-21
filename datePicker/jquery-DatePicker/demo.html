@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="" rel="stylesheet">
+<script src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
+<script src="index.js"></script>
+<style>
+/* 日历 */
+  *{padding:0; margin:0; line-height: normal;}
+  ul,ol{list-style:none;}
+  input.text{height:30px; line-height: 30px; text-indent: 10px; width: 200px;}
+
+  .datepicker-ui-default { display: inline-block; *zoom: 1; position: relative; }
+  .datepicker-ui-default.active { z-index: 10; }
+  .datepicker-ui-default.disabled .date-icon { background-position: center -32px; cursor: default; }
+  .datepicker-ui-default.disabled .clone-input { cursor: default; }
+  .datepicker-ui-default .date-icon { width: 16px; height: 16px; position: absolute; right: 10px; top: 7px; cursor: pointer; background: url(http://fb.pc.lietou-static.com/v1/images/plugins/datepicker/icon-date.png) center 0px no-repeat; }
+  .datepicker-ui-default .clone-input { cursor: pointer; }
+  .datepicker-ui-default .drop-down { width: 320px; padding: 5px 0px 5px; border: 1px solid #a1d4e7; color: #2d3e50; display: none; font-size: 14px; background: #f5fdff; }
+  .datepicker-ui-default .title { padding: 10px 20px 10px; margin-bottom: 5px; *zoom: 1; border-bottom: 1px solid #c5e8f5; }
+  .datepicker-ui-default .title:after { display: table; content: ""; clear: both; height: 0; }
+  .datepicker-ui-default .title .prev, .datepicker-ui-default .title .next { width: 20px; height: 20px; margin: 0px 12px; position: relative; top: 3px; display: inline-block; text-align: center; cursor: pointer; color: #37abe7; }
+  .datepicker-ui-default .title .prev { background: url(http://fb.pc.lietou-static.com/v1/images/plugins/datepicker/icon-left.png) center 2px no-repeat; }
+  .datepicker-ui-default .title .next { background: url(http://fb.pc.lietou-static.com/v1/images/plugins/datepicker/icon-right.png) center 2px no-repeat; }
+  .datepicker-ui-default .title .prev.disable, .datepicker-ui-default .title .next.disable { background-position: center -30px; }
+  .datepicker-ui-default .title h2 { display: inline-block; font-weight: normal; font-size: 18px; margin:0; padding:0; line-height: 24px; text-align: center; }
+  .datepicker-ui-default .year-box { float: left; }
+  .datepicker-ui-default .month-box { float: right; }
+  .datepicker-ui-default a { text-decoration: none; }
+  .datepicker-ui-default ol, .datepicker-ui-default ul { overflow: hidden; padding: 0 10px 0 15px; }
+  .datepicker-ui-default ol li, .datepicker-ui-default ul li { float: left; width: 41px; height: 24px; line-height: 24px; margin: 4px 0px; text-align: center; }
+  .datepicker-ui-default ul li { cursor: pointer; }
+  .datepicker-ui-default ol li.week_end { color: #f33; }
+  .datepicker-ui-default ul li:hover { color: #37abe7; }
+  .datepicker-ui-default ul li.active:hover { color: #fff; }
+  .datepicker-ui-default ul li.active { background: #37abe7; border-radius: 12px; color: #fff; }
+  .datepicker-ui-default ul li.disable { color: #999; cursor: auto; }
+</style>
+</head>
+<body>
+
+
+
+  开始日期: <input type="text" class="text" id="startDate" name="startDate" />
+
+
+<script>
+$(function(){
+
+  $('#startDate').datepicker({
+    startDate : '2015-12-10',
+    format : 'yyyy年mm月dd日'         //回填值的格式
+  });
+
+  //$('#startDate2').datePicker('show');
+  //$('#startDate2').datePicker('hide');
+  //$('#startDate2').datePicker('refresh');
+});
+</script>
+
+</body>
+</html>
