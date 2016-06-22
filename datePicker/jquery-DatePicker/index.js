@@ -7,7 +7,8 @@
   let defaults = {
     left      : 0,
     top       : 0,
-    errortext : '请选择$start到$end范围内的日期',
+    readonly  : true,
+    errortext : 'auto',
     btnbar    : false,
     startdate : null,
     enddate   : null,
@@ -29,10 +30,12 @@
       this._visible = false;
       this._id = ++$[pluginName].id;
       this._errorTimer = null;
+      this._startdate = null;
+      this._enddate = null;
       this._initialAttr();
       this.createUi();
-      this.bindEvent();
       this.refresh();
+      this.bindEvent();
     }
     createUi(){
       let html = `
@@ -75,12 +78,10 @@
     }
     refreshSelectYear(){
       let $year = this.helper.find('.year').removeClass('select');
-      let start = this._stringToDate(this.options.startdate);
-      let end = this._stringToDate(this.options.enddate);
       let html = '';
       for(let i=this.options.minyear; i<=this.options.maxyear; i++){
-        if( (start && i<start.year) ||
-            (end && i>end.year)
+        if( (this._startdate && i<this._startdate.year) ||
+            (this._enddate && i>this._enddate.year)
          ){
           html += `<li class="disabled">${i}</li>`;
         }else if(i === this.year){
@@ -90,12 +91,12 @@
         }
       }
       $year.find('ul').html(html);
-      if( $year.find('ul li:not(.disabled)').length >= 1 ) $year.addClass('select');
+      if( $year.find('ul li:not(.disabled)').length > 1 ) $year.addClass('select');
     }
     refreshSelectMonth(){
       let $month = this.helper.find('.month').removeClass('select');
-      let start = this._stringToDate(this.options.startdate);
-      let end = this._stringToDate(this.options.enddate);
+      let start = this._startdate;
+      let end = this._enddate;
       let html = '';
       for(let i=1; i<=12; i++){
         let curDate = this.year + this._pad(i);
@@ -109,12 +110,12 @@
       }
       $month.find('ul').html(html);
       if( $month.find('ul li:not(.disabled)').length >= 3 ) $month.addClass('select');
-      if(this.year + this._pad(this.month) <= start.year + this._pad(start.month) )
+      if(start && this.year + this._pad(this.month) <= start.year + this._pad(start.month) )
         this.helper.find('.prev').addClass('e-disabled');
       else
         this.helper.find('.prev').removeClass('e-disabled');
 
-      if(this.year + this._pad(this.month) >= end.year + this._pad(end.month) )
+      if(end && this.year + this._pad(this.month) >= end.year + this._pad(end.month) )
         this.helper.find('.next').addClass('e-disabled');
       else
         this.helper.find('.next').removeClass('e-disabled');      
@@ -188,6 +189,10 @@
     refresh(options){
       if(options) $.extend(true, this.options, options);
 
+      if( this.options.startdate ) this._startdate = this._stringToDate(this.options.startdate);
+      if( this.options.enddate ) this._enddate = this._stringToDate(this.options.enddate);
+      this.element.prop('readonly', this.options.readonly);
+
       {
         let v = this.element.val().trim();
         if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(v) )
@@ -198,9 +203,9 @@
       if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
       
       this.setZindex();
+      this.refreshDate();
       this.refreshSelectYear();
       this.refreshSelectMonth();
-      this.refreshDate();
       this.rePosition();
       return this;
     }
@@ -264,7 +269,9 @@
       //弹出年月下拉框
       this.helper.on('click', '.year, .month', function(event){
         let ul = $(this).find('ul');
-        if( ul.has(event.target).length>0 || ul[0]===event.target ){ event.stopPropagation(); return false }
+        if( ul.has(event.target).length>0 || ul[0]===event.target ){ 
+          event.stopPropagation(); return;
+        }
         if($(this).hasClass('active')){
           $(this).removeClass('active');
         }else{
@@ -282,46 +289,50 @@
         that.refreshDate();
         that.refreshSelectMonth();
         select.removeClass('active');
+        return false;
       });
 
       //点击空白隐藏弹框
-      $(document).on('click.' + pluginName + this._id, event => {               
-        if (this.helper &&
-          this.helper.has(event.target).length === 0 &&
-          this.helper[0] != event.target &&
-          this.element[0] != event.target &&
-          this.icon[0] != event.target &&
-          this.element.has(event.target).length === 0) {
+      $(document).on('click.' + pluginName + this._id, event => {
+        let target = event.target;
+        if (this._visible === true &&
+          this.helper &&
+          this.helper.has(target).length === 0 &&
+          this.helper[0] != target &&
+          this.element[0] != target &&
+          this.icon[0] != target &&
+          this.element.has(target).length === 0) {
           this.hide();
         };
         let year = this.helper.find('.year'),
             month = this.helper.find('.month');
-        if (year.has(event.target).length === 0 && year[0] != event.target) {
+        if (year.has(target).length === 0 && year[0] != target) {
           year.removeClass('active');
         };
-        if (month.has(event.target).length === 0 && month[0] != event.target) {
+        if (month.has(target).length === 0 && month[0] != target) {
           month.removeClass('active');
         };  
       });
     }
     rePosition(){
       if(!this.element) return this;
-      let that = this,
-          offset = this.element.offset(),
-          x = offset.left + this.options.left,
-          y = offset.top + this.element.outerHeight() + this.options.top;
-      this.helper.css({left: x, top: y});
-
       //对齐图标
       let position = this.element.position();
       this.icon.css({
         left : position.left + parseInt(this.element.css('margin-left'), 10) + this.element.outerWidth() - this.icon.outerWidth() - (parseInt(this.element.css('padding-right'),10)||5),
         top : position.top + parseInt(this.element.css('margin-top'), 10) + this.element.outerHeight()/2 - this.icon.outerHeight()/2
-      });
+      });      
+      if(!this._visible) return this;
+      let that = this,
+          offset = this.element.offset(),
+          x = offset.left + this.options.left,
+          y = offset.top + this.element.outerHeight() + this.options.top;
+      this.helper.css({left: x, top: y});
     }
     show(){
       if(this._visible) return this;
       this._visible = true;
+      this.rePosition();
       this.helper.show().addClass('animated-fadein-bottom');
     }
     hide(){
@@ -350,8 +361,22 @@
     }
     errorTips(){
       let tips = this.helper.find('.error-tips');
+      let text = this.options.errortext;
+
+      if( this.options.errortext === 'auto' ){
+        if( this.options.startdate && !this.options.enddate ){
+          text = '请选择$start之后的日期'
+        }else if( !this.options.startdate && this.options.enddate ){
+          text = '请选择$end之前的日期'
+        }else{
+          text = '请选择$start到$end范围内的日期'
+        }
+      }
+
+      text = text.replace('$start', this.options.startdate || '' )
+                 .replace('$end', this.options.enddate || '' );
       if(tips.length === 0){
-        tips = $(`<div class="error-tips">${this.options.errortext.replace('$start', this.options.startdate).replace('$end', this.options.enddate)}</div>`).appendTo(this.helper);
+        tips = $(`<div class="error-tips">${text}</div>`).appendTo(this.helper);
       }else{
         tips.show();
       }
@@ -412,14 +437,13 @@
       }
     }
     _initialAttr(){
-      let that = this;
       //:代表别名
       ['startdate', 'enddate'].forEach(v => {  
         let arr = v.split(":");
-        if (arr.length > 0) {
-          if(that.element.attr("data-" + arr[0]) ) that.options[arr[1]] = that.element.attr("data-" + arr[0]);
+        if (arr.length > 1) {
+          if(this.element.attr("data-" + arr[0]) ) this.options[arr[1]] = this.element.attr("data-" + arr[0]);
         } else {
-          if(that.element.attr("data-" + v) ) that.options[n] = that.element.attr("data-" + n);
+          if(this.element.attr("data-" + v) ) this.options[v] = this.element.attr("data-" + v);
         }
       });
       return this;

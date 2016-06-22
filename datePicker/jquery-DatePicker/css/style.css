@@ -7,8 +7,8 @@
 .date-picker-ui .title .prev, .date-picker-ui .title .next { cursor: pointer; position: absolute; top: 50%; margin-top: -16px; }
 .date-picker-ui .title .prev { left: 4px; }
 .date-picker-ui .title .next { right: 4px; }
-.date-picker-ui .title .prev i { width: 32px; height: 32px; display: inline-block; background: url(../images/icons.png) -32px 0px; no-repeat; }
-.date-picker-ui .title .next i { width: 32px; height: 32px; display: inline-block; background: url(../images/icons.png); no-repeat; }
+.date-picker-ui .title .prev i { width: 32px; height: 32px; display: inline-block; background: url(../images/icons.png) -32px 0px no-repeat; }
+.date-picker-ui .title .next i { width: 32px; height: 32px; display: inline-block; background: url(../images/icons.png) no-repeat; }
 .date-picker-ui .title .prev:hover i { animation: move-right .8s cubic-bezier(0.39, 0.58, 0.57, 1) infinite; }
 .date-picker-ui .title .next:hover i { animation: move-left .8s cubic-bezier(0.39, 0.58, 0.57, 1) infinite; }
 .date-picker-ui .title .e-disabled { opacity: .3;}
@@ -64,7 +64,7 @@
   position: absolute;
   width: 20px;
   height: 20px;
-  background: url(../images/icons.png) 0 -32px; no-repeat;
+  background: url(../images/icons.png) 0 -32px no-repeat;
   cursor: pointer;
 }
 .date-picker-icon.active { color: #6c9ad8; }

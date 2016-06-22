@@ -96,6 +96,11 @@
           <td>可以选择的最大年</td>
         </tr>
         <tr>
+          <th>readonly</th>
+          <td>true</td>
+          <td>设置文本框是否只读 true, false</td>
+        </tr>        
+        <tr>
           <th>zindex</th>
           <td>'auto'</td>
           <td>z轴层级，auto时，会自动获取，建议auto。</td>
@@ -357,17 +362,12 @@
 
 <script type="text/template" id="example">
   <section class="template-info">
-    <h2>为input添加readonly</h2>
+    <h2>readonly</h2>
     <ul>
       <li> 
-        <input type="text" readonly="readonly" data-selector="bind-c" />
-         <a data-selector="btn-c" class="btn small">源码</a>
-        <small>通过添加readonly使日期不能通过手动修改, 只能通过插件选择</small>
-        <div class="pre">
-        <input type="text" readonly="readonly" />
-          &nbsp;
-          $snippet
-        </div>
+        <input type="text" data-selector="bind-c" />
+        <a data-selector="btn-c" class="btn small">源码</a>
+        <small>插件默认会给文本框加上readonly, 若不想要可设为false</small>
       </li>
     </ul>
     <h2>为input添加disabled</h2>
@@ -438,7 +438,9 @@
         });
       },
       c : function(){
-        $('[data-selector="bind-c"]').DatePicker();
+        $('[data-selector="bind-c"]').DatePicker({
+          readonly : false
+        });
       },
       d : function(){
         $('[data-selector="bind-d"]').DatePicker();

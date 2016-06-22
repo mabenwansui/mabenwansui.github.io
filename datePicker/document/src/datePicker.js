@@ -74,6 +74,7 @@
     var defaults = {
       left: 0,
       top: 0,
+      readonly: true,
       errortext: 'auto',
       btnbar: false,
       startdate: null,
@@ -241,6 +242,7 @@
 
           if (this.options.startdate) this._startdate = this._stringToDate(this.options.startdate);
           if (this.options.enddate) this._enddate = this._stringToDate(this.options.enddate);
+          this.element.prop('readonly', this.options.readonly);
 
           {
             var v = this.element.val().trim();

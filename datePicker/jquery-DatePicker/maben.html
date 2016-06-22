@@ -24,7 +24,7 @@ input{
 
 } 
 </style>
-<input type="text" class="text" value="2015-6-10" />
+<input type="text" class="text" value="" />
 
 
 <p>1</p>
@@ -35,10 +35,9 @@ input{
 <script>
 
 $('input').DatePicker({
-  //btnbar : true,
+  btnbar : true,
   //cssstyle : 'light'
-  startdate: '2015-03-02',
-  enddate: '2016-11-10',
+  //startdate : '2016-06-21',
   callback : function(date){
     console.log( this.format(date, 'yyyy年M月dd日') );
     return false;
