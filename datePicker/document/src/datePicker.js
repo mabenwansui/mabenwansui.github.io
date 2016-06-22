@@ -353,7 +353,7 @@
           this.helper.on('click', '.year, .month', function (event) {
             var ul = $(this).find('ul');
             if (ul.has(event.target).length > 0 || ul[0] === event.target) {
-              event.stopPropagation();return false;
+              event.stopPropagation();return;
             }
             if ($(this).hasClass('active')) {
               $(this).removeClass('active');
@@ -369,19 +369,21 @@
             that.refreshDate();
             that.refreshSelectMonth();
             select.removeClass('active');
+            return false;
           });
 
           //点击空白隐藏弹框
           $(document).on('click.' + pluginName + this._id, function (event) {
-            if (_this.helper && _this.helper.has(event.target).length === 0 && _this.helper[0] != event.target && _this.element[0] != event.target && _this.icon[0] != event.target && _this.element.has(event.target).length === 0) {
+            var target = event.target;
+            if (_this._visible === true && _this.helper && _this.helper.has(target).length === 0 && _this.helper[0] != target && _this.element[0] != target && _this.icon[0] != target && _this.element.has(target).length === 0) {
               _this.hide();
             };
             var year = _this.helper.find('.year'),
                 month = _this.helper.find('.month');
-            if (year.has(event.target).length === 0 && year[0] != event.target) {
+            if (year.has(target).length === 0 && year[0] != target) {
               year.removeClass('active');
             };
-            if (month.has(event.target).length === 0 && month[0] != event.target) {
+            if (month.has(target).length === 0 && month[0] != target) {
               month.removeClass('active');
             };
           });
