@@ -1,7 +1,7 @@
 {
-  "name": "@liepin/jquery-AlertTs",
-  "version": "0.0.8",
-  "description": "气泡插件（测试）",
+  "name": "@liepin/jquery-DatePicker",
+  "version": "0.0.2",
+  "description": "日期插件（测试）",
   "main": "./index.js",
   "author": {
     "name": "maben@liepin.com"

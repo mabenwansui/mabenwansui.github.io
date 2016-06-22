@@ -1,274 +1,96 @@
-.alert-ts { position: absolute; display: none;
-  left:0;
-  top:0;
-  font-size: 12px;
-  line-height: 22px;
-  border-radius: 2px;
-  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);  
+.date-picker-ui { font-family: Arial; border-radius: 0 7px 0 0; display: none; color: #464748; font-size: 14px; background: #9ebee8; position: absolute; padding: 0 2px 2px; }
+.date-picker-ui a { text-decoration: none; }
+.date-picker-ui .text-gray { color: #979797; }
+.date-picker-ui .weekend { color: #fa4040; }
+/* title */
+.date-picker-ui .title { padding: 4px 20px; color: #fff; text-align: center; position: relative; }
+.date-picker-ui .title .prev, .date-picker-ui .title .next { cursor: pointer; position: absolute; top: 50%; margin-top: -16px; }
+.date-picker-ui .title .prev { left: 4px; }
+.date-picker-ui .title .next { right: 4px; }
+.date-picker-ui .title .prev i { width: 32px; height: 32px; display: inline-block; background: url(../images/icons.png) -32px 0px; no-repeat; }
+.date-picker-ui .title .next i { width: 32px; height: 32px; display: inline-block; background: url(../images/icons.png); no-repeat; }
+.date-picker-ui .title .prev:hover i { animation: move-right .8s cubic-bezier(0.39, 0.58, 0.57, 1) infinite; }
+.date-picker-ui .title .next:hover i { animation: move-left .8s cubic-bezier(0.39, 0.58, 0.57, 1) infinite; }
+.date-picker-ui .title .e-disabled { opacity: .3;}
+.date-picker-ui .title .e-disabled:hover i{animation:none;}
+.date-picker-ui .title h2 { display: inline-block; font-weight: normal; font-size: 18px; line-height: 38px; margin: 0; padding: 0; text-align: center; }
+.date-picker-ui .title .year, .date-picker-ui .title .month { display: inline-block; position: relative; height: 38px; margin: 0 4px; border-radius: 5px; padding: 0px 10px 0 4px; }
+.date-picker-ui .title .year h2 { width: 70px; }
+.date-picker-ui .title .month h2 { width: 44px; }
+.date-picker-ui .title .arrow { display: inline-block; width: 0px; height: 0px; line-height: 0px; border: 4px solid #fff; border-color: #fff transparent transparent transparent; visibility: hidden; transition: transform .3s ease-out; }
+.date-picker-ui .error-tips{background: #f66b6b; padding:10px 0; line-height: 18px; font-size: 12px; text-align: center; color: #fff; position: absolute; width: 100%; z-index: 10; bottom:0; left:0;}
+
+/* drop-down */
+.date-picker-ui .title ul.drop-down { display: none; max-height: 222px; overflow-y: auto; width: 66px; list-style: none; padding: 0; margin: 0; top: 30px; left: -1px; position: absolute; z-index: 2; background: #fff; border: 1px solid #9ebee8; border-top: 0px; }
+.date-picker-ui .title .year ul.drop-down { width: 92px; }
+.date-picker-ui .title ul.drop-down li { padding: 0; margin: 0; text-align: left; padding-left: 14px; line-height: 22px; cursor: pointer; }
+.date-picker-ui .title ul.drop-down li.disabled { color: #b9b9b9;}
+.date-picker-ui .title ul.drop-down li.disabled:hover{background: inherit; font-size: 14px;}
+.date-picker-ui .title ul.drop-down li:hover { background: #dbebfe; font-size: 18px; }
+.date-picker-ui .title .select:hover { background: #7aa5de; }
+.date-picker-ui .title .select { border: 1px solid #9ebee8; cursor: pointer; }
+.date-picker-ui .title .select.active { background: #fff; color: #2c3e51; }
+.date-picker-ui .title .select.active .arrow { border-top-color: #6c9ad7; transform: rotate(180deg) translate3d(0, 4px, 0); }
+.date-picker-ui .title .select.active ul.drop-down { display: block; }
+.date-picker-ui .title .select .arrow { visibility: visible; }
+
+/* table */
+.date-picker-ui table { overflow: hidden; border-collapse: collapse; border-spacing: 0; }
+.date-picker-ui table th, .date-picker-ui table td { transition: transform .3s ease-out; width: 36px; line-height: 34px; text-align: center; background: #fff; }
+
+/*.date-picker-ui table td:hover { cursor: pointer; background: #dbebfd; line-height: 33px; border-bottom: 2px solid #6c9ad7; font-size: 18px; }*/
+.date-picker-ui table td:hover { transform: translate3d(0, -3px, 0); cursor: pointer; font-size: 18px; }
+.date-picker-ui table th { background: #f5f6f8; color: #6e9bd5; font-size: 16px; }
+.date-picker-ui table tbody .disabled { color: #b9b9b9; cursor: inherit; font-size: 14px; background-color: #fff; line-height: 34px; }
+.date-picker-ui table tbody .disabled:hover{ transform:none; }
+.date-picker-ui table tbody .active { background: #e0eeff; color: #4e86d5; }
+.date-picker-ui table tbody .today-effect { animation: today 1s ease-out; }
+.date-picker-ui .buttons-bar { text-align: right; padding: 5px 5px 5px 0; display: none; }
+.date-picker-ui .buttons-bar a { transition:all .3s ease-in; font-size: 12px; line-height: 22px; display: inline-block; border-radius: 10px; padding:0 10px; background: #6b9ad7; color:#fff; margin-left: 5px; }
+.date-picker-ui .buttons-bar a:focus { outline:none;}
+.date-picker-ui .buttons-bar a:hover{background: #fff; color:#6c9ad8;}
+
+/* 皮肤 */
+.date-picker-ui-light{background: #d8e5f6; color: #374a62;}
+.date-picker-ui-light .title{color: #6e9bd5;}
+.date-picker-ui-light .title .arrow{border-top-color: #6e9bd5;}
+.date-picker-ui-light .title .select{border-color: #d8e5f6;}
+.date-picker-ui-light table th{border-color: #f5f6f8;}
+.date-picker-ui-light table td{border-color: #fff;}
+.date-picker-ui-light table tbody .active{}
+
+
+.date-picker-icon {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: url(../images/icons.png) 0 -32px; no-repeat;
+  cursor: pointer;
 }
-.alert-ts .closex { font-family: Verdana; padding-bottom: 1px; transition: all .3s ease-out; position: absolute; z-index: 3; cursor: pointer; }
-.alert-ts .closex:hover { -webkit-transform: rotate(180deg);}
-.alert-ts .arrow { position: absolute; overflow: hidden; }
-.alert-ts .arrow i { display: block; width: 0px; height: 0px; overflow: hidden; position: absolute; z-index: 2; border-style: solid; border-width: 1px; border-color: transparent transparent transparent transparent; }
-.alert-ts .arrow .a1 { z-index: 1; }
-.alert-ts .loading{min-width:80px; min-height:30px;}
-.alert-ts .loading div { position: absolute; top:50%; left:50%; font-size: 0; line-height: 0; text-align: center;}
-.alert-ts .loading div i {
-  background-color: #fff;
-  width: 10px;
-  height: 10px;
-  border-radius: 100%;
-  margin: 2px;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-  display: inline-block;
-  animation: ball-beat 0.7s 0s infinite linear;
+.date-picker-icon.active { color: #6c9ad8; }
+.animated-fadein-bottom { animation: fadein-bottom .4s cubic-bezier(0.39, 0.58, 0.57, 1) }
+.animated-fadein-top{ animation: fadein-top .4s cubic-bezier(0.39, 0.58, 0.57, 1)}
+@keyframes error-tips{
+  form{opacity: 0; transform: rotate(180deg); }
+  to{opacity: 1;}
 }
-.alert-ts .loading div i:nth-child(2n-1) { -webkit-animation-delay: 0.35s; animation-delay: 0.35s; }
-
-
-/* 
-  皮肤 
-*/
-/* default */
-.alert-ts-default {
-  padding: 8px 10px;
-  border: 1px solid #e2e2e2;
-  background-color: #fff;
-  color: #666;
-}
-.alert-ts-default .loading i { background-color: #d2d2d2 !important; }
-.alert-ts-default .closex { color: #d2d2d2; }
-
-/* info */
-.alert-ts-info {
-  padding: 8px 10px;
-  border: 1px solid #ceeaff;
-  background-color: #e8f8ff;
-  color: #6699cc;
-}
-.alert-ts-info .loading i { background-color: #b7e7fe !important; }
-.alert-ts-info .closex { color: #a8d7f5; }
-
-/* warning */
-.alert-ts-warning {
-  padding: 8px 10px;
-  border: 1px solid #ffe99d;
-  background-color: #fff8d2;
-  color: #cc8c28;
-}
-.alert-ts-warning .loading i { background-color: #f9d574 !important; }
-.alert-ts-warning .closex { color: #ebd97b; }
-
-/* error */
-.alert-ts-error {
-  padding: 8px 10px;
-  border: 1px solid #ffd0d0;
-  background-color: #fff0ee;
-  color: #cc0000;
-}
-.alert-ts-error .loading i { background-color: #ffbaba !important; }
-.alert-ts-error .closex { color:#edb6b6;}
-
-
-
-
-
-
-
-
-
-
-
-.animated-zoomin { animation: zoomin .2s cubic-bezier(0.39, 0.58, 0.57, 1) }
-.animated-fadein-top{ animation: fadein-top .3s cubic-bezier(0.39, 0.58, 0.57, 1) }
-.animated-fadein-right{ animation: fadein-right .3s cubic-bezier(0.39, 0.58, 0.57, 1) }
-.animated-fadein-bottom{ animation: fadein-bottom .3s cubic-bezier(0.39, 0.58, 0.57, 1) }
-.animated-fadein-left{ animation: fadein-left .3s cubic-bezier(0.39, 0.58, 0.57, 1) }
-.animated-bounceout { animation: bounce-in .75s cubic-bezier(0.39, 0.58, 0.57, 1) }
-/* 动画 */
-@-webkit-keyframes zoomin {
-  from {
-    opacity: 0;
-    -webkit-transform: scale3d(.1, .1, .1);
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes zoomin {
-  from {
-    opacity: 0;
-    transform: scale3d(.1, .1, .1);
-  }
-  to {
-    opacity: 1;
-  }
-}
-@-webkit-keyframes ball-beat {
-  50% {
-    opacity: 0.2;
-    -webkit-transform: scale(0.75);
-  }
-  100% {
-    opacity: 1;
-    -webkit-transform: scale(1);
-  } 
-}
-@keyframes ball-beat {
-  50% {
-    opacity: 0.2;
-    transform: scale(0.75);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  } 
-}
-@-webkit-keyframes bounce-in {
-  from, 20%, 40%, 60%, 80%, to {
-    -webkit-animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
-    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
-  }
-  0% {
-    opacity: 0;
-    -webkit-transform: scale3d(.3, .3, .3);
-    transform: scale3d(.3, .3, .3);
-  }
-
-  20% {
-    -webkit-transform: scale3d(1.1, 1.1, 1.1);
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-
-  40% {
-    -webkit-transform: scale3d(.9, .9, .9);
-    transform: scale3d(.9, .9, .9);
-  }
-
-  60% {
-    opacity: 1;
-    -webkit-transform: scale3d(1.03, 1.03, 1.03);
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    -webkit-transform: scale3d(.97, .97, .97);
-    transform: scale3d(.97, .97, .97);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-@keyframes bounce-in {
-  from, 20%, 40%, 60%, 80%, to {
-    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
-  }
-  0% {
-    opacity: 0;
-    transform: scale3d(.3, .3, .3);
-  }
-
-  20% {
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-
-  40% {
-    transform: scale3d(.9, .9, .9);
-  }
-
-  60% {
-    opacity: 1;
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    transform: scale3d(.97, .97, .97);
-  }
-  to {
-    opacity: 1;
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-@-webkit-keyframes fadein-bottom {
-  from {
-    opacity: 0;
-    -webkit-transform: translate3d(0, -10px, 0);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: none;
-  }
-}
-@keyframes fadein-bottom {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@-webkit-keyframes fadein-right {
-  from {
-    opacity: 0;
-    -webkit-transform: translate3d(-10px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: none;
-  }
-}
-@keyframes fadein-right {
-  from {
-    opacity: 0;
-    transform: translate3d(-10px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@-webkit-keyframes fadein-left {
-  from {
-    opacity: 0;
-    -webkit-transform: translate3d(10px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: none;
-  }
-}
-@keyframes fadein-left {
-  from {
-    opacity: 0;
-    transform: translate3d(10px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@-webkit-keyframes fadein-top {
-  from {
-    opacity: 0;
-    -webkit-transform: translate3d(0, 10px, 0);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: none;
-  }
+@keyframes today {
+  from { background: #6a99da; color: #fff; transform: rotate(180deg); }
+  to { }
 }
 @keyframes fadein-top {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fadein-bottom {
+  from { opacity: 0; transform: translate3d(0, -10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes move-right {
+  from { transform: translate3d(-5px, 0, 0); }
+  to { transform: none; }
+}
+@keyframes move-left {
+  from { transform: translate3d(8px, 0, 0); }
+  to { transform: none; }
 }

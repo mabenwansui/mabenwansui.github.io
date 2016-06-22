@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>es6浏览器</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<script src="/Users/maben/Documents/jquery.js"></script>
+<link href="https://concat.lietou-static.com/core/pc/css/port/h/common.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+<style>
+body{ padding: 50px 0px 0px 100px; 
+  position: relative;
+  z-index:500;
+}
+input{
+  width: 200px;
+  height: 32px;
+  line-height: 32px;
+  margin-left: 100px;
+
+} 
+</style>
+<input type="text" class="text" value="2015-6-10" />
+
+
+<p>1</p>
+<p>2</p>
+
+</body>
+<script src="index.js"></script>
+<script>
+
+$('input').DatePicker({
+  //btnbar : true,
+  //cssstyle : 'light'
+  startdate: '2015-03-02',
+  enddate: '2016-11-10',
+  callback : function(date){
+    console.log( this.format(date, 'yyyy年M月dd日') );
+    return false;
+  }
+});
+
+$('input').trigger('click');
+</script>
+</html>

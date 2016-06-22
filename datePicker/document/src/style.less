@@ -1,5 +1,5 @@
 @bc : #e1e1e1;
-@red : #ff5652;
+@important : #9ac1f5;
 @mb : 10px;
 @mb1 : 20px;
 html,body{
@@ -9,18 +9,30 @@ html,body{
   font-family: "Microsoft YaHei";
   font-size: 14px;
   color:#4b4b4b;
+  overflow: hidden;
 }
 ul,li{padding: 0; margin: 0; list-style: none;}
 h2,h3,pre{margin: 0; padding:0; font-weight: normal;}
 input[type='text']{
-  height : 26px;
+  padding: 0 5px;
+  position: relative;
+  top: -1px;
+  margin-left: 5px;
+  margin-bottom: 5px;
+  width: 130px;
+  border: 1px solid #ccc;
+  height: 26px;
   line-height: 26px;
 }
+input:focus{
+  border : 1px solid #5689ea;
+  outline: none;
+}
 a{color:#5a8ce7; cursor:pointer; text-decoration: none; transition: all .2s ease-out;}
-a:hover{text-decoration: none; opacity: .7;}
+a:hover{text-decoration: none;}
 .btn{background:#5a8ce7; transition:all .2s ease-out; margin-left: 10px; display: inline-block; color:#fff;  border-radius: 4px;}
 .btn.small{padding:2px 5px 4px; font-size: 12px;}
-.btn.active{background:@red;}
+.btn.active{background:@important;}
 
 .text-wraning{color:#f8603d;}
 #box{
@@ -35,12 +47,12 @@ a:hover{text-decoration: none; opacity: .7;}
   .logo{
     font-family: Arial;
     line-height: 70px;
-    font-size: 34px;
+    font-size: 26px;
     background: #333;
     color: #fff;
     text-align: center;
     span{
-      color: @red;
+      color: @important;
     }
   }
   ul>li{
@@ -51,8 +63,8 @@ a:hover{text-decoration: none; opacity: .7;}
     transition:all .3s ease-out;
   }
   ul>li.active{
-    background: @red;
-    border-bottom-color: @red;
+    background: @important;
+    border-bottom-color: @important;
     color:#fff;
   }
   ul>li:hover{
@@ -66,7 +78,8 @@ a:hover{text-decoration: none; opacity: .7;}
   background: #f1f1f1;
   overflow-y: auto;
   position: relative;
-  .wrap{ padding:20px 30px; }
+  .wrap{ padding:20px 30px 200px; }
+  a:hover{opacity: .7;}
   h2{
     margin-bottom: @mb;
     font-size: 16px;
@@ -83,11 +96,11 @@ a:hover{text-decoration: none; opacity: .7;}
       padding:20px;
       border:1px solid @bc;
       background: #fff;
+      color : #9d9d9d;
     }
     ul>li{ flex:1; }
     ul>li small{
       display: block;
-      color : #9d9d9d;
       line-height: 24px;
       padding-top: 6px;
     }

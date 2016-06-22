@@ -6,6 +6,7 @@ body {
   font-family: "Microsoft YaHei";
   font-size: 14px;
   color: #4b4b4b;
+  overflow: hidden;
 }
 ul,
 li {
@@ -21,8 +22,19 @@ pre {
   font-weight: normal;
 }
 input[type='text'] {
+  padding: 0 5px;
+  position: relative;
+  top: -1px;
+  margin-left: 5px;
+  margin-bottom: 5px;
+  width: 130px;
+  border: 1px solid #ccc;
   height: 26px;
   line-height: 26px;
+}
+input:focus {
+  border: 1px solid #5689ea;
+  outline: none;
 }
 a {
   color: #5a8ce7;
@@ -33,7 +45,6 @@ a {
 }
 a:hover {
   text-decoration: none;
-  opacity: .7;
 }
 .btn {
   background: #5a8ce7;
@@ -49,7 +60,7 @@ a:hover {
   font-size: 12px;
 }
 .btn.active {
-  background: #ff5652;
+  background: #9ac1f5;
 }
 .text-wraning {
   color: #f8603d;
@@ -69,13 +80,13 @@ a:hover {
 #nav .logo {
   font-family: Arial;
   line-height: 70px;
-  font-size: 34px;
+  font-size: 26px;
   background: #333;
   color: #fff;
   text-align: center;
 }
 #nav .logo span {
-  color: #ff5652;
+  color: #9ac1f5;
 }
 #nav ul > li {
   cursor: pointer;
@@ -86,8 +97,8 @@ a:hover {
   transition: all 0.3s ease-out;
 }
 #nav ul > li.active {
-  background: #ff5652;
-  border-bottom-color: #ff5652;
+  background: #9ac1f5;
+  border-bottom-color: #9ac1f5;
   color: #fff;
 }
 #nav ul > li:hover {
@@ -103,7 +114,10 @@ a:hover {
   position: relative;
 }
 #article .wrap {
-  padding: 20px 30px;
+  padding: 20px 30px 200px;
+}
+#article a:hover {
+  opacity: .7;
 }
 #article h2 {
   margin-bottom: 10px;
@@ -122,6 +136,7 @@ a:hover {
   padding: 20px;
   border: 1px solid #e1e1e1;
   background: #fff;
+  color: #9d9d9d;
 }
 #article .template-info ul > li {
   -webkit-box-flex: 1;
@@ -130,7 +145,6 @@ a:hover {
 }
 #article .template-info ul > li small {
   display: block;
-  color: #9d9d9d;
   line-height: 24px;
   padding-top: 6px;
 }

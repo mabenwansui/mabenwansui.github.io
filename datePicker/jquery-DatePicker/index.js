@@ -1,324 +1,456 @@
-;(function( $, window ){
-  var pluginName = "datepicker",
-      classname  = "datepicker-js",
-      document = window.document,
-      defaults = {
-        startDate   : null,      //设置能选择日期的范围  格式 2015-06-01
-        endDate     : null,
-        defaultDate : null,      //第一次打开的默认日期
-        format      : null,      //格式化日期显示  如 yyyy年mm月dd日
-        left        : null,      //下拉框位置
-        top         : null,
-        iconRight   : null,      //日期图标位置
-        iconTop     : null,
-        zIndex      : null,
-        init        : null,
-        callback    : null
-      };
-  window[pluginName+'_id'] = 0;
-  function Plugin( element, options ) {
-    this.element = element;
-    this.id      = ++window[pluginName+'_id'];
-    this.year    = null;
-    this.month   = null;
-    this.date    = null;
-    this.helper  = null;
-    this.ul      = null;
-    this.options = $.extend( {}, defaults, options);
-    this.init();
-  };
+//import './css/style.css';
 
-  Plugin.prototype.init = function(){
-    this.toNumber(['left', 'top', 'iconRight', 'iconLeft', 'zIndex']);
-    this.options.startDate = this.element.attr('data-startDate') || this.options.startDate;
-    this.options.endDate = this.element.attr('data-endDate') || this.options.endDate;
-    this.createHtml();
-    this.refresh();
-    this.bindEvent();
-    this.options.init && this.options.init.call(this, {
-      inp   : this.inp,
-      year  : this.year,
-      month : this.month,
-      day   : this.day
-    });
-  };
-
-  Plugin.prototype.createHtml = function(){
-    var that = this, 
-        html = [ 
-        '<div class="'+pluginName+'-ui-default">',
-        '  <input type="text" readonly="readonly" />',
-        '  <i class="date-icon"></i>',
-        '  <div class="drop-down">',
-        '    <div class="title">',
-        '      <div class="year-box"><a href="javascript:;" class="prev"></a><h2></h2><a href="javascript:;" class="next"></a></div>',
-        '      <div class="month-box"><a href="javascript:;" class="prev"></a><h2></h2><a href="javascript:;" class="next"></a></div>',
-        '    </div>',
-        '    <ol>',
-        '      <li>一</li>',
-        '      <li>二</li>',
-        '      <li>三</li>',
-        '      <li>四</li>',
-        '      <li>五</li>',
-        '      <li class="week_end">六</li>',
-        '      <li class="week_end">日</li>',
-        '    </ol>',
-        '    <ul></ul>',
-        '  </div>',
-        '</div>' 
-      ];
-    this.box    = this.element.after(html.join('')).next().css('position','relative');
-    this.icon   = this.box.find('.date-icon');
-    this.inp    = this.box.children('input');
-    this.helper = this.box.find('.drop-down').css('position','absolute').hide();
-    this.ul     = this.helper.find('ul');
-    this.element.hide();
-    if(this.options.defaultDate){
-      var d = this._stringToDate(this.options.defaultDate);
-      this.addDate(d.year, d.month, d.day);
-    }else{
-      this.addDate();
-    }
+(function($, window, undefined) {
+  'use strict';
+  let pluginName = 'DatePicker';
+  let className = 'date-picker';
+  let defaults = {
+    left      : 0,
+    top       : 0,
+    errortext : '请选择$start到$end范围内的日期',
+    btnbar    : false,
+    startdate : null,
+    enddate   : null,
+    minyear   : 1975,
+    maxyear   : 2025,
+    zindex    : 'auto',
+    cssStyle  : null,
+    callback  : $.noop
   }
-
-  Plugin.prototype.addStyle = function(arr){
-    var that = this;
-    arr && $.each(arr, function(i,v){
-      var a = that.element.attr(v);
-      if(a){
-        if(v == 'value') {
-          var d = that._stringToDate(a);
-          that.year  = d.year;
-          that.month = d.month;
-          that.day   = d.day;
-          that.inp.val(that.format());
+  class DatePicker{
+    constructor(element, options){
+      this.element = element;
+      this.options = $.extend(true, {}, defaults, options);
+      this.helper = null;
+      this.year = null;
+      this.month = null;
+      this.day = null;
+      this.icon = null;
+      this._visible = false;
+      this._id = ++$[pluginName].id;
+      this._errorTimer = null;
+      this._initialAttr();
+      this.createUi();
+      this.bindEvent();
+      this.refresh();
+    }
+    createUi(){
+      let html = `
+        <div class="${className}-ui">
+          <div class="title">
+            <div class="prev"><i></i></div>
+            <div class="year">
+              <h2></h2><i class="arrow"></i>
+              <ul class="drop-down"></ul>                
+            </div>
+            <div class="month">
+              <h2></h2><i class="arrow"></i>
+              <ul class="drop-down"></ul>              
+            </div>
+            <div class="next"><i></i></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>一</th>
+                <th>二</th>
+                <th>三</th>
+                <th>四</th>
+                <th>五</th>
+                <th class="weekend">六</th>
+                <th class="weekend">日</th>
+              </tr>
+            </thead>
+            <tbody></tbody>           
+          </table>
+          <div class='buttons-bar'>
+            <a href="javascript:;" class="today">返回今天</a>
+            <a href="javascript:;" class="clear">清空</a>
+          </div>           
+        </div>`;
+      this.helper = $(html).appendTo('body');
+      if(this.options.btnbar) this.helper.find('.buttons-bar').show();
+      this.element.parent().css('position', 'relative');
+      this.icon = $(`<i class="${className}-icon"></i>`).insertAfter(this.element.css('cursor', 'pointer'));
+    }
+    refreshSelectYear(){
+      let $year = this.helper.find('.year').removeClass('select');
+      let start = this._stringToDate(this.options.startdate);
+      let end = this._stringToDate(this.options.enddate);
+      let html = '';
+      for(let i=this.options.minyear; i<=this.options.maxyear; i++){
+        if( (start && i<start.year) ||
+            (end && i>end.year)
+         ){
+          html += `<li class="disabled">${i}</li>`;
+        }else if(i === this.year){
+          html += '<li class="cur">'+i+'</li>';
         }else{
-          that.inp.attr(v, a);
+          html += '<li>'+i+'</li>';
         }
-      };
-    });
-    that.inp.show().addClass('clone-input');
-  }
-
-  Plugin.prototype.addDate = function(year, month, day){   //data格式为 2014或2014-05
-    var that = this;
-    var d = new Date();
-
-    if(arguments.length>0){
-      d.setYear(year);
-      month && d.setMonth(month, 0);
-    }else{
-      d.setMonth(d.getMonth()+1, 0);
-    }
-    this.year  = d.getFullYear();
-    this.month = d.getMonth()+1;
-    this.day   = day;
-
-    //设置年月
-    that.helper.find('.year-box h2').html( this.year + '年' );
-    that.helper.find('.month-box h2').html( this.month + '月' );
-    that.ul.empty();
-
-    //设置星期几前的空格
-    !function(year, month){   
-      var d = new Date(), w;
-      d.setYear( year );
-      d.setMonth( --month, 1 );
-      w = d.getDay();
-      if(w == 0) w=7; w--;
-      for(var i=0; i<w; i++){
-        that.ul.prepend('<li class="disable" />');
       }
-    }(this.year, this.month);
+      $year.find('ul').html(html);
+      if( $year.find('ul li:not(.disabled)').length >= 1 ) $year.addClass('select');
+    }
+    refreshSelectMonth(){
+      let $month = this.helper.find('.month').removeClass('select');
+      let start = this._stringToDate(this.options.startdate);
+      let end = this._stringToDate(this.options.enddate);
+      let html = '';
+      for(let i=1; i<=12; i++){
+        let curDate = this.year + this._pad(i);
+        if( (start && curDate < start.year+this._pad(start.month)) ||
+            (end && curDate > end.year+this._pad(end.month))
+        ){
+          html += `<li class="disabled">${i}</li>`;
+        }else{
+          html += '<li>'+i+'</li>';
+        }
+      }
+      $month.find('ul').html(html);
+      if( $month.find('ul li:not(.disabled)').length >= 3 ) $month.addClass('select');
+      if(this.year + this._pad(this.month) <= start.year + this._pad(start.month) )
+        this.helper.find('.prev').addClass('e-disabled');
+      else
+        this.helper.find('.prev').removeClass('e-disabled');
 
-    //填充日期
-    for(var i=0, total=d.getDate(); i<total; i++){
-      that.ul.append( $('<li data-value="'+(i+1)+'">'+(i+1)+'</li>') )
-    };
+      if(this.year + this._pad(this.month) >= end.year + this._pad(end.month) )
+        this.helper.find('.next').addClass('e-disabled');
+      else
+        this.helper.find('.next').removeClass('e-disabled');      
+    }
+    refreshDate(){
+      let that = this; 
+      let html = '<tr>';
+      let ul = this.helper.find('tbody');
+      let j = 0;
+      {
+        if(!this.year || this.month){
+          let d = new Date();
+          if(!this.year) this.year = d.getFullYear();
+          if(!this.month) this.month = d.getMonth()+1;
+        }
+        this.helper.find('.year h2').html(this.year + '年');
+        this.helper.find('.month h2').html(this.month + '月');     
+      }
 
-    this._adddisable();
+      //补齐前面的日
+      {
+        let [year,month] = this._getPrevMonth();
+        let day = this._getDay(year, month);
+        let w = new Date(this.year, this.month-1, 1).getDay()-1;
+        day = day-w;
+        for(let i=0; i<w; i++, j++) 
+          html+=`<td class="text-gray" data-value="${year}-${this._pad(month)}-${this._pad(++day)}">${day}</td>`;
+      }
 
-    //选中状态
-    !function(day){
-      var d = new Date();
-      day = day || d.getDate();
-      that.ul.find('li').each(function(){
-        if( !$(this).hasClass('disable') && $(this).html()==day ){
+      //填充日
+      {
+        for(let i=0, d=this._getDay(this.year, this.month); i<d; i++, j++) {
+          if(j===7){
+            j=0;
+            html+='</tr><tr>';
+          };
+          if(j===5 || j===6){
+            html += `<td class="weekend" data-value="${this.year}-${this._pad(this.month)}-${this._pad(i+1)}">${i+1}</td>`;
+          }else{
+            html += `<td data-value="${this.year}-${this._pad(this.month)}-${this._pad(i+1)}">${i+1}</td>`;
+          }
+        }
+      }
+
+      //补齐后面的日
+      {
+        let [year, month] = this._getNextMonth();
+        for(let i=1; j<7; j++, i++) 
+          html+=`<td class="text-gray" data-value="${year}-${this._pad(month)}-${this._pad(i)}">${i}</td>`;
+      }
+
+      html+='</tr>';    
+      ul.html(html);
+
+      //高亮可选择的日历
+      ul.find('td').each(function(){
+        let v = $(this).data('value');
+        if(v < that.options.startdate || v > that.options.enddate) 
+          $(this).addClass('disabled');
+        else if(v === that.format(that.element.val().trim(), 'yyyy-MM-dd') ){
           $(this).addClass('active');
-          return false;
         }
-      })
-    }(day);
-  }
+      });
 
-  Plugin.prototype._adddisable = function(){
-    if( this.options.startDate ){
-      var start = this._stringToDate(this.options.startDate);
-      if( this.year < start.year || ( start.year == this.year && this.month < start.month ) ){
-        this.ul.find('li').addClass('disable');
-      }else if( this.year == start.year && this.month == start.month ){
-        this.ul.find('li').each(function(){
-          if( $(this).html() < start.day ) $(this).addClass('disable');
-        });
+      //设置当前天
+      {
+        let d = new Date();
+        ul.find(`td[data-value="${d.getFullYear()}-${this._pad(d.getMonth()+1)}-${this._pad(d.getDate())}"]`).addClass('today');
       }
     }
-    if( this.options.endDate ){
-      var end = this._stringToDate(this.options.endDate);
-      if( this.year > end.year || ( end.year == this.year && this.month > end.month ) ){
-        this.ul.find('li').addClass('disable');
-      }else if( this.year == end.year && this.month == end.month ){
-        this.ul.find('li').each(function(){
-          if( $(this).html() > end.day ) $(this).addClass('disable');
-        });
-      }
-    }
-  }
+    refresh(options){
+      if(options) $.extend(true, this.options, options);
 
-  Plugin.prototype.bindEvent = function(){
-    var that = this;
-    this.inp.on('focus', function(){
-      that.box.addClass('active');
-      (!that.helper.is(':visible') && !that.element.attr('disabled') ) && that.show();
-    });
-    this.icon.on('click', function(){ that.inp.triggerHandler('focus') });
-    $(document).on('click.' + pluginName + that.id, function (event) {
-      if (that.helper.has(event.target).length == 0 && that.helper[0] != event.target && that.icon[0] != event.target && that.inp[0] != event.target) {
-        that.hide();
-        that.box.removeClass('active');
+      {
+        let v = this.element.val().trim();
+        if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(v) )
+          ({year:this.year, month:this.month, day:this.day} = this._stringToDate(v));
+      }
+
+      if(this.element.is(':disabled')) this.icon.addClass('disabled');
+      if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
+      
+      this.setZindex();
+      this.refreshSelectYear();
+      this.refreshSelectMonth();
+      this.refreshDate();
+      this.rePosition();
+      return this;
+    }
+    bindEvent(){
+      var that = this;
+      //弹出日期
+      this.element.add(this.icon).on('click.' + pluginName, () => {
+        if(this.element.prop('disabled')) return this;
+        this.show()
+      });
+
+      //选择日期
+      this.helper.find('table').on('click', 'td:not(.disabled)', function(){
+        $(this).closest('table').find('.active').removeClass('active');
+        that.element.val( $(this).addClass('active').data('value') );
+        that.options.callback.call(that, $(this).data('value'), {
+          year  : that.year,
+          month : that.month,
+          day   : $(this).text()
+        }) !== false && that.hide();
+      });
+
+      //出错提示
+      this.helper.on('click', '.disabled', ()=> this.errorTips() );
+
+      //上个月
+      this.helper.find('.prev').on('click', function(){
+        if( $(this).hasClass('e-disabled') ) return this;
+        [that.year, that.month] = that._getPrevMonth();
+        that.refreshDate();
+        that.refreshSelectMonth();
+      });
+
+      //下个月
+      this.helper.find('.next').on('click', function(){
+        if( $(this).hasClass('e-disabled') ) return this;
+        [that.year, that.month] = that._getNextMonth();
+        that.refreshDate();
+        that.refreshSelectMonth();
+      });
+
+      //操作按钮组
+      this.helper.find('.buttons-bar').on('click', 'a', function() {
+        let $this = $(this);
+        if($this.hasClass('today')){
+          [that.year, that.month, that.day] = [];
+          that.refreshDate();
+          that.refreshSelectMonth();
+          that.helper.find('.today').addClass('today-effect').on('animationend', function(){
+            $(this).off('animationend').removeClass('today-effect');
+          });
+        }else if($this.hasClass('clear')){
+          that.element.val('');
+          [that.year, that.month, that.day] = [];
+          that.refresh();
+          if(typeof that.options.btnbar === 'function')
+            that.options.btnbar.call(that);
+        }
+      });
+
+      //弹出年月下拉框
+      this.helper.on('click', '.year, .month', function(event){
+        let ul = $(this).find('ul');
+        if( ul.has(event.target).length>0 || ul[0]===event.target ){ event.stopPropagation(); return false }
+        if($(this).hasClass('active')){
+          $(this).removeClass('active');
+        }else{
+          $(this).addClass('active').hasClass('year') && ul.scrollTop( (that.year-that.options.minyear-4) * ul.find('li:first').outerHeight() );
+        }
+      });
+
+      //选择下拉后的年月
+      this.helper.find('.drop-down').on('click', 'li:not(.disabled)', function(){
+        let select = $(this).closest('.select');
+        if(select.hasClass('year'))
+          that.year = parseInt($(this).text(), 10);
+        else
+          that.month = parseInt($(this).text(), 10);
+        that.refreshDate();
+        that.refreshSelectMonth();
+        select.removeClass('active');
+      });
+
+      //点击空白隐藏弹框
+      $(document).on('click.' + pluginName + this._id, event => {               
+        if (this.helper &&
+          this.helper.has(event.target).length === 0 &&
+          this.helper[0] != event.target &&
+          this.element[0] != event.target &&
+          this.icon[0] != event.target &&
+          this.element.has(event.target).length === 0) {
+          this.hide();
+        };
+        let year = this.helper.find('.year'),
+            month = this.helper.find('.month');
+        if (year.has(event.target).length === 0 && year[0] != event.target) {
+          year.removeClass('active');
+        };
+        if (month.has(event.target).length === 0 && month[0] != event.target) {
+          month.removeClass('active');
+        };  
+      });
+    }
+    rePosition(){
+      if(!this.element) return this;
+      let that = this,
+          offset = this.element.offset(),
+          x = offset.left + this.options.left,
+          y = offset.top + this.element.outerHeight() + this.options.top;
+      this.helper.css({left: x, top: y});
+
+      //对齐图标
+      let position = this.element.position();
+      this.icon.css({
+        left : position.left + parseInt(this.element.css('margin-left'), 10) + this.element.outerWidth() - this.icon.outerWidth() - (parseInt(this.element.css('padding-right'),10)||5),
+        top : position.top + parseInt(this.element.css('margin-top'), 10) + this.element.outerHeight()/2 - this.icon.outerHeight()/2
+      });
+    }
+    show(){
+      if(this._visible) return this;
+      this._visible = true;
+      this.helper.show().addClass('animated-fadein-bottom');
+    }
+    hide(){
+      this._visible = false;
+      this.helper.hide().removeClass('animated-fadein-bottom');
+      this.helper.find('.error-tips').hide();
+    }
+    setZindex(){
+      let getAutoIndex = ()=>{
+        let maxindex = 0;
+        this.element.parents().each(function () {
+          let getindex = parseInt($(this).css('z-index'), 10);
+          if (maxindex < getindex) maxindex = getindex;
+        });
+        return maxindex + (++$[pluginName].zindex);
       };
-    });
-    this.helper.find('.year-box .prev').on('click', function(){
-      that.addDate(--that.year, that.month);
-    });
-    this.helper.find('.year-box .next').on('click', function(){
-      that.addDate(++that.year, that.month);
-    });
-    this.helper.find('.month-box .prev').on('click', function(){
-      that.month--;
-      if(that.month <= 0){
-        that.month = 12;
-        that.year--;
+      let zindex = this.options.zindex;
+      if (zindex.indexOf('auto') > -1) {
+        this.helper.css('z-index', getAutoIndex());
+      }else if(typeof zindex === 'string' && /^(\-|\+)/.test(zindex)){
+        this.helper.css('z-index', getAutoIndex() + parseInt(zindex, 10));
+      }else{
+        this.helper.css('z-index', zindex);
       }
-      that.addDate(that.year, that.month);
-    });
-    this.helper.find('.month-box .next').on('click', function(){
-      that.month++;
-      if(that.month > 12){
-        that.month = 1;
-        that.year++;
+      return this;
+    }
+    errorTips(){
+      let tips = this.helper.find('.error-tips');
+      if(tips.length === 0){
+        tips = $(`<div class="error-tips">${this.options.errortext.replace('$start', this.options.startdate).replace('$end', this.options.enddate)}</div>`).appendTo(this.helper);
+      }else{
+        tips.show();
       }
-      that.addDate(that.year, that.month);
-    });
-    this.ul.on('click', 'li', function(){    //点击日
-      if( $(this).hasClass('disable') ) return;
-      that.day = $(this).attr('data-value');
-      that.inp.val(that.format());
-      that.element.val( that.year+'-'+that.pad(that.month)+'-'+that.pad(that.day) );
-      that.hide();
-      that.options.callback && that.options.callback.call(that, {
-        inp   : that.inp,
-        year  : that.year,
-        month : that.month,
-        day   : that.day
-      });
-    })
-  }
-  Plugin.prototype.show = function(){
-    var v = $.trim(this.element.val());
-    if(v){
-      var date = this._stringToDate(v);
-      this.addDate(date.year, date.month, date.day);
+      tips.addClass('animated-fadein-top');
+      this._errorTimer && clearTimeout(this._errorTimer);
+      this._errorTimer = setTimeout(()=>tips.removeClass('animated-fadein-top').fadeOut(), 3000);
+    }    
+    _getDay(year, month){
+      return new Date(year, month, 0).getDate();
     }
-    this.helper.show();
-  }
-
-  Plugin.prototype.hide = function(){
-    this.helper.hide();
-  }
-
-  Plugin.prototype.refresh = function(){
-    var that = this;
-    this.addStyle(['class', 'disabled', 'size', 'style', 'value']);
-
-    this.element.attr('disabled') ? this.box.addClass('disabled') : this.box.removeClass('disabled');
-
-    setTimeout(function(){
-      var padding = that.inp.outerHeight()/2 - that.icon.height()/2;
-      that.icon.css({
-        right : padding + (that.options.iconRight || 0),
-        top   : padding + (that.options.iconTop || 0)
-      });
-    }, 0);
-
-    if( this.options.zIndex ) this.box.css('z-index', this.options.zIndex);
-    
-    this.helper.css({
-      left : 0 + (this.options.left || 0),
-      top  : this.inp.position().top + this.inp.outerHeight() -1 + (this.options.top || 0)
-    });
-  }
-
-  Plugin.prototype.destory = function(){
-    this.box.remove();
-    this.element.show();
-    $(document).off('click.' + pluginName + this.id);
-  }
-
-  Plugin.prototype._stringToDate = function(str){
-    var d = new Date(Date.parse(str.replace(/-/g, "/")));
-    return {
-      d     : d,
-      year  : d.getFullYear(),
-      month : d.getMonth() + 1,
-      day   : d.getDate()
+    _getNextMonth(){
+      let year, month;
+      if(parseInt(this.month, 10)+1>12){
+        year = parseInt(this.year) + 1;
+        month = 1;
+      }else{
+        year = this.year;
+        month = parseInt(this.month) + 1;
+      }
+      return [year, month];
     }
-  }
-
-  Plugin.prototype.format = function(){
-    var that = this,
-        str = this.options.format;
-    if(str){
-      str = str.replace(/y{1,4}/ig, function($1){
-        var y = String(that.year);
-        return y.substr( y.length - $1.length );
-      }).replace(/m{1,2}/ig, function($1){
-        return $1.length==2 ? that.pad(that.month) : that.month;
-      }).replace(/d{1,2}/ig, function($1){
-        return $1.length==2 ? that.pad(that.day) : that.day;
-      });
-    }else{
-      str = this.year + '-' + this.month + '-' + this.day;
+    _getPrevMonth(){
+      let year, month;
+      if(parseInt(this.month, 10)-1 <= 0){
+        month = 12;
+        year = parseInt(this.year, 10) - 1;
+      }else{
+        month = parseInt(this.month, 10) - 1;
+        year = this.year;
+      }
+      return [year, month];
+    }    
+    format(date, str){
+      let year, month, day;
+      if(date){
+        if(typeof date === 'string'){
+          date = this._stringToDate(date);
+          [year, month, day] = [date.year, date.month, date.day];
+        }
+      }else{
+        [year, month, day] = [this.year, this.month, this.day];
+      }
+      return str.replace(/y{1,4}/g, $1 => year.toString().substr( year.toString().length - $1.length ) )
+        .replace(/M{1,2}/g, $1 => $1.length==2 ? this._pad(month) : month)
+        .replace(/d{1,2}/g, $1 => $1.length==2 ? this._pad(day) : day);
     }
-    return str;
-  }
-
-  Plugin.prototype.pad = function(str){
-    return (str/Math.pow(10, 2)).toFixed(2).substr(2);
-  }
-
-  Plugin.prototype.toNumber = function(arr){
-    var that = this;
-    $.each(arr, function(i, v){
-      if(that.options[v]) that.options[v] = parseInt(that.options[v], 10);
-    });
-  }  
-
-  $.fn[pluginName] = function ( options ) {
-    if (typeof options == 'string') {
-      var args=arguments, method=options;
-      Array.prototype.shift.call(args);
-
-      return this.each(function(){
-        var plugin = $.data(this, 'plugin_'+pluginName);
-        if(plugin && plugin[method]) plugin[method].apply(plugin, args);
-      });
-    }else{
-      return this.each(function() {
-        var plugin = $.data(this, 'plugin_'+pluginName);
-        if(!plugin){
-          $.data(this, 'plugin_'+pluginName, new Plugin( $(this), options ));
+    _pad(str){ return (str/Math.pow(10, 2)).toFixed(2).substr(2) }
+    _stringToDate(str){
+      if(typeof str === 'string' &&  /^\d{4}-\d{1,2}-\d{1,2}$/.test(str)){
+        str = str.split('-');
+        return {
+          year  : parseInt(str[0], 10),
+          month : parseInt(str[1], 10),
+          day   : parseInt(str[2])
+        }
+      }else{
+        return false;
+      }
+    }
+    _initialAttr(){
+      let that = this;
+      //:代表别名
+      ['startdate', 'enddate'].forEach(v => {  
+        let arr = v.split(":");
+        if (arr.length > 0) {
+          if(that.element.attr("data-" + arr[0]) ) that.options[arr[1]] = that.element.attr("data-" + arr[0]);
+        } else {
+          if(that.element.attr("data-" + v) ) that.options[n] = that.element.attr("data-" + n);
         }
       });
-    }
-  };
-})( jQuery, window );
+      return this;
+    }    
+  }
+
+  $.fn[pluginName] = function (options) {
+    options = options || {};
+    if (typeof options == 'string') {
+      let args = arguments,
+          method = options;
+      Array.prototype.shift.call(args);
+      switch (method) {
+        case "getClass":
+          return $(this).data('plugin_' + pluginName);
+        default:
+          return this.each(function () {
+            let plugin = $(this).data('plugin_' + pluginName);
+            if (plugin && plugin[method]) plugin[method].apply(plugin, args);
+          });
+      };
+    } else {
+      return this.each(function () {
+        let plugin = $(this).data('plugin_' + pluginName);
+        if(!plugin) $(this).data('plugin_' + pluginName, new DatePicker($(this), options));
+      });
+    };
+  };  
+
+  $[pluginName] = {
+    id : 0,
+    zindex : 999
+  }
+}(jQuery, window));
