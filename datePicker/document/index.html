@@ -23,6 +23,7 @@
       <li data-page="rule">介绍</li>
       <li data-page="range">时间范围</li>
       <li data-page="sidebar">底边栏</li>
+      <li data-page="hms">显示时分秒</li>
       <li data-page="error">出错提醒</li>
       <li data-page="method">插件方法</li>
       <li data-page="example">常用示例</li>
@@ -152,7 +153,7 @@
     </ul>
     <ul>
       <li>
-        时间段 <input type="text" data-selector="bind-c" />
+        时间段 <input type="text" value="2016-06-08" data-selector="bind-c" />
         <a data-selector="btn-c" class="btn small">源码</a>
         <small>
           只能选择2016-06-05 到 2016-06-28内的时间。<br />
@@ -230,6 +231,78 @@
           btnbar : true
         });
       }
+    }
+    bindEvent(obj);
+  </script>  
+</script>
+
+<script type="text/template" id="hms">
+  <section class="template-info">
+    <h2>显示时分秒</h2>
+    <ul>
+      <li>
+        <input type="text" value="2016-05-04 10:04:30" data-selector="bind-a" />
+        <a data-selector="btn-a" class="btn small">源码</a>
+      </li>
+    </ul>
+    <h2>只显示时分 并 设置默认时间</h2>
+    <ul>
+      <li>
+        <input type="text" data-selector="bind-b" />
+        <a data-selector="btn-b" class="btn small">源码</a>
+      </li>
+    </ul>
+    <h2>回调格式化</h2>
+    <ul>
+      <li>
+        <input type="text" style="width:200px;" data-selector="bind-c" />
+        <a data-selector="btn-c" class="btn small">源码</a>
+      </li>
+    </ul>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <script>
+    var obj = {
+      a : function(){
+        $('[data-selector="bind-a"]').DatePicker({
+          //h,m,s 默认为false 即不显示时分秒
+          //设置初始值
+          h : 20, 
+          //true会取系统当前时间
+          m : true,
+          s : true
+        });
+      },
+      b : function(){
+        $('[data-selector="bind-b"]').DatePicker({
+          h : 10,
+          m : 40
+        });
+      },
+      c : function(){
+        $('[data-selector="bind-c"]').DatePicker({
+          h : true,
+          m : true,
+          s : true,
+          callback : function(date){
+            this.element.val( 
+              this.format(
+                date, 
+                'yyyy年MM月dd日 hh时mm分ss秒'
+              )
+            );
+          }
+        });
+      }      
     }
     bindEvent(obj);
   </script>  

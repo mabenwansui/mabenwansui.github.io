@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>maben</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<script src="alertTs/document/src/jquery.js"></script>
+<style>
+  html, body { height: 100%; margin: 0; padding: 0; color: #666; }
+  div, h2, h3, h4 { margin: 0; padding: 0; }
+  a { text-decoration: none; }
+  body { font-size: 14px; font-family: "Microsoft YaHei"; background: #f0f0f0; }
+  section { position: absolute; perspective: 800px; }
+  section a { display: inline-block; width: 160px; font-size: 20px; line-height: 60px; text-align: center; color: #fff; background: #585858; border: none; transform-style: preserve-3d; transition: all .3s; }
+  section a:hover:after { width: 27%; }
+  section a:after { display: block; top: 0; content: ''; position: absolute; width: 0%; height: 100%; transition: all 0.3s; }
+  .photo { width: 150px; height: 150px; text-align: center; line-height: 150px; font-size: 26px; position: absolute; left: 50%; margin-left: -75px; top: 50%; margin-top: -75px; border-radius: 50%; background: #fff; overflow: hidden; }
+  .alertts{
+    left : 50%;
+    top : 50%;
+    z-index: 10; 
+    margin-left: 100px;
+    margin-top: -100px;
+  }
+  .alertts a{ background-color: #f76565;}
+  .alertts a:hover{transform: rotateY(-35deg);}
+  .alertts a:after{
+    left: 99%;
+    background: #d85b59;
+    transform-origin: 0% 0%;
+    transform: rotateY(90deg);
+  }
+  .datepicker{
+    left : 50%;
+    top : 50%;
+    z-index: 10;
+    margin-left: -270px;
+    margin-top: 80px;
+    zoom: .8;
+  }
+  .datepicker a{background: #9cbdea; transition: all .3s ease-out; position: relative;}
+  .datepicker a:hover{
+    transform: rotateY(35deg);
+  }
+  .datepicker a:after{
+    width: 27%;
+    background: #8babd9;
+    left: -26%;
+    transform-origin: 100% 0%;
+    transform: rotateY(-90deg);    
+  }
+</style>
+</head>
+<body>
+
+<section class="alertts"><a href="http://mabenwansui.github.io/alertTs/document/" target="_blank">AlertTs</a></section>
+<section class="datepicker"><a href="http://mabenwansui.github.io/datePicker/document/" target="_blank">DatePicker</a></section>
+<div class="photo">Maben</div>
+
+
+
+
+<script>
+$(function(){
+
+  $('.photo').mouseMove({
+    cv : 0.12,
+    max : 30
+  }); 
+
+  $('.alertts').mouseMove({
+    cv : 0.15,
+    max : 40
+  }); 
+
+  $('.datepicker').mouseMove({
+    cv : 0.1,
+    max : 20
+  }); 
+
+});
+
+
+$.fn.animateZepTo = function(properties, duration, ease, callback){
+  if (duration) duration = duration / 1000
+  var supportedTransforms = /^((translate|rotate|scale)(X|Y|Z|3d)?|matrix(3d)?|perspective|skew(X|Y)?)$/i;
+  var prefix, eventPrefix, clearProperties = {}, testEl = document.createElement('div');
+  $.each({ Webkit: 'webkit', Moz: '', O: 'o', ms: 'MS' }, function(vendor, event){
+    if (testEl.style[vendor + 'TransitionProperty'] !== undefined) {
+      prefix = '-' + vendor.toLowerCase() + '-'
+      eventPrefix = event
+      return false
+    }
+  });
+  clearProperties[prefix + 'transition-property'] =
+  clearProperties[prefix + 'transition-duration'] =
+  clearProperties[prefix + 'transition-timing-function'] =
+  clearProperties[prefix + 'animation-name'] =
+  clearProperties[prefix + 'animation-duration'] = '';
+  var transforms, cssProperties = {}, key, that = $(this), wrappedCallback, 
+      endEvent = eventPrefix ? eventPrefix + 'TransitionEnd' : 'TransitionEnd'.toLowerCase();
+  if (duration === undefined) duration = 0.4
+  for (key in properties)
+    if (supportedTransforms.test(key)) {
+      transforms || (transforms = [])
+      transforms.push(key + '(' + properties[key] + ')')
+    }
+    else cssProperties[key] = properties[key]
+  if (transforms) cssProperties[prefix + 'transform'] = transforms.join(' ');
+  if (typeof properties === 'object') {
+    cssProperties[prefix + 'transition-property'] = Object.keys(properties).join(', ');
+    cssProperties[prefix + 'transition-duration'] = duration + 's';
+    cssProperties[prefix + 'transition-timing-function'] = (ease || 'linear');
+  }
+  wrappedCallback = function(event){
+    if (typeof event !== 'undefined') {
+      if (event.target !== event.currentTarget) return
+      $(event.target).unbind(endEvent, arguments.callee);
+    };
+    $(this).css(clearProperties);
+    callback && callback.call(this);
+  }
+  if (duration > 0) $(this).bind(endEvent, wrappedCallback)
+  setTimeout(function() {
+    that.css(cssProperties)
+    if (duration <= 0) setTimeout(function() {
+      that.each(function(){ wrappedCallback.call(this) });
+    }, 0);
+  }, 0);
+  return this;
+}
+$.fn.mouseMove = function( options ){
+  var window_width,
+      window_height,
+      _default = {
+        cv : 0.2,   //速度
+        max_x : 40,   //最多移动多少
+        max_y : 20
+      }
+  options = $.extend(_default, options||{});
+  return this.each(function(){
+    var that = $(this);
+    $(window).on('resize', function(){
+      window_width = $(window).width();
+      window_height = $(window).height();
+    }).trigger('resize');
+    $(document).on('mousemove', function(e){
+      var _x = (e.pageX - window_width / 2) * options.cv,
+          _y = (e.pageY - window_height / 2) * options.cv;
+      if(Math.abs(_x) > options.max_x) _x = _x > 0 ? options.max_x : -options.max_x; 
+      if(Math.abs(_y) > options.max_y) _y = _y > 0 ? options.max_y : -options.max_y; 
+      that.animateZepTo({
+        'transform': 'translate3d('+_x+'px, '+_y+'px, 0px)'
+      }, 200, 'ease-out');
+    });
+  });
+};
+</script>
+
+</body>
+</html>
