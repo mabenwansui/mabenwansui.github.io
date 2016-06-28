@@ -9,6 +9,15 @@
 <script src="alertTs/document/src/jquery.js"></script>
 <style>
   html, body { height: 100%; margin: 0; padding: 0; color: #666; }
+  html{overflow: hidden;}
+  body{
+    transform: scale(1.2);
+  }
+  @media (min-width: 1600px) {
+    body {
+      transform: scale(2)!important;
+    }
+  }  
   div, h2, h3, h4 { margin: 0; padding: 0; }
   a { text-decoration: none; }
   body { font-size: 14px; font-family: "Microsoft YaHei"; background: #f0f0f0; }
@@ -54,12 +63,9 @@
 </style>
 </head>
 <body>
-
 <section class="alertts"><a href="http://mabenwansui.github.io/alertTs/document/" target="_blank">AlertTs</a></section>
 <section class="datepicker"><a href="http://mabenwansui.github.io/datePicker/document/" target="_blank">DatePicker</a></section>
 <div class="photo">Maben</div>
-
-
 
 
 <script>
