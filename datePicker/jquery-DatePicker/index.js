@@ -14,6 +14,12 @@
     enddate   : null,
     minyear   : 1975,
     maxyear   : 2025,
+    h         : false,
+    m         : false,
+    s         : false,
+    h_range   : false,
+    m_range   : false,
+    s_range   : false,
     zindex    : 'auto',
     cssStyle  : null,
     callback  : $.noop
@@ -32,6 +38,8 @@
       this._errorTimer = null;
       this._startdate = null;
       this._enddate = null;
+      this._dateRE = str => /^\d{4}-\d{1,2}-\d{1,2}$/.test(str);
+      this._timeRE = str => /^\d{4}-\d{1,2}-\d{1,2} (\d{1,2}:)*\d{1,2}$/.test(str);
       this._initialAttr();
       this.createUi();
       this.refresh();
@@ -66,13 +74,13 @@
             </thead>
             <tbody></tbody>           
           </table>
+          <div class="hms-bar"></div>
           <div class='buttons-bar'>
             <a href="javascript:;" class="today">返回今天</a>
             <a href="javascript:;" class="clear">清空</a>
           </div>           
         </div>`;
       this.helper = $(html).appendTo('body');
-      if(this.options.btnbar) this.helper.find('.buttons-bar').show();
       this.element.parent().css('position', 'relative');
       this.icon = $(`<i class="${className}-icon"></i>`).insertAfter(this.element.css('cursor', 'pointer'));
     }
@@ -176,7 +184,7 @@
         if(v < that.options.startdate || v > that.options.enddate) 
           $(this).addClass('disabled');
         else if(v === that.format(that.element.val().trim(), 'yyyy-MM-dd') ){
-          $(this).addClass('active');
+          $(this).trigger('click');
         }
       });
 
@@ -186,26 +194,40 @@
         ul.find(`td[data-value="${d.getFullYear()}-${this._pad(d.getMonth()+1)}-${this._pad(d.getDate())}"]`).addClass('today');
       }
     }
+    assignment(){
+      let v = this.element.val().trim();
+      if(!v) return this;
+      if( this._timeRE(v) ){
+        ({ year:this.year, month:this.month, day:this.day, h:this.h, m:this.m, s:this.s } = this._stringToDate(v));
+        this.refreshHms();
+      }else if( this._dateRE(v) ){
+        ({ year:this.year, month:this.month, day:this.day } = this._stringToDate(v));
+      }
+      this.refreshDate();
+      this.refreshSelectYear();
+      this.refreshSelectMonth();
+    }
     refresh(options){
       if(options) $.extend(true, this.options, options);
 
       if( this.options.startdate ) this._startdate = this._stringToDate(this.options.startdate);
       if( this.options.enddate ) this._enddate = this._stringToDate(this.options.enddate);
       this.element.prop('readonly', this.options.readonly);
-
-      {
-        let v = this.element.val().trim();
-        if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(v) )
-          ({year:this.year, month:this.month, day:this.day} = this._stringToDate(v));
-      }
-
-      if(this.element.is(':disabled')) this.icon.addClass('disabled');
-      if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
       
+      if(this.options.h || this.options.m || this.options.s) {
+        let d = new Date();
+        this.h = /^\d+$/.test(this.options.h) ? this.options.h : d.getHours();
+        this.m = /^\d+$/.test(this.options.m) ? this.options.m : d.getMinutes();
+        this.s = /^\d+$/.test(this.options.s) ? this.options.s : d.getSeconds();        
+        this.refreshHms();
+      }
       this.setZindex();
       this.refreshDate();
       this.refreshSelectYear();
       this.refreshSelectMonth();
+      if(this.element.is(':disabled')) this.icon.addClass('disabled');
+      //if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
+      if(this.options.btnbar) this.helper.find('.buttons-bar').show();
       this.rePosition();
       return this;
     }
@@ -219,13 +241,19 @@
 
       //选择日期
       this.helper.find('table').on('click', 'td:not(.disabled)', function(){
-        $(this).closest('table').find('.active').removeClass('active');
-        that.element.val( $(this).addClass('active').data('value') );
-        that.options.callback.call(that, $(this).data('value'), {
-          year  : that.year,
-          month : that.month,
-          day   : $(this).text()
-        }) !== false && that.hide();
+        let $this = $(this);
+        $this.closest('table').addClass('selected').find('.active').removeClass('active');
+        $this.addClass('active');
+        that.day = parseInt($this.text(), 10);
+        if(that.helper.find('a.ok').length === 0){
+          let value = $this.data('value');
+          that.element.val( value );
+          that.options.callback.call(that, value, {
+            year  : that.year,
+            month : that.month,
+            day   : that.day
+          }) !== false && that.hide();
+        }
       });
 
       //出错提示
@@ -249,20 +277,31 @@
 
       //操作按钮组
       this.helper.find('.buttons-bar').on('click', 'a', function() {
-        let $this = $(this);
-        if($this.hasClass('today')){
-          [that.year, that.month, that.day] = [];
+        let $this = $(this);        
+        if($this.hasClass('today')){    //返回今天
+          [that.year, that.month] = [];
           that.refreshDate();
           that.refreshSelectMonth();
           that.helper.find('.today').addClass('today-effect').on('animationend', function(){
             $(this).off('animationend').removeClass('today-effect');
           });
-        }else if($this.hasClass('clear')){
+        }else if($this.hasClass('clear')){  //清空
           that.element.val('');
+          that.helper.find('table.selected').removeClass('selected');
           [that.year, that.month, that.day] = [];
           that.refresh();
           if(typeof that.options.btnbar === 'function')
             that.options.btnbar.call(that);
+        }else if($this.hasClass('ok')){     //确定
+          if(that.helper.find('table.selected').length === 0){
+            that.errorTips('请选择日期');
+          }else{
+            let obj = {};
+            ['year', 'month', 'day', 'h', 'm', 's'].forEach( v => that[v] && (obj[v]=that[v]) );
+            let value = that.format(obj,'yyyy-MM-dd hh:mm:ss');
+            that.element.val(value);
+            that.options.callback.call(that, value, obj) !== false && that.hide();            
+          }
         }
       });
 
@@ -292,6 +331,8 @@
         return false;
       });
 
+      this.helper.on('click', '.error-tips', function(){ $(this).fadeOut() });
+
       //点击空白隐藏弹框
       $(document).on('click.' + pluginName + this._id, event => {
         let target = event.target;
@@ -314,6 +355,129 @@
         };  
       });
     }
+    createHms(type){
+      var map = {
+        h: ['时', 24],
+        m: ['分', 60],
+        s: ['秒', 60]
+      };
+      let html = `
+        <div class="section">
+          <h4><span></span>${map[type][0]}</h4>
+          <div class="slider">
+            <div class="handle"></div>
+            <div class="line e-disabled start" title="超出可选择的时间范围"></div>
+            <div class="line e-disabled end" title="超出可选择的时间范围"></div>
+            <div class="line"></div>
+          </div>
+        </div>
+      `;
+      this['$'+type] = $(html).appendTo(this.helper.find('.hms-bar').show());
+
+      let start=0, end=map[type][1];
+      {
+        let val = this.options[type+'_range'];
+        if( /^\d+$|^\d+-\d+$/.test(val) ){
+          let arr = val.trim().split('-');
+          start = parseInt(arr[0], 10);
+          arr[1] && (end = parseInt(arr[1], 10));
+        }
+      }
+
+      this.drag({
+        element: this['$'+type],
+        total: map[type][1],
+        start,
+        end,
+        defaultValue: this[type],
+        callback: time => {
+          this[type] = time;
+          this['$'+type].find('h4 span').text(time);
+        }
+      });
+    }
+    refreshHms(){
+      let i = 0;
+      this.helper.find('.hms-bar').empty();
+      ['h', 'm', 's'].forEach( v => {
+        if( this.options[v] ) {
+          this.createHms(v);
+          i++;
+        }
+      });
+      if(i>0){
+        let bar = this.helper.find('.buttons-bar');
+        if(bar.find('.ok').length === 0){
+          bar.addClass('okbar');
+          this.options.btnbar = true;
+          this.$ok = $('<a href="javascript:;" class="ok">确定</a>').prependTo(bar);
+        }
+      }
+    }
+    drag({element, total, start, end, defaultValue, callback}){
+      let box = element.find('.slider');
+      let handle = element.find('.handle');
+      let handle_w = handle.outerWidth();
+      let box_w = box.outerWidth() - handle_w;
+      let getX = value => Math.ceil(box_w / total * value, 10);
+      let getV = value => parseInt(value/(box_w/total), 10);
+
+      box.find('.line:not(.e-disabled)').on('click', function(e){
+        let x = e.pageX - box.offset().left - handle_w/2;
+        handle.trigger('position', [x, v => callback(v)]);
+      });
+
+      handle.on({
+        'selectstart': function(){ return false },
+        'position' : function(e, x, callback){
+          let _start = getX(start);
+          let _end = getX(end);
+          let loc = x;
+          if(x<_start)
+            loc = _start;
+          else if(x>_end)
+            loc = _end;
+          $(this).css('left', loc);
+          callback && callback(getV(loc));
+        },
+        'mousedown': function(e){
+          var $this = $(this).addClass('active');
+          let x = e.pageX - $this.offset().left;
+          $(document).on({
+            'mousemove.datepickerdrag': function(e){
+              $this.trigger('position', [(e.pageX-box.offset().left-x), v => callback(v)]);
+            },
+            'mouseup.datepickerdrag': function(e){ 
+              $this.removeClass('active');
+              $(this).unbind("mousemove.datepickerdrag").unbind("mouseup.datepickerdrag");
+            }
+          });
+        }
+      });
+
+      //初始化默认值
+      {
+        if(start!==0){
+          if(defaultValue<start) defaultValue = start;
+          box.find('.start').show().css('width', getX(start));
+        }
+        if(end!==0){
+          box.find('.end').show().css('width', getX(end===0 ? 0 : total-end));
+          if(defaultValue>end) defaultValue = end;
+        }
+        handle.css('left', getX(defaultValue)); 
+        callback(defaultValue);
+      }
+
+    }
+    destroy(){
+      $(document).off('click.' + pluginName + this._id);
+      this.element.off('click.' + pluginName);
+      this.helper.remove();
+      this.icon.remove();
+      this.element.css('cursor','auto').removeData('plugin_' + pluginName);
+      if(this.options.readonly) this.element.prop('readonly', false);
+    }
     rePosition(){
       if(!this.element) return this;
       //对齐图标
@@ -332,6 +496,7 @@
     show(){
       if(this._visible) return this;
       this._visible = true;
+      this.assignment();
       this.rePosition();
       this.helper.show().addClass('animated-fadein-bottom');
     }
@@ -359,30 +524,33 @@
       }
       return this;
     }
-    errorTips(){
+    errorTips(str){
       let tips = this.helper.find('.error-tips');
       let text = this.options.errortext;
 
-      if( this.options.errortext === 'auto' ){
-        if( this.options.startdate && !this.options.enddate ){
-          text = '请选择$start之后的日期'
-        }else if( !this.options.startdate && this.options.enddate ){
-          text = '请选择$end之前的日期'
-        }else{
-          text = '请选择$start到$end范围内的日期'
+      if(str){
+        text = str;
+      }else{
+        if( this.options.errortext === 'auto' ){
+          if( this.options.startdate && !this.options.enddate ){
+            text = '请选择$start之后的日期';
+          }else if( !this.options.startdate && this.options.enddate ){
+            text = '请选择$end之前的日期';
+          }else{
+            text = '请选择$start到$end范围内的日期';
+          }
         }
+        text = text.replace('$start', this.options.startdate || '' )
+                   .replace('$end', this.options.enddate || '' );
       }
-
-      text = text.replace('$start', this.options.startdate || '' )
-                 .replace('$end', this.options.enddate || '' );
       if(tips.length === 0){
         tips = $(`<div class="error-tips">${text}</div>`).appendTo(this.helper);
       }else{
-        tips.show();
+        tips.show().html(text);
       }
       tips.addClass('animated-fadein-top');
       this._errorTimer && clearTimeout(this._errorTimer);
-      this._errorTimer = setTimeout(()=>tips.removeClass('animated-fadein-top').fadeOut(), 3000);
+      this._errorTimer = setTimeout(()=>tips.removeClass('animated-fadein-top').fadeOut(), 2500);
     }    
     _getDay(year, month){
       return new Date(year, month, 0).getDate();
@@ -409,29 +577,35 @@
       }
       return [year, month];
     }    
-    format(date, str){
-      let year, month, day;
-      if(date){
-        if(typeof date === 'string'){
-          date = this._stringToDate(date);
-          [year, month, day] = [date.year, date.month, date.day];
-        }
-      }else{
-        [year, month, day] = [this.year, this.month, this.day];
+    format(date, format){
+      if(typeof date === 'string') date = this._stringToDate(date);
+      if(date){ 
+        let obj = {
+          M : 'month',
+          d : 'day',
+          h : 'h',
+          m : 'm',
+          s : 's'
+        };
+        Object.keys(obj).forEach( v => !date[obj[v]] && (format = format.replace(new RegExp('[^a-zA-z]'+v+'+'), '')) );
+        format = format.replace(/y{1,4}/g, $1 => date.year.toString().substr( date.year.toString().length - $1.length ) );
+        Object.keys(obj).forEach( (v, i) => {
+          format = format.replace( new RegExp(v+'{1,2}', 'g'), $1 => $1.length==2 ? this._pad(date[obj[v]]) : date[obj[v]]);
+        });
+        return format;
       }
-      return str.replace(/y{1,4}/g, $1 => year.toString().substr( year.toString().length - $1.length ) )
-        .replace(/M{1,2}/g, $1 => $1.length==2 ? this._pad(month) : month)
-        .replace(/d{1,2}/g, $1 => $1.length==2 ? this._pad(day) : day);
     }
     _pad(str){ return (str/Math.pow(10, 2)).toFixed(2).substr(2) }
     _stringToDate(str){
-      if(typeof str === 'string' &&  /^\d{4}-\d{1,2}-\d{1,2}$/.test(str)){
-        str = str.split('-');
-        return {
-          year  : parseInt(str[0], 10),
-          month : parseInt(str[1], 10),
-          day   : parseInt(str[2])
-        }
+      str = str.trim();
+      if(this._dateRE(str) || this._timeRE(str)){
+        str = str.split(' ');
+        let date = str[0].split('-');
+        let time = str[1] ? str[1].split(':') : false;
+        let obj = {};
+        ['year', 'month', 'day'].forEach((v, i) => obj[v] = parseInt(date[i], 10) );
+        if(time) ['h', 'm', 's'].forEach((v, i) => time[i] && (obj[v] = parseInt(time[i], 10)) );
+        return obj;
       }else{
         return false;
       }

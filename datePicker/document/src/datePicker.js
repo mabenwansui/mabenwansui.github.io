@@ -77,13 +77,16 @@
       readonly: true,
       errortext: 'auto',
       btnbar: false,
-      startdate: null,
-      enddate: null,
+      startdate: false,
+      enddate: false,
       minyear: 1975,
       maxyear: 2025,
       h: false,
       m: false,
       s: false,
+      h_range: false,
+      m_range: false,
+      s_range: false,
       zindex: 'auto',
       cssStyle: null,
       callback: $.noop
@@ -103,10 +106,14 @@
         this._visible = false;
         this._id = ++$[pluginName].id;
         this._errorTimer = null;
-        this._startdate = null;
-        this._enddate = null;
-        this._regDate = function (str) {
-          return (/^\d{4}-\d{1,2}-\d{1,2}$|^\d{4}-\d{1,2}-\d{1,2} (\d{1,2}:)*\d{1,2}$/.test(str)
+        this._startdate = false;
+        this._enddate = false;
+        this._dateRE = function (str) {
+          return (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)
+          );
+        };
+        this._timeRE = function (str) {
+          return (/^\d{4}-\d{1,2}-\d{1,2} (\d{1,2}:)*\d{1,2}$/.test(str)
           );
         };
         this._initialAttr();
@@ -231,7 +238,7 @@
           ul.find('td').each(function () {
             var v = $(this).data('value');
             if (v < that.options.startdate || v > that.options.enddate) $(this).addClass('disabled');else if (v === that.format(that.element.val().trim(), 'yyyy-MM-dd')) {
-              $(this).addClass('active');
+              $(this).trigger('click', [true]);
             }
           });
 
@@ -242,49 +249,54 @@
           }
         }
       }, {
+        key: 'assignment',
+        value: function assignment() {
+          var v = this.element.val().trim();
+          if (!v) return this;
+          if (this._timeRE(v)) {
+            var _stringToDate2 = this._stringToDate(v);
+
+            this.year = _stringToDate2.year;
+            this.month = _stringToDate2.month;
+            this.day = _stringToDate2.day;
+            this.h = _stringToDate2.h;
+            this.m = _stringToDate2.m;
+            this.s = _stringToDate2.s;
+
+            this.refreshHms();
+          } else if (this._dateRE(v)) {
+            var _stringToDate3 = this._stringToDate(v);
+
+            this.year = _stringToDate3.year;
+            this.month = _stringToDate3.month;
+            this.day = _stringToDate3.day;
+          }
+          this.refreshDate();
+          this.refreshSelectYear();
+          this.refreshSelectMonth();
+        }
+      }, {
         key: 'refresh',
         value: function refresh(options) {
-          var now_date = new Date();
           if (options) $.extend(true, this.options, options);
 
           if (this.options.startdate) this._startdate = this._stringToDate(this.options.startdate);
           if (this.options.enddate) this._enddate = this._stringToDate(this.options.enddate);
           this.element.prop('readonly', this.options.readonly);
 
-          var v = this.element.val().trim();
           if (this.options.h || this.options.m || this.options.s) {
-            this.h = /^\d+$/.test(this.options.h) ? this.options.h : now_date.getHours();
-            this.m = /^\d+$/.test(this.options.m) ? this.options.m : now_date.getMinutes();
-            this.s = /^\d+$/.test(this.options.s) ? this.options.s : now_date.getSeconds();
-            if (this._regDate(v)) {
-              ;
-
-              var _stringToDate2 = this._stringToDate(v);
-
-              this.year = _stringToDate2.year;
-              this.month = _stringToDate2.month;
-              this.day = _stringToDate2.day;
-              this.h = _stringToDate2.h;
-              this.m = _stringToDate2.m;
-              this.s = _stringToDate2.s;
-            }this.refreshHms();
-          } else {
-            if (this._regDate(v)) {
-              ;
-
-              var _stringToDate3 = this._stringToDate(v);
-
-              this.year = _stringToDate3.year;
-              this.month = _stringToDate3.month;
-              this.day = _stringToDate3.day;
-            }
+            var d = new Date();
+            this.h = /^\d+$/.test(this.options.h) ? this.options.h : d.getHours();
+            this.m = /^\d+$/.test(this.options.m) ? this.options.m : d.getMinutes();
+            this.s = /^\d+$/.test(this.options.s) ? this.options.s : d.getSeconds();
+            this.refreshHms();
           }
           this.setZindex();
           this.refreshDate();
           this.refreshSelectYear();
           this.refreshSelectMonth();
           if (this.element.is(':disabled')) this.icon.addClass('disabled');
-          if (this.options.cssstyle) this.helper.addClass(className + '-ui-' + this.options.cssstyle);
+          //if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
           if (this.options.btnbar) this.helper.find('.buttons-bar').show();
           this.rePosition();
           return this;
@@ -302,7 +314,7 @@
           });
 
           //选择日期
-          this.helper.find('table').on('click', 'td:not(.disabled)', function () {
+          this.helper.find('table').on('click', 'td:not(.disabled)', function (e, flag) {
             var $this = $(this);
             $this.closest('table').addClass('selected').find('.active').removeClass('active');
             $this.addClass('active');
@@ -310,7 +322,7 @@
             if (that.helper.find('a.ok').length === 0) {
               var value = $this.data('value');
               that.element.val(value);
-              that.options.callback.call(that, value, {
+              !flag && that.options.callback.call(that, value, {
                 year: that.year,
                 month: that.month,
                 day: that.day
@@ -357,7 +369,8 @@
           this.helper.find('.buttons-bar').on('click', 'a', function () {
             var $this = $(this);
             if ($this.hasClass('today')) {
-              var _ref = [];
+              var _ref = []; //返回今天
+
               that.year = _ref[0];
               that.month = _ref[1];
 
@@ -367,6 +380,7 @@
                 $(this).off('animationend').removeClass('today-effect');
               });
             } else if ($this.hasClass('clear')) {
+              //清空
               that.element.val('');
               that.helper.find('table.selected').removeClass('selected');
               var _ref2 = [];
@@ -377,6 +391,7 @@
               that.refresh();
               if (typeof that.options.btnbar === 'function') that.options.btnbar.call(that);
             } else if ($this.hasClass('ok')) {
+              //确定
               if (that.helper.find('table.selected').length === 0) {
                 that.errorTips('请选择日期');
               } else {
@@ -416,6 +431,10 @@
             return false;
           });
 
+          this.helper.on('click', '.error-tips', function () {
+            $(this).fadeOut();
+          });
+
           //点击空白隐藏弹框
           $(document).on('click.' + pluginName + this._id, function (event) {
             var target = event.target;
@@ -437,76 +456,107 @@
         value: function createHms(type) {
           var _this2 = this;
 
-          if (!this.options[type]) return this;
           var map = {
             h: ['时', 24],
             m: ['分', 60],
             s: ['秒', 60]
           };
-          this.options.btnbar = true;
-          var html = '\n        <div class="section">\n          <h4><span></span>' + map[type][0] + '</h4>\n          <div class="slider">\n            <div class="handle"></div>\n            <div class="line"></div>\n          </div>\n        </div>\n      ';
+          var html = '\n        <div class="section">\n          <h4><span></span>' + map[type][0] + '</h4>\n          <div class="slider">\n            <div class="handle"></div>\n            <div class="line e-disabled start" title="超出可选择的时间范围"></div>\n            <div class="line e-disabled end" title="超出可选择的时间范围"></div>\n            <div class="line"></div>\n          </div>\n        </div>\n      ';
           this['$' + type] = $(html).appendTo(this.helper.find('.hms-bar').show());
-          this.drag(this['$' + type], map[type][1], this[type], function (time) {
-            _this2[type] = time;
-            _this2['$' + type].find('h4 span').text(time);
-          });
 
-          var bar = this.helper.find('.buttons-bar');
-          if (bar.find('.ok').length === 0) {
-            bar.addClass('okbar');
-            this.$ok = $('<a href="javascript:;" class="ok">确定</a>').prependTo(bar);
+          var start = 0,
+              end = map[type][1];
+          {
+            var val = this.options[type + '_range'];
+            if (/^\d+$|^\d+-\d+$/.test(val)) {
+              var arr = val.trim().split('-');
+              start = parseInt(arr[0], 10);
+              arr[1] && (end = parseInt(arr[1], 10));
+            }
           }
+
+          this.drag({
+            element: this['$' + type],
+            total: map[type][1],
+            start: start,
+            end: end,
+            defaultValue: this[type],
+            callback: function callback(time) {
+              _this2[type] = time;
+              _this2['$' + type].find('h4 span').text(time);
+            }
+          });
         }
       }, {
         key: 'refreshHms',
         value: function refreshHms() {
           var _this3 = this;
 
+          var i = 0;
+          this.helper.find('.hms-bar').empty();
           ['h', 'm', 's'].forEach(function (v) {
-            if (_this3['$' + v]) _this3['$' + v].remove();
-            if (_this3.options[v]) _this3.createHms(v);
+            if (_this3.options[v]) {
+              _this3.createHms(v);
+              i++;
+            }
           });
+          if (i > 0) {
+            var bar = this.helper.find('.buttons-bar');
+            if (bar.find('.ok').length === 0) {
+              bar.addClass('okbar');
+              this.options.btnbar = true;
+              this.$ok = $('<a href="javascript:;" class="ok">确定</a>').prependTo(bar);
+            }
+          }
         }
       }, {
         key: 'drag',
-        value: function drag(element, total, defaultValue, callback) {
-          var that = this;
-          var date = new Date();
+        value: function drag(_ref3) {
+          var element = _ref3.element;
+          var total = _ref3.total;
+          var start = _ref3.start;
+          var end = _ref3.end;
+          var defaultValue = _ref3.defaultValue;
+          var callback = _ref3.callback;
+
           var box = element.find('.slider');
           var handle = element.find('.handle');
           var handle_w = handle.outerWidth();
           var box_w = box.outerWidth() - handle_w;
+          var getX = function getX(value) {
+            return Math.ceil(box_w / total * value, 10);
+          };
+          var getV = function getV(value) {
+            return parseInt(value / (box_w / total), 10);
+          };
 
-          handle.css('left', box_w / total * defaultValue);
-          callback(defaultValue);
-
-          element.find('.line').on('click', function (e) {
-            var handle_w = handle.outerWidth();
-            var end = e.pageX - box.offset().left - handle_w / 2;
-            handle.css('left', end);
-            callback(parseInt(end / (box_w / total), 10));
+          box.find('.line:not(.e-disabled)').on('click', function (e) {
+            var x = e.pageX - box.offset().left - handle_w / 2;
+            handle.trigger('position', [x, function (v) {
+              return callback(v);
+            }]);
           });
+
           handle.on({
             'selectstart': function selectstart() {
               return false;
             },
+            'position': function position(e, x, callback) {
+              var _start = getX(start);
+              var _end = getX(end);
+              var loc = x;
+              if (x < _start) loc = _start;else if (x > _end) loc = _end;
+              $(this).css('left', loc);
+              callback && callback(getV(loc));
+            },
             'mousedown': function mousedown(e) {
               var $this = $(this).addClass('active');
-              var x1 = e.pageX - $this.offset().left;
-              var x2 = box.offset().left;
-              var x3 = x2 + box_w;
+              var x = e.pageX - $this.offset().left;
               $(document).on({
                 'mousemove.datepickerdrag': function mousemoveDatepickerdrag(e) {
-                  var end = void 0;
-                  if (e.pageX - x1 < x2) {
-                    end = 0;
-                  } else if (e.pageX - x1 > x3) {
-                    end = x3 - x2;
-                  } else {
-                    end = e.pageX - x2 - x1;
-                  }
-                  $this.css('left', end);
-                  callback(parseInt(end / (box_w / total), 10));
+                  $this.trigger('position', [e.pageX - box.offset().left - x, function (v) {
+                    return callback(v);
+                  }]);
                 },
                 'mouseup.datepickerdrag': function mouseupDatepickerdrag(e) {
                   $this.removeClass('active');
@@ -515,6 +565,20 @@
               });
             }
           });
+
+          //初始化默认值
+          {
+            if (start !== 0) {
+              if (defaultValue < start) defaultValue = start;
+              box.find('.start').show().css('width', getX(start));
+            }
+            if (end !== 0) {
+              box.find('.end').show().css('width', getX(end === 0 ? 0 : total - end));
+              if (defaultValue > end) defaultValue = end;
+            }
+            handle.css('left', getX(defaultValue));
+            callback(defaultValue);
+          }
         }
       }, {
         key: 'destroy',
@@ -548,6 +612,7 @@
         value: function show() {
           if (this._visible) return this;
           this._visible = true;
+          this.assignment();
           this.rePosition();
           this.helper.show().addClass('animated-fadein-bottom');
         }
@@ -688,16 +753,15 @@
         key: '_stringToDate',
         value: function _stringToDate(str) {
           str = str.trim();
-          if (this._regDate(str)) {
+          if (this._dateRE(str) || this._timeRE(str)) {
             var _ret3 = function () {
               str = str.split(' ');
               var date = str[0].split('-');
               var time = str[1] ? str[1].split(':') : false;
-              var obj = {
-                year: parseInt(date[0], 10),
-                month: parseInt(date[1], 10),
-                day: parseInt(date[2], 10)
-              };
+              var obj = {};
+              ['year', 'month', 'day'].forEach(function (v, i) {
+                return obj[v] = parseInt(date[i], 10);
+              });
               if (time) ['h', 'm', 's'].forEach(function (v, i) {
                 return time[i] && (obj[v] = parseInt(time[i], 10));
               });

@@ -100,7 +100,37 @@
           <th>readonly</th>
           <td>true</td>
           <td>设置文本框是否只读 true, false</td>
-        </tr>        
+        </tr>
+        <tr>
+          <th>h</th>
+          <td>true</td>
+          <td>设置时否显示小时选择</td>
+        </tr>
+        <tr>
+          <th>m</th>
+          <td>true</td>
+          <td>设置时否显示分钟选择</td>
+        </tr>
+        <tr>
+          <th>s</th>
+          <td>true</td>
+          <td>设置时否显示秒选择</td>
+        </tr>
+        <tr>
+          <th>h_range</th>
+          <td>false</td>
+          <td>设置小时可选择范围 例: "5-20"代表只能选择5点到20点之间的值</td>
+        </tr>
+        <tr>
+          <th>m_range</th>
+          <td>false</td>
+          <td>设置分钟可选择范围</td>
+        </tr>
+        <tr>
+          <th>s_range</th>
+          <td>false</td>
+          <td>设置秒可选择范围</td>
+        </tr>                
         <tr>
           <th>zindex</th>
           <td>'auto'</td>
@@ -241,17 +271,24 @@
     <h2>显示时分秒</h2>
     <ul>
       <li>
-        <input type="text" value="2016-05-04 10:04:30" data-selector="bind-a" />
+        <input type="text" value="2016-05-10 10:04:30" data-selector="bind-a" />
         <a data-selector="btn-a" class="btn small">源码</a>
       </li>
     </ul>
-    <h2>只显示时分 并 设置默认时间</h2>
+    <h2>只显示时分并设置默认时间</h2>
     <ul>
       <li>
         <input type="text" data-selector="bind-b" />
         <a data-selector="btn-b" class="btn small">源码</a>
       </li>
     </ul>
+    <h2>设置时分秒的可选范围</h2>
+    <ul>
+      <li>
+        <input type="text" data-selector="bind-d" />
+        <a data-selector="btn-d" class="btn small">源码</a>
+      </li>
+    </ul>    
     <h2>回调格式化</h2>
     <ul>
       <li>
@@ -301,6 +338,16 @@
               )
             );
           }
+        });
+      },
+      d : function(){
+        $('[data-selector="bind-d"]').DatePicker({
+          h : true, 
+          m : true,
+          s : true,
+          h_range : '10',
+          m_range : '10-50',
+          s_range : '0-30'
         });
       }      
     }

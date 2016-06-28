@@ -12,7 +12,7 @@
 </head>
 <body>
 <style>
-body{ padding: 50px 0px 0px 100px; 
+body{ padding: 10px 0px 0px 100px; 
   position: relative;
   z-index:500;
 }
@@ -24,7 +24,7 @@ input{
 
 } 
 </style>
-<input type="text" class="text" value="" />
+<input type="text" class="text" value="2016-05-04 10:04:30" />
 
 
 <p>1</p>
@@ -35,14 +35,23 @@ input{
 <script>
 
 $('input').DatePicker({
-  btnbar : true,
+  //btnbar : true,
   //cssstyle : 'light'
-  //startdate : '2016-06-21',
+  startdate : '2016-06-05',
+  h: true,
+  h_range: '5-20',
+  m: true,
+  m_range : '10',
+  s: true,
+  s_range : '5-30',
   callback : function(date){
-    console.log( this.format(date, 'yyyy年M月dd日') );
-    return false;
+    console.log(arguments);
+    console.log( this.format(date, 'yyyy年M月dd日 hh时dd分') );
+    //return false;
   }
 });
+
+
 
 $('input').trigger('click');
 </script>

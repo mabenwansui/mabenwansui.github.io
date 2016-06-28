@@ -57,16 +57,15 @@
 
 /* */
 .date-picker-ui .hms-bar{display: none; padding: 20px 0 20px 18px; border-top: 2px solid #efefef; background: #fff; -moz-user-select:none; -webkit-user-select:none;}
-.date-picker-ui .hms-bar .section{}
-.date-picker-ui .hms-bar h4{margin: 0 5px 0 0; display: inline-block; padding:0; line-height: 30px; font-weight: normal; font-size: 14px;}
+.date-picker-ui .hms-bar .section{*zoom:1;}
+.date-picker-ui .hms-bar .section:after{display:table; content:""; clear:both; height:0;}
+.date-picker-ui .hms-bar h4{margin: 0 10px 0 0; float: left; padding:0; line-height: 30px; font-weight: normal; font-size: 14px;}
 .date-picker-ui .hms-bar h4 span{font-weight: bold; width: 20px; margin-right: 3px; display: inline-block; text-align: right;}
 .date-picker-ui .hms-bar .slider{
   width: 178px;
-  display: inline-block;
-  *display: inline;
-  *zoom: 1;
+  float: left;
+  top: 13px;
   position: relative;
-  top: -2px;
 }
 .date-picker-ui .hms-bar .slider .handle{
   left: 0;
@@ -74,6 +73,7 @@
   cursor: pointer;
   border-radius: 4px;
   position: absolute;
+  z-index: 10;
   height: 17px;
   width: 8px;
   background: #9cbdea;
@@ -88,11 +88,34 @@
   transform: scale(1.1, 1.3);
 }
 .date-picker-ui .hms-bar .slider .line{
+  width: 100%;
   height: 5px;
   overflow: hidden;
   cursor: pointer;
-  background: #e4e4e4;
+  background: #dcdcdc;
   border-radius: 4px;
+  position: absolute;
+  top:0;
+  left:0;
+}
+.date-picker-ui .hms-bar .slider .line.e-disabled{
+  display: none;
+  width: 0;
+  z-index: 2;
+  background: #eee;
+  cursor: auto;
+}
+.date-picker-ui .hms-bar .slider .line.e-disabled.start{
+  border-top-right-radius : 0;
+  border-bottom-right-radius : 0;
+  border-right: 1px solid #fff;
+}
+.date-picker-ui .hms-bar .slider .line.e-disabled.end{
+  left: auto;
+  right: 0px;
+  border-top-left-radius : 0;
+  border-bottom-left-radius : 0;
+  border-left: 1px solid #fff;;
 }
 
 
