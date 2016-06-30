@@ -106,7 +106,7 @@ import './css/style.css';
         'margin-top' : -box.innerHeight() / 2
       });
     }
-    show(){
+    show(options=false){
       if(this._visible) return this;
       this._visible = true;
       this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
@@ -128,7 +128,7 @@ import './css/style.css';
         this._helper = true;
       }
       !this.options.content && this.createLoading();
-      this.setZindex().reArrow().rePosition();
+      this.refresh(options);
       this.options.callback.show.call(this);
       this.options.callback.windowborder && this._windowborder( this.options.callback.windowborder );
       switch(this.options.animation){
@@ -142,6 +142,7 @@ import './css/style.css';
     hide(){
       if(!this._visible) return this;
       this._visible = false;
+      this.options.act === 'click' && $(document).off('click.' + pluginName + this._id);
       this.options.callback.hide.call(this);
       this.helper.removeClass('animated-zoomin');
       this.options.cache ? this.helper.hide() : this.removeTag();
@@ -312,13 +313,17 @@ import './css/style.css';
       this._timer && clearTimeout(this._timer);
       return this;
     }
+    reContent(str){
+      str && this.$content.html(str);
+      return this;
+    }
     refresh(options){
       if(!this.element) return this;
       if(options){
         this.alias(options);
         $.extend(true, this.options, options); 
-        this.initialAttr().mergeOptions().toNumber();
-        options.content && this.$content.html( this.options.content );
+        this.mergeOptions().toNumber();
+        this.reContent(options.content);
       }
       this.helper.css(this.options.css);
       this.options.cssStyle && this.helper.addClass(className + '-' + this.options.cssStyle);
@@ -333,15 +338,17 @@ import './css/style.css';
       let proxy = this.options.proxy;
       switch(this.options.act){
         case 'click' :
-          let eventFunc = function(){ that.show() }
+          let eventFunc = function(options){ that.show(options) }
           if(proxy){
             $ele.on('click.' + pluginName, proxy, function(){
-              that.options.proxy = $ele;
-              that.element = $(this);
-              eventFunc.call(this);
+              setTimeout(()=>{
+                that.options.proxy = $ele;
+                that.element = $(this);
+                eventFunc.call(this, that.initialAttr());
+              });
             });
           }else{
-            $ele.on('click.' + pluginName, eventFunc)        
+            $ele.on('click.' + pluginName, eventFunc);   
           }
           this._off = function(){
             $ele.off('click.' + pluginName);
@@ -349,38 +356,39 @@ import './css/style.css';
           };
           break;
         case 'hover' :
-          let _in, _out, 
-            _delay = 200, 
-            _outfunc = ()=> that.hide();
-          let mouseenterFunc = function(){
-            clearTimeout(_out);
-            _in = setTimeout(()=> {
-              that.show();
+          let _in = {}, 
+              _out = {}, 
+              _delay = 200,
+              _outfunc = ()=> that.hide();
+          let mouseenterFunc = function(index=0, options){
+            clearTimeout(_out[index]);
+            _in[index] = setTimeout(()=> {
+              that.show(options);
               if(that.helper && !that.helper.data("events")){
                 that.helper.on({
                   mouseenter : ()=>{
-                    clearTimeout(_out);
+                    clearTimeout(_out[index]);
                   },
                   mouseleave : ()=>{
-                    _out = setTimeout(_outfunc, _delay);
+                    _out[index] = setTimeout(_outfunc, _delay);
                   }
                 });
               }            
             }, _delay);
           };
-          let mouseleaveFunc = function(){
-            clearTimeout(_in);
-            _out = setTimeout(_outfunc, _delay * 1.5);   
+          let mouseleaveFunc = function(index){
+            clearTimeout(_in[index]);
+            _out[index] = setTimeout(_outfunc, _delay);   
           };
           if(this.options.proxy){
             $ele.on('mouseenter.' + pluginName, this.options.proxy, function(){
               that.options.proxy = $ele;
               that.element = $(this);
-              mouseenterFunc.call(this);
+              mouseenterFunc.call(this, $(this).index(proxy), that.initialAttr());
             }).on('mouseleave.' + pluginName, this.options.proxy, function(){
               that.options.proxy = $ele;
               that.element = $(this);
-              mouseleaveFunc.call(this);
+              mouseleaveFunc.call(this, $(this).index(proxy));
             });
           }else{
             $ele.on('mouseenter.' + pluginName, mouseenterFunc)
@@ -398,16 +406,21 @@ import './css/style.css';
     }
     initialAttr(){
       let that = this;
+      let obj = {};
       //:代表别名
       ['position', 'title:content', 'zindex', 'top', 'left'].forEach(v => {  
         let arr = v.split(":");
-        if (arr.length > 0) {
-          if(that.element.attr("data-" + arr[0]) ) that.options[arr[1]] = that.element.attr("data-" + arr[0]);
+        if (arr.length > 1) {
+          if(this.element.attr("data-" + arr[0]) ) {
+            this.options[arr[1]] = obj[arr[1]] = this.element.attr("data-" + arr[0]);
+          }
         } else {
-          if(that.element.attr("data-" + v) ) that.options[n] = that.element.attr("data-" + n);
+          if(this.element.attr("data-" + v) ) {
+            this.options[v] = obj[arr[v]] = this.element.attr("data-" + v);
+          }
         }
       });
-      return this;
+      return obj;
     }
     toNumber(){
       var reg = new RegExp('^[-0-9]+(px|em|rem)?$');
