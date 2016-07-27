@@ -47,11 +47,11 @@
 
   'use strict';
 
-  __webpack_require__(52);
+  __webpack_require__(53);
 
 /***/ },
 
-/***/ 52:
+/***/ 53:
 /***/ function(module, exports) {
 
   'use strict';
@@ -75,6 +75,7 @@
       left: 0,
       top: 0,
       readonly: true,
+      display: false,
       errortext: 'auto',
       btnbar: false,
       startdate: false,
@@ -89,6 +90,9 @@
       s_range: false,
       zindex: 'auto',
       cssStyle: null,
+      init: $.noop,
+      prev: $.noop,
+      next: $.noop,
       callback: $.noop
     };
 
@@ -120,15 +124,25 @@
         this.createUi();
         this.refresh();
         this.bindEvent();
+        this.options.init && this.options.init.call(this);
       }
 
       _createClass(DatePicker, [{
         key: 'createUi',
         value: function createUi() {
           var html = '\n        <div class="' + className + '-ui">\n          <div class="title">\n            <div class="prev"><i></i></div>\n            <div class="year">\n              <h2></h2><i class="arrow"></i>\n              <ul class="drop-down"></ul>                \n            </div>\n            <div class="month">\n              <h2></h2><i class="arrow"></i>\n              <ul class="drop-down"></ul>              \n            </div>\n            <div class="next"><i></i></div>\n          </div>\n          <table>\n            <thead>\n              <tr>\n                <th>一</th>\n                <th>二</th>\n                <th>三</th>\n                <th>四</th>\n                <th>五</th>\n                <th class="weekend">六</th>\n                <th class="weekend">日</th>\n              </tr>\n            </thead>\n            <tbody></tbody>           \n          </table>\n          <div class="hms-bar"></div>\n          <div class=\'buttons-bar\'>\n            <a href="javascript:;" class="today">返回今天</a>\n            <a href="javascript:;" class="clear">清空</a>\n          </div>           \n        </div>';
-          this.helper = $(html).appendTo('body');
-          this.element.parent().css('position', 'relative');
-          this.icon = $('<i class="' + className + '-icon"></i>').insertAfter(this.element.css('cursor', 'pointer'));
+          if (this.options.display === 'inline') {
+            this.helper = $(html).insertAfter(this.element);
+            this.helper.css({
+              display: 'inline-block',
+              position: 'relative'
+            });
+            this.icon = $();
+          } else {
+            this.helper = $(html).appendTo('body');
+            this.element.parent().css('position', 'relative');
+            this.icon = $('<i class="' + className + '-icon"></i>').insertAfter(this.element.css('cursor', 'pointer'));
+          }
         }
       }, {
         key: 'refreshSelectYear',
@@ -167,6 +181,8 @@
           if (start && this.year + this._pad(this.month) <= start.year + this._pad(start.month)) this.helper.find('.prev').addClass('e-disabled');else this.helper.find('.prev').removeClass('e-disabled');
 
           if (end && this.year + this._pad(this.month) >= end.year + this._pad(end.month)) this.helper.find('.next').addClass('e-disabled');else this.helper.find('.next').removeClass('e-disabled');
+
+          return html;
         }
       }, {
         key: 'refreshDate',
@@ -296,7 +312,7 @@
           this.refreshSelectYear();
           this.refreshSelectMonth();
           if (this.element.is(':disabled')) this.icon.addClass('disabled');
-          //if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
+          if (this.options.cssstyle) this.helper.addClass(className + '-ui-' + this.options.cssstyle);
           if (this.options.btnbar) this.helper.find('.buttons-bar').show();
           this.rePosition();
           return this;
@@ -308,11 +324,15 @@
 
           var that = this;
           //弹出日期
-          this.element.add(this.icon).on('click.' + pluginName, function () {
-            if (_this.element.prop('disabled')) return _this;
-            _this.show();
-          });
-
+          if (this.options.display === 'inline') {
+            this.element.hide();
+            this.show();
+          } else {
+            this.element.add(this.icon).on('click.' + pluginName, function () {
+              if (_this.element.prop('disabled')) return _this;
+              _this.show();
+            });
+          }
           //选择日期
           this.helper.find('table').on('click', 'td:not(.disabled)', function (e, flag) {
             var $this = $(this);
@@ -323,6 +343,7 @@
               var value = $this.data('value');
               that.element.val(value);
               !flag && that.options.callback.call(that, value, {
+                element: $this,
                 year: that.year,
                 month: that.month,
                 day: that.day
@@ -438,8 +459,10 @@
           //点击空白隐藏弹框
           $(document).on('click.' + pluginName + this._id, function (event) {
             var target = event.target;
-            if (_this._visible === true && _this.helper && _this.helper.has(target).length === 0 && _this.helper[0] != target && _this.element[0] != target && _this.icon[0] != target && _this.element.has(target).length === 0) {
-              _this.hide();
+            if (!_this.options.display) {
+              if (_this._visible === true && _this.helper && _this.helper.has(target).length === 0 && _this.helper[0] != target && _this.element[0] != target && _this.icon[0] != target && _this.element.has(target).length === 0) {
+                _this.hide();
+              };
             };
             var year = _this.helper.find('.year'),
                 month = _this.helper.find('.month');
@@ -593,7 +616,7 @@
       }, {
         key: 'rePosition',
         value: function rePosition() {
-          if (!this.element) return this;
+          if (!this.element || this.options.display === 'inline') return this;
           //对齐图标
           var position = this.element.position();
           this.icon.css({
@@ -663,6 +686,8 @@
               } else {
                 text = '请选择$start到$end范围内的日期';
               }
+            } else if (this.options.errortext === false) {
+              return false;
             }
             text = text.replace('$start', this.options.startdate || '').replace('$end', this.options.enddate || '');
           }
@@ -832,7 +857,7 @@
 
     $[pluginName] = {
       id: 0,
-      zindex: 999
+      zindex: 100
     };
   })(jQuery, window);
 

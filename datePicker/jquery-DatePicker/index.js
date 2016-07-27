@@ -2,16 +2,17 @@
 
 (function($, window, undefined) {
   'use strict';
-  let pluginName = 'DatePicker';
-  let className = 'date-picker';
-  let defaults = {
+  const pluginName = 'DatePicker';
+  const className = 'date-picker';
+  const defaults = {
     left      : 0,
     top       : 0,
     readonly  : true,
+    display   : false,
     errortext : 'auto',
     btnbar    : false,
-    startdate : null,
-    enddate   : null,
+    startdate : false,
+    enddate   : false,
     minyear   : 1975,
     maxyear   : 2025,
     h         : false,
@@ -22,6 +23,9 @@
     s_range   : false,
     zindex    : 'auto',
     cssStyle  : null,
+    init      : $.noop,
+    prev      : $.noop,
+    next      : $.noop,
     callback  : $.noop
   }
   class DatePicker{
@@ -36,14 +40,15 @@
       this._visible = false;
       this._id = ++$[pluginName].id;
       this._errorTimer = null;
-      this._startdate = null;
-      this._enddate = null;
+      this._startdate = false;
+      this._enddate = false;
       this._dateRE = str => /^\d{4}-\d{1,2}-\d{1,2}$/.test(str);
       this._timeRE = str => /^\d{4}-\d{1,2}-\d{1,2} (\d{1,2}:)*\d{1,2}$/.test(str);
       this._initialAttr();
       this.createUi();
       this.refresh();
       this.bindEvent();
+      this.options.init && this.options.init.call(this);
     }
     createUi(){
       let html = `
@@ -80,9 +85,18 @@
             <a href="javascript:;" class="clear">清空</a>
           </div>           
         </div>`;
-      this.helper = $(html).appendTo('body');
-      this.element.parent().css('position', 'relative');
-      this.icon = $(`<i class="${className}-icon"></i>`).insertAfter(this.element.css('cursor', 'pointer'));
+      if(this.options.display==='inline'){
+        this.helper = $(html).insertAfter(this.element);
+        this.helper.css({
+          display : 'inline-block',
+          position : 'relative'
+        });
+        this.icon = $();
+      }else{
+        this.helper = $(html).appendTo('body');
+        this.element.parent().css('position', 'relative');
+        this.icon = $(`<i class="${className}-icon"></i>`).insertAfter(this.element.css('cursor', 'pointer'));
+      }
     }
     refreshSelectYear(){
       let $year = this.helper.find('.year').removeClass('select');
@@ -126,7 +140,9 @@
       if(end && this.year + this._pad(this.month) >= end.year + this._pad(end.month) )
         this.helper.find('.next').addClass('e-disabled');
       else
-        this.helper.find('.next').removeClass('e-disabled');      
+        this.helper.find('.next').removeClass('e-disabled');
+
+      return html;
     }
     refreshDate(){
       let that = this; 
@@ -184,7 +200,7 @@
         if(v < that.options.startdate || v > that.options.enddate) 
           $(this).addClass('disabled');
         else if(v === that.format(that.element.val().trim(), 'yyyy-MM-dd') ){
-          $(this).trigger('click');
+          $(this).trigger('click', [true]);
         }
       });
 
@@ -226,7 +242,7 @@
       this.refreshSelectYear();
       this.refreshSelectMonth();
       if(this.element.is(':disabled')) this.icon.addClass('disabled');
-      //if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
+      if(this.options.cssstyle) this.helper.addClass(`${className}-ui-${this.options.cssstyle}`);
       if(this.options.btnbar) this.helper.find('.buttons-bar').show();
       this.rePosition();
       return this;
@@ -234,13 +250,17 @@
     bindEvent(){
       var that = this;
       //弹出日期
-      this.element.add(this.icon).on('click.' + pluginName, () => {
-        if(this.element.prop('disabled')) return this;
-        this.show()
-      });
-
+      if(this.options.display === 'inline'){
+        this.element.hide();
+        this.show();
+      }else{
+        this.element.add(this.icon).on('click.' + pluginName, () => {
+          if(this.element.prop('disabled')) return this;
+          this.show();
+        });
+      }
       //选择日期
-      this.helper.find('table').on('click', 'td:not(.disabled)', function(){
+      this.helper.find('table').on('click', 'td:not(.disabled)', function(e, flag){
         let $this = $(this);
         $this.closest('table').addClass('selected').find('.active').removeClass('active');
         $this.addClass('active');
@@ -248,10 +268,11 @@
         if(that.helper.find('a.ok').length === 0){
           let value = $this.data('value');
           that.element.val( value );
-          that.options.callback.call(that, value, {
-            year  : that.year,
-            month : that.month,
-            day   : that.day
+          !flag && that.options.callback.call(that, value, {
+            element : $this,
+            year    : that.year,
+            month   : that.month,
+            day     : that.day
           }) !== false && that.hide();
         }
       });
@@ -336,14 +357,16 @@
       //点击空白隐藏弹框
       $(document).on('click.' + pluginName + this._id, event => {
         let target = event.target;
-        if (this._visible === true &&
-          this.helper &&
-          this.helper.has(target).length === 0 &&
-          this.helper[0] != target &&
-          this.element[0] != target &&
-          this.icon[0] != target &&
-          this.element.has(target).length === 0) {
-          this.hide();
+        if(!this.options.display){
+          if (this._visible === true &&
+            this.helper &&
+            this.helper.has(target).length === 0 &&
+            this.helper[0] != target &&
+            this.element[0] != target &&
+            this.icon[0] != target &&
+            this.element.has(target).length === 0) {
+            this.hide();
+          };
         };
         let year = this.helper.find('.year'),
             month = this.helper.find('.month');
@@ -468,7 +491,6 @@
         handle.css('left', getX(defaultValue)); 
         callback(defaultValue);
       }
-
     }
     destroy(){
       $(document).off('click.' + pluginName + this._id);
@@ -479,7 +501,7 @@
       if(this.options.readonly) this.element.prop('readonly', false);
     }
     rePosition(){
-      if(!this.element) return this;
+      if(!this.element || this.options.display==='inline') return this;
       //对齐图标
       let position = this.element.position();
       this.icon.css({
@@ -539,6 +561,8 @@
           }else{
             text = '请选择$start到$end范围内的日期';
           }
+        }else if( this.options.errortext === false ){
+          return false;
         }
         text = text.replace('$start', this.options.startdate || '' )
                    .replace('$end', this.options.enddate || '' );
@@ -649,6 +673,6 @@
 
   $[pluginName] = {
     id : 0,
-    zindex : 999
+    zindex : 100
   }
 }(jQuery, window));
