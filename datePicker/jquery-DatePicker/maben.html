@@ -10,7 +10,7 @@
 <link href="https://concat.lietou-static.com/core/pc/css/port/h/common.css" rel="stylesheet">
 <link href="css/style.css" rel="stylesheet">
 </head>
-<body>
+<body id='mmm'>
 <style>
 body{ padding: 10px 0px 0px 100px; 
   position: relative;
@@ -23,36 +23,91 @@ input{
   margin-left: 100px;
 
 } 
+
 </style>
 <input type="text" class="text" value="2016-05-04 10:04:30" />
-
-
 <p>1</p>
 <p>2</p>
 
+
+
+<div class="maben" style="display:none;">
+  <div class="date-picker-ui animated-fadein-bottom" style="display: inline-block; position: relative;">
+    <div class="title">
+      <div class="prev e-disabled"><i></i></div>
+      <div class="year">
+        <h2>2016年</h2><i class="arrow"></i>
+        <ul class="drop-down"><li class="disabled">1975</li><li class="disabled">1976</li><li class="disabled">1977</li><li class="disabled">1978</li><li class="disabled">1979</li><li class="disabled">1980</li><li class="disabled">1981</li><li class="disabled">1982</li><li class="disabled">1983</li><li class="disabled">1984</li><li class="disabled">1985</li><li class="disabled">1986</li><li class="disabled">1987</li><li class="disabled">1988</li><li class="disabled">1989</li><li class="disabled">1990</li><li class="disabled">1991</li><li class="disabled">1992</li><li class="disabled">1993</li><li class="disabled">1994</li><li class="disabled">1995</li><li class="disabled">1996</li><li class="disabled">1997</li><li class="disabled">1998</li><li class="disabled">1999</li><li class="disabled">2000</li><li class="disabled">2001</li><li class="disabled">2002</li><li class="disabled">2003</li><li class="disabled">2004</li><li class="disabled">2005</li><li class="disabled">2006</li><li class="disabled">2007</li><li class="disabled">2008</li><li class="disabled">2009</li><li class="disabled">2010</li><li class="disabled">2011</li><li class="disabled">2012</li><li class="disabled">2013</li><li class="disabled">2014</li><li class="disabled">2015</li><li class="cur">2016</li><li class="disabled">2017</li><li class="disabled">2018</li><li class="disabled">2019</li><li class="disabled">2020</li><li class="disabled">2021</li><li class="disabled">2022</li><li class="disabled">2023</li><li class="disabled">2024</li><li class="disabled">2025</li></ul>                
+      </div>
+      <div class="next"><i></i></div>
+    </div>
+    <table class="month-table">
+      <tr>
+        <td width="33%">1月</td>
+        <td width="33%">2月</td>
+        <td>3月</td>
+      </tr>
+      <tr>
+        <td>4月</td>
+        <td>5月</td>
+        <td>6月</td>
+      </tr>
+      <tr>
+        <td>7月</td>
+        <td>8月</td>
+        <td>9月</td>
+      </tr>
+      <tr>
+        <td>10月</td>
+        <td>11月</td>
+        <td>12月</td>
+      </tr>      
+    </table>
+    <div class="hms-bar"></div>
+    <div class="buttons-bar">
+      <a href="javascript:;" class="today">返回今天</a>
+      <a href="javascript:;" class="clear">清空</a>
+    </div>           
+  </div>
+</div>
 </body>
 <script src="index.js"></script>
 <script>
 
+
 $('input').DatePicker({
-  //btnbar : true,
-  //cssstyle : 'light'
-  startdate : '2016-06-05',
-  h: true,
-  h_range: '5-20',
-  m: true,
-  m_range : '10',
-  s: true,
-  s_range : '5-30',
-  callback : function(date){
-    console.log(arguments);
-    console.log( this.format(date, 'yyyy年M月dd日 hh时dd分') );
+  //startdate: '2016-06-05',
+  //enddate: '2016-10-28',
+  //display: 'inline',
+  //cssstyle: 'light',
+  btnbar: true,
+  h:true,
+  m:true,
+  s:true,
+  init: function(){
+    //this.helper.on('mouseenter', 'td', function(){
+    //  var tr = $(this).closest('tr');
+    //  if(tr.find('.disabled').length === 0){
+    //    $(this).closest('tr').addClass('select-range');
+    //  }
+    //}).on('mouseleave', 'td', function(){
+    //  $(this).closest('tr').removeClass('select-range');
+    //})
+  },
+  callback: function(val, data){
+    //var tr = data.element.closest('tr');
+    //data.element.removeClass('active');
+    //if(tr.find('.disabled').length === 0){
+    //  tr.addClass('active');
+    //  var start = tr.find('td').first().attr('data-value');
+    //  var end = tr.find('td').last().attr('data-value');
+    //};
     //return false;
+    
   }
-});
+}).trigger('click');
 
 
 
-$('input').trigger('click');
 </script>
 </html>
