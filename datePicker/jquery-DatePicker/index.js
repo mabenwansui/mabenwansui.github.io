@@ -22,7 +22,7 @@
     m_range   : false,
     s_range   : false,
     zindex    : 'auto',
-    cssStyle  : null,
+    cssStyle  : 'light',
     init      : $.noop,
     prev      : $.noop,
     next      : $.noop,
