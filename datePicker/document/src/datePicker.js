@@ -47,11 +47,11 @@
 
   'use strict';
 
-  __webpack_require__(53);
+  __webpack_require__(57);
 
 /***/ },
 
-/***/ 53:
+/***/ 57:
 /***/ function(module, exports) {
 
   'use strict';
@@ -89,7 +89,7 @@
       m_range: false,
       s_range: false,
       zindex: 'auto',
-      cssStyle: null,
+      cssStyle: 'light',
       init: $.noop,
       prev: $.noop,
       next: $.noop,
