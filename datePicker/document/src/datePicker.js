@@ -89,7 +89,7 @@
       m_range: false,
       s_range: false,
       zindex: 'auto',
-      cssStyle: 'light',
+      cssstyle: 'light',
       init: $.noop,
       prev: $.noop,
       next: $.noop,
