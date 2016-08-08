@@ -6,7 +6,7 @@
   const className = 'date-picker';
   const defaults = {
     left      : 0,
-    top       : 0,
+    top       : -1,
     readonly  : true,
     display   : false,
     errortext : 'auto',
@@ -22,7 +22,7 @@
     m_range   : false,
     s_range   : false,
     zindex    : 'auto',
-    cssStyle  : 'light',
+    cssstyle  : false,
     init      : $.noop,
     prev      : $.noop,
     next      : $.noop,

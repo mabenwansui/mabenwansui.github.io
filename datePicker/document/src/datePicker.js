@@ -73,7 +73,7 @@
     var className = 'date-picker';
     var defaults = {
       left: 0,
-      top: 0,
+      top: -1,
       readonly: true,
       display: false,
       errortext: 'auto',
@@ -89,7 +89,7 @@
       m_range: false,
       s_range: false,
       zindex: 'auto',
-      cssstyle: 'light',
+      cssstyle: false,
       init: $.noop,
       prev: $.noop,
       next: $.noop,
