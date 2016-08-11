@@ -47,7 +47,6 @@ import './css/style.css';
       this.closex   = null;
       this.$arrow   = null;
       this.loading  = null;
-      this._options = options;
       this._id      = ++$[pluginName].id;
       this._left    = 0;
       this._top     = 0;
@@ -156,11 +155,7 @@ import './css/style.css';
     destroy() {
       this._off && this._off();
       this.removeTag();
-      if(this.options.proxy){
-        this.options.proxy.removeData('plugin_' + pluginName);
-      }else{
-        this.element.removeData('plugin_' + pluginName);
-      }     
+      this.element.removeData('plugin_' + pluginName);
     }
     reArrow(){
       if(!this.element || !this.helper.is(':visible')) return this;
@@ -314,7 +309,12 @@ import './css/style.css';
       return this;
     }
     reContent(str){
-      str && this.$content.html(str);
+      if(!str) return this;
+      if(!this._helper){
+        this.helper.appendTo('body');
+        this._helper = true;
+      };
+      this.$content.html(str);
       return this;
     }
     refresh(options){
@@ -364,15 +364,10 @@ import './css/style.css';
             clearTimeout(_out[index]);
             _in[index] = setTimeout(()=> {
               that.show(options);
-              if(that.helper && !that.helper.data("events")){
-                that.helper.on({
-                  mouseenter : ()=>{
-                    clearTimeout(_out[index]);
-                  },
-                  mouseleave : ()=>{
-                    _out[index] = setTimeout(_outfunc, _delay);
-                  }
-                });
+              if(that.helper){
+                that.helper.off(`.${pluginName}`)
+                           .on(`mouseenter.${pluginName}`, ()=> clearTimeout(_out[index]))
+                           .on(`mouseleave.${pluginName}`, ()=> {_out[index] = setTimeout(_outfunc, _delay)});
               }            
             }, _delay);
           };
@@ -398,6 +393,8 @@ import './css/style.css';
             $ele.off('mouseenter.' + pluginName)
                 .off('mouseleave.' + pluginName);
           };
+          break;
+        case 'hide' :
           break;
         default :
           this.show();
@@ -442,7 +439,7 @@ import './css/style.css';
       return this;
     }
     mergeOptions(){
-      Object.keys(this._options).forEach(v => {
+      Object.keys(this.options).forEach(v => {
         if(['size', 'align'].indexOf(v) > -1){
           this.options.arrow[v] = this.options[v];
         }else if(['init', 'show', 'windowborder', 'beforeshow', 'hide'].indexOf(v) > -1){
@@ -539,8 +536,30 @@ import './css/style.css';
       };
     } else {
       return this.each(function () {
-        let plugin = $(this).data('plugin_' + pluginName);
-        if(!plugin) $(this).data('plugin_' + pluginName, new AlertTs($(this), options));
+        if(options.proxy){
+          let ele = $(this).find(options.proxy);
+          let plugin = ele.data('plugin_' + pluginName);
+          if(plugin){
+            if(!['click', 'hover', 'hide'].some(v => v===options.act)){
+              plugin.show(options);
+            }else{
+              plugin.refresh(options);
+            }
+          }else{
+            ele.data('plugin_' + pluginName, new AlertTs($(this), options));
+          }
+        }else{
+          let plugin = $(this).data('plugin_' + pluginName);
+          if(plugin){
+            if(!['click', 'hover', 'hide'].some(v => v===options.act)){
+              plugin.show(options);
+            }else{
+              plugin.refresh(options);
+            }
+          }else{
+            $(this).data('plugin_' + pluginName, new AlertTs($(this), options));
+          }
+        }
       });
     };
   };

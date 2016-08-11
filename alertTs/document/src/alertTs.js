@@ -47,11 +47,11 @@
 
   'use strict';
 
-  __webpack_require__(49);
+  __webpack_require__(56);
 
 /***/ },
 
-/***/ 49:
+/***/ 56:
 /***/ function(module, exports) {
 
   'use strict';
@@ -81,7 +81,6 @@
         align: 'left', //角的对齐方式
         left: 0, //角的偏移
         size: 8 },
-      //角的大小
       animation: 'fadein', //动画效果  fadein, zoomin, bounceout
       zindex: 'auto', //z轴层级，auto时，会自动获取，建议auto
       closex: false, //true 则显示x按钮
@@ -116,7 +115,6 @@
         this.closex = null;
         this.$arrow = null;
         this.loading = null;
-        this._options = options;
         this._id = ++$[pluginName].id;
         this._left = 0;
         this._top = 0;
@@ -243,11 +241,7 @@
         value: function destroy() {
           this._off && this._off();
           this.removeTag();
-          if (this.options.proxy) {
-            this.options.proxy.removeData('plugin_' + pluginName);
-          } else {
-            this.element.removeData('plugin_' + pluginName);
-          }
+          this.element.removeData('plugin_' + pluginName);
         }
       }, {
         key: 'reArrow',
@@ -413,7 +407,12 @@
       }, {
         key: 'reContent',
         value: function reContent(str) {
-          str && this.$content.html(str);
+          if (!str) return this;
+          if (!this._helper) {
+            this.helper.appendTo('body');
+            this._helper = true;
+          };
+          this.$content.html(str);
           return this;
         }
       }, {
@@ -436,88 +435,92 @@
       }, {
         key: 'bindEvent',
         value: function bindEvent() {
+          var _this5 = this;
+
           var $ele = this.element;
           var that = this;
           var proxy = this.options.proxy;
-          switch (this.options.act) {
-            case 'click':
-              var eventFunc = function eventFunc(options) {
-                that.show(options);
-              };
-              if (proxy) {
-                $ele.on('click.' + pluginName, proxy, function () {
-                  var _this5 = this;
 
-                  setTimeout(function () {
-                    that.options.proxy = $ele;
-                    that.element = $(_this5);
-                    eventFunc.call(_this5, that.initialAttr());
-                  });
-                });
-              } else {
-                $ele.on('click.' + pluginName, eventFunc);
-              }
-              this._off = function () {
-                $ele.off('click.' + pluginName);
-                $(document).off('click.' + pluginName + this._id);
-              };
-              break;
-            case 'hover':
-              var _in = {},
-                  _out = {},
-                  _delay = 200,
-                  _outfunc = function _outfunc() {
-                return that.hide();
-              };
-              var mouseenterFunc = function mouseenterFunc() {
-                var index = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
-                var options = arguments[1];
-
-                clearTimeout(_out[index]);
-                _in[index] = setTimeout(function () {
+          (function () {
+            switch (_this5.options.act) {
+              case 'click':
+                var eventFunc = function eventFunc(options) {
                   that.show(options);
-                  if (that.helper && !that.helper.data("events")) {
-                    that.helper.on({
-                      mouseenter: function mouseenter() {
-                        clearTimeout(_out[index]);
-                      },
-                      mouseleave: function mouseleave() {
-                        _out[index] = setTimeout(_outfunc, _delay);
-                      }
+                };
+                if (proxy) {
+                  $ele.on('click.' + pluginName, proxy, function () {
+                    var _this6 = this;
+
+                    setTimeout(function () {
+                      that.options.proxy = $ele;
+                      that.element = $(_this6);
+                      eventFunc.call(_this6, that.initialAttr());
                     });
-                  }
-                }, _delay);
-              };
-              var mouseleaveFunc = function mouseleaveFunc(index) {
-                clearTimeout(_in[index]);
-                _out[index] = setTimeout(_outfunc, _delay);
-              };
-              if (this.options.proxy) {
-                $ele.on('mouseenter.' + pluginName, this.options.proxy, function () {
-                  that.options.proxy = $ele;
-                  that.element = $(this);
-                  mouseenterFunc.call(this, $(this).index(proxy), that.initialAttr());
-                }).on('mouseleave.' + pluginName, this.options.proxy, function () {
-                  that.options.proxy = $ele;
-                  that.element = $(this);
-                  mouseleaveFunc.call(this, $(this).index(proxy));
-                });
-              } else {
-                $ele.on('mouseenter.' + pluginName, mouseenterFunc).on('mouseleave.' + pluginName, mouseleaveFunc);
-              }
-              this._off = function () {
-                $ele.off('mouseenter.' + pluginName).off('mouseleave.' + pluginName);
-              };
-              break;
-            default:
-              this.show();
-              this.play();
-          }
+                  });
+                } else {
+                  $ele.on('click.' + pluginName, eventFunc);
+                }
+                _this5._off = function () {
+                  $ele.off('click.' + pluginName);
+                  $(document).off('click.' + pluginName + this._id);
+                };
+                break;
+              case 'hover':
+                var _in = {},
+                    _out = {},
+                    _delay = 200,
+                    _outfunc = function _outfunc() {
+                  return that.hide();
+                };
+                var mouseenterFunc = function mouseenterFunc() {
+                  var index = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+                  var options = arguments[1];
+
+                  clearTimeout(_out[index]);
+                  _in[index] = setTimeout(function () {
+                    that.show(options);
+                    if (that.helper) {
+                      that.helper.off('.' + pluginName).on('mouseenter.' + pluginName, function () {
+                        return clearTimeout(_out[index]);
+                      }).on('mouseleave.' + pluginName, function () {
+                        _out[index] = setTimeout(_outfunc, _delay);
+                      });
+                    }
+                  }, _delay);
+                };
+                var mouseleaveFunc = function mouseleaveFunc(index) {
+                  clearTimeout(_in[index]);
+                  _out[index] = setTimeout(_outfunc, _delay);
+                };
+                if (_this5.options.proxy) {
+                  $ele.on('mouseenter.' + pluginName, _this5.options.proxy, function () {
+                    that.options.proxy = $ele;
+                    that.element = $(this);
+                    mouseenterFunc.call(this, $(this).index(proxy), that.initialAttr());
+                  }).on('mouseleave.' + pluginName, _this5.options.proxy, function () {
+                    that.options.proxy = $ele;
+                    that.element = $(this);
+                    mouseleaveFunc.call(this, $(this).index(proxy));
+                  });
+                } else {
+                  $ele.on('mouseenter.' + pluginName, mouseenterFunc).on('mouseleave.' + pluginName, mouseleaveFunc);
+                }
+                _this5._off = function () {
+                  $ele.off('mouseenter.' + pluginName).off('mouseleave.' + pluginName);
+                };
+                break;
+              case 'hide':
+                break;
+              default:
+                _this5.show();
+                _this5.play();
+            }
+          })();
         }
       }, {
         key: 'initialAttr',
         value: function initialAttr() {
-          var _this6 = this;
+          var _this7 = this;
 
           var that = this;
           var obj = {};
@@ -525,12 +528,12 @@
           ['position', 'title:content', 'zindex', 'top', 'left'].forEach(function (v) {
             var arr = v.split(":");
             if (arr.length > 1) {
-              if (_this6.element.attr("data-" + arr[0])) {
-                _this6.options[arr[1]] = obj[arr[1]] = _this6.element.attr("data-" + arr[0]);
+              if (_this7.element.attr("data-" + arr[0])) {
+                _this7.options[arr[1]] = obj[arr[1]] = _this7.element.attr("data-" + arr[0]);
               }
             } else {
-              if (_this6.element.attr("data-" + v)) {
-                _this6.options[v] = obj[arr[v]] = _this6.element.attr("data-" + v);
+              if (_this7.element.attr("data-" + v)) {
+                _this7.options[v] = obj[arr[v]] = _this7.element.attr("data-" + v);
               }
             }
           });
@@ -539,16 +542,16 @@
       }, {
         key: 'toNumber',
         value: function toNumber() {
-          var _this7 = this;
+          var _this8 = this;
 
           var reg = new RegExp('^[-0-9]+(px|em|rem)?$');
           ['left', 'top', 'zindex', 'width', 'height', 'timeout', 'css>close-size', 'arrow>size', 'arrow>left'].forEach(function (v) {
             var arr = v.split('>');
             if (arr.length > 1) {
-              var key = _this7.options[arr[0]][arr[1]];
-              if (!key) _this7.options[arr[0]][arr[1]] = 0;else if (reg.test(key)) _this7.options[arr[0]][arr[1]] = parseInt(key, 10);
+              var key = _this8.options[arr[0]][arr[1]];
+              if (!key) _this8.options[arr[0]][arr[1]] = 0;else if (reg.test(key)) _this8.options[arr[0]][arr[1]] = parseInt(key, 10);
             } else {
-              if (!_this7.options[v]) _this7.options[v] = 0;else if (reg.test(_this7.options[v])) _this7.options[v] = parseInt(_this7.options[v], 10);
+              if (!_this8.options[v]) _this8.options[v] = 0;else if (reg.test(_this8.options[v])) _this8.options[v] = parseInt(_this8.options[v], 10);
             }
           });
           return this;
@@ -556,15 +559,15 @@
       }, {
         key: 'mergeOptions',
         value: function mergeOptions() {
-          var _this8 = this;
+          var _this9 = this;
 
-          Object.keys(this._options).forEach(function (v) {
+          Object.keys(this.options).forEach(function (v) {
             if (['size', 'align'].indexOf(v) > -1) {
-              _this8.options.arrow[v] = _this8.options[v];
+              _this9.options.arrow[v] = _this9.options[v];
             } else if (['init', 'show', 'windowborder', 'beforeshow', 'hide'].indexOf(v) > -1) {
-              _this8.options.callback[v] = _this8.options[v];
+              _this9.options.callback[v] = _this9.options[v];
             } else if (/^padding/i.test(v) || /^border/i.test(v) || /^background/i.test(v) || v === 'font-size' || v === 'font-size' || v === 'line-height' || v === 'height' || v === 'width') {
-              _this8.options.css[v] = _this8.options[v];
+              _this9.options.css[v] = _this9.options[v];
             }
           });
           return this;
@@ -572,11 +575,11 @@
       }, {
         key: 'setZindex',
         value: function setZindex() {
-          var _this9 = this;
+          var _this10 = this;
 
           var getAutoIndex = function getAutoIndex() {
             var maxindex = 0;
-            _this9.element.parents().each(function () {
+            _this10.element.parents().each(function () {
               var getindex = parseInt($(this).css('z-index'), 10);
               if (maxindex < getindex) maxindex = getindex;
             });
@@ -655,22 +658,22 @@
 
     $.fn[pluginName] = $.fn.alertTs = function (options) {
       var _arguments = arguments,
-          _this10 = this;
+          _this11 = this;
 
       options = options || {};
       if (typeof options == 'string') {
-        var _ret2 = function () {
+        var _ret3 = function () {
           var args = _arguments,
               method = options;
           Array.prototype.shift.call(args);
           switch (method) {
             case "getClass":
               return {
-                v: $(_this10).data('plugin_' + pluginName)
+                v: $(_this11).data('plugin_' + pluginName)
               };
             default:
               return {
-                v: _this10.each(function () {
+                v: _this11.each(function () {
                   var plugin = $(this).data('plugin_' + pluginName);
                   if (plugin && plugin[method]) plugin[method].apply(plugin, args);
                 })
@@ -678,11 +681,37 @@
           };
         }();
 
-        if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+        if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
       } else {
         return this.each(function () {
-          var plugin = $(this).data('plugin_' + pluginName);
-          if (!plugin) $(this).data('plugin_' + pluginName, new AlertTs($(this), options));
+          if (options.proxy) {
+            var ele = $(this).find(options.proxy);
+            var plugin = ele.data('plugin_' + pluginName);
+            if (plugin) {
+              if (!['click', 'hover', 'hide'].some(function (v) {
+                return v === options.act;
+              })) {
+                plugin.show(options);
+              } else {
+                plugin.refresh(options);
+              }
+            } else {
+              ele.data('plugin_' + pluginName, new AlertTs($(this), options));
+            }
+          } else {
+            var _plugin = $(this).data('plugin_' + pluginName);
+            if (_plugin) {
+              if (!['click', 'hover', 'hide'].some(function (v) {
+                return v === options.act;
+              })) {
+                _plugin.show(options);
+              } else {
+                _plugin.refresh(options);
+              }
+            } else {
+              $(this).data('plugin_' + pluginName, new AlertTs($(this), options));
+            }
+          }
         });
       };
     };

@@ -1,6 +1,6 @@
 {
   "name": "@liepin/jquery-AlertTs",
-  "version": "0.0.8",
+  "version": "0.1.4",
   "description": "气泡插件（测试）",
   "main": "./index.js",
   "author": {
@@ -10,5 +10,9 @@
   "license": "MIT",
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0"
-  }
+  },
+  "_id": "@liepin/jquery-AlertTs@0.0.8",
+  "scripts": {},
+  "_shasum": "c064721367633f9c3edc3253e585949d2e02402c",
+  "_from": "@liepin/jquery-AlertTs@latest"
 }
