@@ -106,6 +106,7 @@ import './css/style.css';
       });
     }
     show(options=false){
+      if(this.options.callback.beforeshow.call(this) === false) return this;
       if(this._visible) return this;
       this._visible = true;
       this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
@@ -119,7 +120,6 @@ import './css/style.css';
       });
 
       this.options.timeout && setTimeout( ()=> this.hide(), this.options.timeout );
-      this.options.callback.beforeshow.call(this);
       if(this._helper){
         this.helper.show();
       }else{

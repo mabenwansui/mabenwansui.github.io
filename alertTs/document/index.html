@@ -501,6 +501,13 @@
         </small>
       </li>
     </ul>
+    <h2>点击查看 -> 点击收起</h2>
+    <ul>
+      <li>
+        <a data-selector="bind-e">点击查看</a>
+        <a data-selector="btn-e" class="btn small">源码</a>
+      </li>
+    </ul>     
     <h2>直接显示内容</h2>
     <ul>
       <li>
@@ -508,6 +515,7 @@
         <a data-selector="btn-d" class="btn small">源码</a>
       </li>
     </ul>
+   
   </section>
   <script>
     var obj = {
@@ -542,6 +550,26 @@
           content: '你是不是记得多久没说爱我'
         });  
       },
+      e : function(){
+        $('[data-selector="bind-e"]').AlertTs({
+          act : 'click',
+          cssStyle: 'warning',
+          position: 'bottom',
+          content: '你是不是记得多久没说爱我',
+          beforeshow: function(){
+            if(this.element.text() === '点击收起'){
+              this.hide();
+              return false;
+            }
+          },
+          show: function(){
+            this.element.text('点击收起');
+          },
+          hide: function(){
+            this.element.text('点击查看');
+          }
+        });  
+      },      
       j : function(){
         $('[data-selector="bind-j"]').AlertTs({
           act : 'click',

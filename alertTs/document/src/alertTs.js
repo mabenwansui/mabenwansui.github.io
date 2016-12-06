@@ -187,7 +187,7 @@
           var _this2 = this;
 
           var options = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
-
+          if(this.options.callback.beforeshow.call(this) === false) return this;
           if (this._visible) return this;
           this._visible = true;
           this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, function (event) {
