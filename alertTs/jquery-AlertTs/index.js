@@ -64,7 +64,7 @@ import './css/style.css';
       this.options.callback.init.call(this);
     }
     createUi(){
-      let helper = $(`<div class="${className}"></div>`).css(this.options.css);
+      let helper = $(`<div class="${className}"></div>`).css(this.options.css).data('plugin_' + pluginName, this.element);
       this.$content = $(`<div>${this.options.content}</div>`).appendTo(helper);
       if(this.options.arrow){
         this.$arrow = $(`<div class="${className}-arrow"><i></i><i class="a1"></i></div>`).appendTo(helper);
@@ -569,6 +569,6 @@ import './css/style.css';
   $[pluginName] = {
     id : 0,
     zindex : 100,
-    parent: (element) => element.closest("." + classname + "-k").data("plugin_" + pluginName).data("plugin_" + pluginName)    
+    parent: (element) => $(element).closest('.'+className).data("plugin_" + pluginName).data("plugin_" + pluginName)    
   }
 }(jQuery, window));

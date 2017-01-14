@@ -238,7 +238,7 @@
         </small>
       </li>
     </ul>
-    <h2>定义关闭按钮</h2>
+    <h2>定义按钮</h2>
     <ul>
       <li>
         <a data-selector="bind-e">显示关闭按钮</a> 
@@ -248,6 +248,10 @@
         <a data-selector="bind-f">关闭按钮回调</a> 
         <a data-selector="btn-f" class="btn small">源码</a>
       </li>
+      <li>
+        <a data-selector="bind-g">自定义按钮关闭</a> 
+        <a data-selector="btn-g" class="btn small">源码</a>
+      </li>      
     </ul>    
   </section>
   <script>
@@ -309,6 +313,20 @@
           },
           cssStyle: 'warning'
         });
+      },
+      g : function(){
+        $('[data-selector="bind-g"]').AlertTs({
+          act: 'click',
+          content : [
+            '我有故事和啤酒所以不孤独',
+            '<a href="javascript:;" ',
+            '  onClick="$.AlertTs.parent(this).hide()">',
+            '  关闭气泡',
+            '</a>',
+          ].join(''),
+          cssStyle: 'warning'
+        });
+
       },
       j : function(){
         $('[data-selector="bind-j"]').AlertTs({
