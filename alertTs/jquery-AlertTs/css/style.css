@@ -8,9 +8,9 @@
 }
 .alert-ts .closex { font-family: Verdana; padding-bottom: 1px; transition: all .3s ease-out; position: absolute; z-index: 3; cursor: pointer; }
 .alert-ts .closex:hover { -webkit-transform: rotate(180deg);}
-.alert-ts .arrow { position: absolute; overflow: hidden; }
-.alert-ts .arrow i { display: block; width: 0px; height: 0px; overflow: hidden; position: absolute; z-index: 2; border-style: solid; border-width: 1px; border-color: transparent transparent transparent transparent; }
-.alert-ts .arrow .a1 { z-index: 1; }
+.alert-ts .alert-ts-arrow { position: absolute; overflow: hidden; }
+.alert-ts .alert-ts-arrow i { display: block; width: 0px; height: 0px; overflow: hidden; position: absolute; z-index: 2; border-style: solid; border-width: 1px; border-color: transparent transparent transparent transparent; }
+.alert-ts .alert-ts-arrow .a1 { z-index: 1; }
 .alert-ts .loading{min-width:80px; min-height:30px;}
 .alert-ts .loading div { position: absolute; top:50%; left:50%; font-size: 0; line-height: 0; text-align: center;}
 .alert-ts .loading div i {

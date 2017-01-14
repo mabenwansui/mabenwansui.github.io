@@ -9,6 +9,7 @@ import './css/style.css';
     left: 0,                   //弹框左偏移
     top: 3,                    //弹框上偏移
     act: 'hover',              //鼠标事件  hover, click(点击显示，空白消失), false(直接弹框，没有事件)
+    hoverdelay : 200,
     proxy : false,             //事件代理 例 $('body').AlertTs({ proxy : '.btn' });
     arrow: {                   //可以简写为 arrow: 'center,8,0' 第一个数字为left，第二个为size, 类css随便调换位置
       align: 'left',           //角的对齐方式
@@ -66,7 +67,7 @@ import './css/style.css';
       let helper = $(`<div class="${className}"></div>`).css(this.options.css);
       this.$content = $(`<div>${this.options.content}</div>`).appendTo(helper);
       if(this.options.arrow){
-        this.$arrow = $(`<div class="arrow"><i></i><i class="a1"></i></div>`).appendTo(helper);
+        this.$arrow = $(`<div class="${className}-arrow"><i></i><i class="a1"></i></div>`).appendTo(helper);
       }
       if(this.options.closex){
         helper.css('padding-right', Number.parseInt(helper.css('padding-right'), 10) + 8);
@@ -189,10 +190,11 @@ import './css/style.css';
           center : ()=>{
             if (position == "top" || position == "bottom") {
               arrowPoint = that.helper.innerWidth() / 2 - size + left;
+              arrowBoxPoint = -arrowPoint-size + that.element.outerWidth() / 2;
             } else {
               arrowPoint = that.helper.innerHeight() / 2 - size + left;
+              arrowBoxPoint = -arrowPoint-size + that.element.outerHeight() / 2;
             };
-            arrowBoxPoint = -arrowPoint-size + that.element.outerWidth() / 2;
           },
           right : ()=>{
             if (position == "top" || position == "bottom") {
@@ -358,7 +360,7 @@ import './css/style.css';
         case 'hover' :
           let _in = {}, 
               _out = {}, 
-              _delay = 200,
+              _delay = this.options.hoverdelay,
               _outfunc = ()=> that.hide();
           let mouseenterFunc = function(index=0, options){
             clearTimeout(_out[index]);

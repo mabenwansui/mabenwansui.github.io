@@ -1,5 +1,4 @@
-//import './css/style.css';
-
+import './css/style.css';
 (function($, window, undefined) {
   'use strict';
   const pluginName = 'DatePicker';
@@ -158,12 +157,12 @@
         this.helper.find('.year h2').html(this.year + '年');
         this.helper.find('.month h2').html(this.month + '月');     
       }
-
       //补齐前面的日
       {
         let [year,month] = this._getPrevMonth();
         let day = this._getDay(year, month);
         let w = new Date(this.year, this.month-1, 1).getDay()-1;
+        if(w===-1) w=6;
         day = day-w;
         for(let i=0; i<w; i++, j++) 
           html+=`<td class="text-gray" data-value="${year}-${this._pad(month)}-${this._pad(++day)}">${day}</td>`;
@@ -233,8 +232,8 @@
       if(this.options.h || this.options.m || this.options.s) {
         let d = new Date();
         this.h = /^\d+$/.test(this.options.h) ? this.options.h : d.getHours();
-        this.m = /^\d+$/.test(this.options.m) ? this.options.m : d.getMinutes();
-        this.s = /^\d+$/.test(this.options.s) ? this.options.s : d.getSeconds();        
+        this.m = /^\d+$/.test(this.options.m) ? this.options.m : this.options.m===true ? d.getMinutes() : false;
+        this.s = /^\d+$/.test(this.options.s) ? this.options.s : this.options.s===true ? d.getSeconds() : false;
         this.refreshHms();
       }
       this.setZindex();
@@ -264,7 +263,10 @@
         let $this = $(this);
         $this.closest('table').addClass('selected').find('.active').removeClass('active');
         $this.addClass('active');
-        that.day = parseInt($this.text(), 10);
+        let {year, month, day} = that._stringToDate($this.data('value'));
+        that.year = year;
+        that.month = month;
+        that.day = day;
         if(that.helper.find('a.ok').length === 0){
           let value = $this.data('value');
           that.element.val( value );
@@ -318,7 +320,7 @@
             that.errorTips('请选择日期');
           }else{
             let obj = {};
-            ['year', 'month', 'day', 'h', 'm', 's'].forEach( v => that[v] && (obj[v]=that[v]) );
+            ['year', 'month', 'day', 'h', 'm', 's'].forEach( v => (that[v]||that[v]===0) && (obj[v]=that[v]) );
             let value = that.format(obj,'yyyy-MM-dd hh:mm:ss');
             that.element.val(value);
             that.options.callback.call(that, value, obj) !== false && that.hide();            
@@ -355,7 +357,7 @@
       this.helper.on('click', '.error-tips', function(){ $(this).fadeOut() });
 
       //点击空白隐藏弹框
-      $(document).on('click.' + pluginName + this._id, event => {
+      $(document).on('mousedown.' + pluginName + this._id, event => {
         let target = event.target;
         if(!this.options.display){
           if (this._visible === true &&
@@ -380,9 +382,9 @@
     }
     createHms(type){
       var map = {
-        h: ['时', 24],
-        m: ['分', 60],
-        s: ['秒', 60]
+        h: ['时', 23],
+        m: ['分', 59],
+        s: ['秒', 59]
       };
       let html = `
         <div class="section">
@@ -438,6 +440,7 @@
       }
     }
     drag({element, total, start, end, defaultValue, callback}){
+      let that = this;
       let box = element.find('.slider');
       let handle = element.find('.handle');
       let handle_w = handle.outerWidth();
@@ -493,7 +496,7 @@
       }
     }
     destroy(){
-      $(document).off('click.' + pluginName + this._id);
+      $(document).off('mousedown.' + pluginName + this._id);
       this.element.off('click.' + pluginName);
       this.helper.remove();
       this.icon.remove();
@@ -611,7 +614,7 @@
           m : 'm',
           s : 's'
         };
-        Object.keys(obj).forEach( v => !date[obj[v]] && (format = format.replace(new RegExp('[^a-zA-z]'+v+'+'), '')) );
+        Object.keys(obj).forEach( v => (!date[obj[v]] && date[obj[v]]!==0) && (format = format.replace(new RegExp('[^a-zA-z]'+v+'+'), '')) );
         format = format.replace(/y{1,4}/g, $1 => date.year.toString().substr( date.year.toString().length - $1.length ) );
         Object.keys(obj).forEach( (v, i) => {
           format = format.replace( new RegExp(v+'{1,2}', 'g'), $1 => $1.length==2 ? this._pad(date[obj[v]]) : date[obj[v]]);

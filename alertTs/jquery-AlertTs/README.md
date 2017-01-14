@@ -17,8 +17,26 @@
 
 
 ## 更新说明
+ 0.1.7
+ 提前了beforeshow回调的触发位置，用来解决展开-收起的问题
+
+    $('.more').AlertTs({
+      act: 'click',
+      beforeshow(){
+        if(this.element.text().trim() === '收起'){
+          this.hide();
+          return false;
+        }
+      },
+      show(){
+        this.refresh({
+          content: "..."
+        }).element.text('收起');
+      },
+      hide(){ this.element.text('更多'); }    
+    });
+
  0.1.4
- 
  之前当重复调用插件时，并且act设为一个不存在的事件时，只触发一次alertTs，是因为不会重复绑定插件。
  现修改为重复调用时，弹框也能正常显示；
 

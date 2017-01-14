@@ -50,7 +50,8 @@
 .date-picker-ui .buttons-bar a { transition: all .3s ease-in; font-size: 12px; line-height: 22px; display: inline-block; border-radius: 10px; padding: 0 10px; background: #fff; color: #5a8dd6; border: 1px solid #a3c4f2; margin-left: 5px; }
 .date-picker-ui .buttons-bar a:focus { outline: none; }
 .date-picker-ui .buttons-bar a:hover { background: #a3c4f2; color: #fff;}
-.date-picker-ui .buttons-bar a.ok { float: right; margin-left: 15px; }
+.date-picker-ui .buttons-bar a.ok { float: right; margin-left: 15px; color:#fff; background: #a1c3f3;}
+.date-picker-ui .buttons-bar a.ok:hover{background: #5e93df; border-color:#5e93df;}
 /* */
 .date-picker-ui .hms-bar{display: none; padding: 8px 0 12px 18px; background: #fff; -moz-user-select:none; -webkit-user-select:none;}
 .date-picker-ui .hms-bar .section{*zoom:1;}

@@ -1,7 +1,7 @@
 {
   "name": "@liepin/jquery-AlertTs",
-  "version": "0.1.4",
-  "description": "气泡插件（测试）",
+  "version": "0.2.0",
+  "description": "气泡插件",
   "main": "./index.js",
   "author": {
     "name": "maben@liepin.com"
@@ -11,8 +11,9 @@
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0"
   },
-  "_id": "@liepin/jquery-AlertTs@0.0.8",
+  "_id": "@liepin/jquery-AlertTs@0.2.0",
   "scripts": {},
-  "_shasum": "c064721367633f9c3edc3253e585949d2e02402c",
-  "_from": "@liepin/jquery-AlertTs@latest"
+  "_shasum": "4cc3ce94a98933a6a3b854b95936e8726e15e847",
+  "_from": "@liepin/jquery-AlertTs@latest",
+  "readme": "## 基本信息\n\n* 功能说明：气泡控件\n* 语法：``$(object).AlertTs(options)``\n\n\n## 使用说明\n    import '@liepin/jquery-AlertTs';   //模板用require\n\n    $('element').AlertTs({\n      act: 'click',\n      content: '猎聘欢迎你'\n    });\n\n\n详细内容 访问 http://mabenwansui.github.io/\n\n\n## 更新说明\n 0.1.7\n 提前了beforeshow回调的触发位置，用来解决展开-收起的问题\n\n    $('.more').AlertTs({\n      act: 'click',\n      beforeshow(){\n        if(this.element.text().trim() === '收起'){\n          this.hide();\n          return false;\n        }\n      },\n      show(){\n        this.refresh({\n          content: \"...\"\n        }).element.text('收起');\n      },\n      hide(){ this.element.text('更多'); }    \n    });\n\n 0.1.4\n 之前当重复调用插件时，并且act设为一个不存在的事件时，只触发一次alertTs，是因为不会重复绑定插件。\n 现修改为重复调用时，弹框也能正常显示；\n\n 0.1.2\n * 解决了通过proxy方法绑事件，在相同父元素下，插件不能绑定的问题\n * 解决了通过proxy方法绑事件，hover时，鼠标离开弹框表现不正确的问题\n * 感谢张佐提供的bug反馈，问题描述的很详细。\n\n详细内容 访问 http://mabenwansui.github.io/\n"
 }
