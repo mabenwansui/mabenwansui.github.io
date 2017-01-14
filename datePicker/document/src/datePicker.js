@@ -34,7 +34,7 @@
 /******/  __webpack_require__.c = installedModules;
 
 /******/  // __webpack_public_path__
-/******/  __webpack_require__.p = "//concat.lietou-static.com/dev/msk/pc/v3/build/";
+/******/  __webpack_require__.p = "//concat.lietou-static.com/dev/h/pc/v3/build/";
 
 /******/  // Load entry module and return exports
 /******/  return __webpack_require__(0);
@@ -47,24 +47,24 @@
 
   'use strict';
 
-  __webpack_require__(57);
+  __webpack_require__(201);
 
 /***/ },
 
-/***/ 57:
-/***/ function(module, exports) {
+/***/ 201:
+/***/ function(module, exports, __webpack_require__) {
 
   'use strict';
 
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
   var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
   var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  __webpack_require__(202);
 
-  //import './css/style.css';
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   (function ($, window, undefined) {
     'use strict';
@@ -130,7 +130,7 @@
       _createClass(DatePicker, [{
         key: 'createUi',
         value: function createUi() {
-          var html = '\n        <div class="' + className + '-ui">\n          <div class="title">\n            <div class="prev"><i></i></div>\n            <div class="year">\n              <h2></h2><i class="arrow"></i>\n              <ul class="drop-down"></ul>                \n            </div>\n            <div class="month">\n              <h2></h2><i class="arrow"></i>\n              <ul class="drop-down"></ul>              \n            </div>\n            <div class="next"><i></i></div>\n          </div>\n          <table>\n            <thead>\n              <tr>\n                <th>一</th>\n                <th>二</th>\n                <th>三</th>\n                <th>四</th>\n                <th>五</th>\n                <th class="weekend">六</th>\n                <th class="weekend">日</th>\n              </tr>\n            </thead>\n            <tbody></tbody>           \n          </table>\n          <div class="hms-bar"></div>\n          <div class=\'buttons-bar\'>\n            <a href="javascript:;" class="today">返回今天</a>\n            <a href="javascript:;" class="clear">清空</a>\n          </div>           \n        </div>';
+          var html = '\n        <div class="' + className + '-ui">\n          <div class="title">\n            <div class="prev"><i></i></div>\n            <div class="year">\n              <h2></h2><i class="arrow"></i>\n              <ul class="drop-down"></ul>                \n            </div>\n            <div class="month">\n              <h2></h2><i class="arrow"></i>\n              <ul class="drop-down"></ul>              \n            </div>\n            <div class="next"><i></i></div>\n          </div>\n          <table>\n            <thead>\n              <tr>\n                <th>\u4E00</th>\n                <th>\u4E8C</th>\n                <th>\u4E09</th>\n                <th>\u56DB</th>\n                <th>\u4E94</th>\n                <th class="weekend">\u516D</th>\n                <th class="weekend">\u65E5</th>\n              </tr>\n            </thead>\n            <tbody></tbody>           \n          </table>\n          <div class="hms-bar"></div>\n          <div class=\'buttons-bar\'>\n            <a href="javascript:;" class="today">\u8FD4\u56DE\u4ECA\u5929</a>\n            <a href="javascript:;" class="clear">\u6E05\u7A7A</a>\n          </div>           \n        </div>';
           if (this.options.display === 'inline') {
             this.helper = $(html).insertAfter(this.element);
             this.helper.css({
@@ -200,18 +200,16 @@
             this.helper.find('.year h2').html(this.year + '年');
             this.helper.find('.month h2').html(this.month + '月');
           }
-
           //补齐前面的日
           {
-            var _getPrevMonth2 = this._getPrevMonth();
-
-            var _getPrevMonth3 = _slicedToArray(_getPrevMonth2, 2);
-
-            var year = _getPrevMonth3[0];
-            var month = _getPrevMonth3[1];
+            var _getPrevMonth2 = this._getPrevMonth(),
+                _getPrevMonth3 = _slicedToArray(_getPrevMonth2, 2),
+                year = _getPrevMonth3[0],
+                month = _getPrevMonth3[1];
 
             var day = this._getDay(year, month);
             var w = new Date(this.year, this.month - 1, 1).getDay() - 1;
+            if (w === -1) w = 6;
             day = day - w;
             for (var i = 0; i < w; i++, j++) {
               html += '<td class="text-gray" data-value="' + year + '-' + this._pad(month) + '-' + this._pad(++day) + '">' + day + '</td>';
@@ -235,12 +233,10 @@
 
           //补齐后面的日
           {
-            var _getNextMonth2 = this._getNextMonth();
-
-            var _getNextMonth3 = _slicedToArray(_getNextMonth2, 2);
-
-            var _year = _getNextMonth3[0];
-            var _month = _getNextMonth3[1];
+            var _getNextMonth2 = this._getNextMonth(),
+                _getNextMonth3 = _slicedToArray(_getNextMonth2, 2),
+                _year = _getNextMonth3[0],
+                _month = _getNextMonth3[1];
 
             for (var _i2 = 1; j < 7; j++, _i2++) {
               html += '<td class="text-gray" data-value="' + _year + '-' + this._pad(_month) + '-' + this._pad(_i2) + '">' + _i2 + '</td>';
@@ -303,8 +299,8 @@
           if (this.options.h || this.options.m || this.options.s) {
             var d = new Date();
             this.h = /^\d+$/.test(this.options.h) ? this.options.h : d.getHours();
-            this.m = /^\d+$/.test(this.options.m) ? this.options.m : d.getMinutes();
-            this.s = /^\d+$/.test(this.options.s) ? this.options.s : d.getSeconds();
+            this.m = /^\d+$/.test(this.options.m) ? this.options.m : this.options.m === true ? d.getMinutes() : false;
+            this.s = /^\d+$/.test(this.options.s) ? this.options.s : this.options.s === true ? d.getSeconds() : false;
             this.refreshHms();
           }
           this.setZindex();
@@ -338,7 +334,15 @@
             var $this = $(this);
             $this.closest('table').addClass('selected').find('.active').removeClass('active');
             $this.addClass('active');
-            that.day = parseInt($this.text(), 10);
+
+            var _that$_stringToDate = that._stringToDate($this.data('value')),
+                year = _that$_stringToDate.year,
+                month = _that$_stringToDate.month,
+                day = _that$_stringToDate.day;
+
+            that.year = year;
+            that.month = month;
+            that.day = day;
             if (that.helper.find('a.ok').length === 0) {
               var value = $this.data('value');
               that.element.val(value);
@@ -419,7 +423,7 @@
                 (function () {
                   var obj = {};
                   ['year', 'month', 'day', 'h', 'm', 's'].forEach(function (v) {
-                    return that[v] && (obj[v] = that[v]);
+                    return (that[v] || that[v] === 0) && (obj[v] = that[v]);
                   });
                   var value = that.format(obj, 'yyyy-MM-dd hh:mm:ss');
                   that.element.val(value);
@@ -457,7 +461,7 @@
           });
 
           //点击空白隐藏弹框
-          $(document).on('click.' + pluginName + this._id, function (event) {
+          $(document).on('mousedown.' + pluginName + this._id, function (event) {
             var target = event.target;
             if (!_this.options.display) {
               if (_this._visible === true && _this.helper && _this.helper.has(target).length === 0 && _this.helper[0] != target && _this.element[0] != target && _this.icon[0] != target && _this.element.has(target).length === 0) {
@@ -480,11 +484,11 @@
           var _this2 = this;
 
           var map = {
-            h: ['时', 24],
-            m: ['分', 60],
-            s: ['秒', 60]
+            h: ['时', 23],
+            m: ['分', 59],
+            s: ['秒', 59]
           };
-          var html = '\n        <div class="section">\n          <h4><span></span>' + map[type][0] + '</h4>\n          <div class="slider">\n            <div class="handle"></div>\n            <div class="line e-disabled start" title="超出可选择的时间范围"></div>\n            <div class="line e-disabled end" title="超出可选择的时间范围"></div>\n            <div class="line"></div>\n          </div>\n        </div>\n      ';
+          var html = '\n        <div class="section">\n          <h4><span></span>' + map[type][0] + '</h4>\n          <div class="slider">\n            <div class="handle"></div>\n            <div class="line e-disabled start" title="\u8D85\u51FA\u53EF\u9009\u62E9\u7684\u65F6\u95F4\u8303\u56F4"></div>\n            <div class="line e-disabled end" title="\u8D85\u51FA\u53EF\u9009\u62E9\u7684\u65F6\u95F4\u8303\u56F4"></div>\n            <div class="line"></div>\n          </div>\n        </div>\n      ';
           this['$' + type] = $(html).appendTo(this.helper.find('.hms-bar').show());
 
           var start = 0,
@@ -535,13 +539,14 @@
       }, {
         key: 'drag',
         value: function drag(_ref3) {
-          var element = _ref3.element;
-          var total = _ref3.total;
-          var start = _ref3.start;
-          var end = _ref3.end;
-          var defaultValue = _ref3.defaultValue;
-          var callback = _ref3.callback;
+          var element = _ref3.element,
+              total = _ref3.total,
+              start = _ref3.start,
+              end = _ref3.end,
+              defaultValue = _ref3.defaultValue,
+              callback = _ref3.callback;
 
+          var that = this;
           var box = element.find('.slider');
           var handle = element.find('.handle');
           var handle_w = handle.outerWidth();
@@ -606,7 +611,7 @@
       }, {
         key: 'destroy',
         value: function destroy() {
-          $(document).off('click.' + pluginName + this._id);
+          $(document).off('mousedown.' + pluginName + this._id);
           this.element.off('click.' + pluginName);
           this.helper.remove();
           this.icon.remove();
@@ -751,7 +756,7 @@
                 s: 's'
               };
               Object.keys(obj).forEach(function (v) {
-                return !date[obj[v]] && (_format = _format.replace(new RegExp('[^a-zA-z]' + v + '+'), ''));
+                return !date[obj[v]] && date[obj[v]] !== 0 && (_format = _format.replace(new RegExp('[^a-zA-z]' + v + '+'), ''));
               });
               _format = _format.replace(/y{1,4}/g, function ($1) {
                 return date.year.toString().substr(date.year.toString().length - $1.length);
@@ -860,6 +865,13 @@
       zindex: 100
     };
   })(jQuery, window);
+
+/***/ },
+
+/***/ 202:
+/***/ function(module, exports) {
+
+  // removed by extract-text-plus-webpack-plugin
 
 /***/ }
 
