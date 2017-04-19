@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>es6浏览器</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<script src="/Users/maben/Documents/jquery.js"></script>
+</head>
+<body>
+<style>
+  body{
+    font-size: 14px;
+    padding: 30px 0px 0px 100px; 
+  }
+  p{
+    padding: 5px 0;
+  }
+  input{margin-right: 5px; padding:7px; border-width:1px;}
+  label{ margin-right: 10px; }
+  .valid-error{
+    border-color: #ff6555;
+    color: #cc0000!important;
+  }
+
+  .loader{width: 22px; height: 22px;}
+  .loader .ball-clip-rotate > div {
+    background-color: #ccc;
+    border-radius: 100%;
+    margin: 2px;
+    border: 2px solid #ccc;
+    border-bottom-color: transparent;
+    height: 14px;
+    width: 14px;
+    background: transparent !important;
+    display: inline-block;
+    animation: rotate 0.6s 0s linear infinite; 
+  }
+  @keyframes rotate {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);} 
+  }
+</style>
+
+<form action="">
+  <p>
+    性别: 
+    <label><input type="radio" id="mm1" name="r1">男</label>
+    <label><input type="radio" name="r1">女</label>
+    <label><input type="radio" name="r1">不限</label>
+  </p>
+  <p> 
+    用户名：<input type="text" id="user" name="user" valid="用户名|*, maben, s10-15" class="text" value="" />
+  </p>
+  <p>
+    邮箱:
+    <input type="text" name="email" class="text" value="2" />
+  </p>
+  <p>
+    学历:
+    <select name="edu">
+      <option>请选择</option>
+      <option value="1">初中</option>
+      <option value="2">高中</option>
+      <option value="3">大学</option>
+    </select>    
+  </p>
+
+  <p class="maben" valid-group='checkbox' valid-title="语言" valid-type='*,2-3'>
+    语言:
+    <label><input type="checkbox" name="langue"> 英语</label>
+    <label><input type="checkbox" name="langue"> 法语</label>
+    <label><input type="checkbox" name="langue"> 德语</label>
+    <label><input type="checkbox" name="langue"> 日语</label>
+    <label><input type="checkbox" name="langue"> 韩语</label>
+  </p>
+  <p>
+    所填信息：
+    <textarea name="info" id="" cols="50" rows="3"></textarea>
+  </p>
+  <p><input type="submit" value="提交" /></p>
+</form>
+
+</body>
+<script src="../../bulid/index.js"></script>
+<script>
+$('form').Validate(function(){
+  console.log('maben');
+})
+/*
+  $('form').Validate({
+    dyrules: {
+      maben : function({element, title, val, valid, msg}){
+        console.log(this);
+        return {
+          element : element,
+          valid : false,
+          msg : '有错误'
+        }
+      }
+    },
+    rules : [
+      ['edu', '学历3', '*',{
+        msg : '123'
+      }],
+      //['email', '邮箱2','ajax,*,15-16,email'],
+      [$(':checkbox'), '语言', '*,2-3'],
+      [$('[name=r1]'), '性别', '*', {
+        //tips : $('[name="info"]')      
+      }],
+      //[$(':checkbox'), '语言2', '*'],
+      {
+        name : 'email',
+        title : '邮箱',
+        type : '*',
+        asyc : function(){
+          
+        }
+        //ajax : {},
+        //tips : $('[name="info"]')
+      },
+      //{
+      //  name: 'user_salary',
+      //  title: '年薪',
+      //  type: '*,f'
+      //},
+      //{
+      //  name : 'r1',
+      //  title : '性别',
+      //  type : '*'
+      //},
+      //{
+      //  name : $('.maben').find(':checkbox'),
+      //  title : '语言',
+      //  type : '*,2',
+      //  dy : function(ele, title){
+      //    return {
+      //      valid : true,
+      //      msg : title+'出错了'
+      //    }
+      //  }
+      //},    
+      //{
+      //  name : 'edu',
+      //  title : '学历',
+      //  type : '*'
+      //}
+    ],
+    success: function(data){
+      console.log('');
+      //this代表form
+      //data代表form.serializeArray();
+      //$.post('url', data).done(function(data){
+        //...
+      //});
+    },
+    fail : function(e){
+      //console.dir(e);
+      //return true;
+    }
+  });
+*/
+
+
+/*$('form').trigger('submit');*/
+
+</script>
+</html>
