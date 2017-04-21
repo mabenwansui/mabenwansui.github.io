@@ -113,14 +113,14 @@ function loading(element) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lang__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(19);
 /* harmony export (immutable) */ __webpack_exports__["a"] = rule;
 
 function rule() {
   let that = this;
   let empty = val => !/^[\w\W]+$/.test(val);
   let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
-  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__lang__["a" /* default */])());
+  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
   return {
     required({ element, forElement, title, type, val, msg }) {
       switch (element.attr('type') || element[0].tagName.toLowerCase()) {
@@ -220,11 +220,13 @@ function rule() {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(19);
 /* unused harmony export getJQelement */
 /* unused harmony export jsonFormat */
 /* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
 /* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 
 function getJQelement(element, form = 'form') {
   if (!element) return;
@@ -238,27 +240,14 @@ function getJQelement(element, form = 'form') {
   return element.length > 0 ? element : false;
 }
 
-function aliasFunc(obj) {
-  let arr = Object.keys(obj).reduce((a, b) => (a.push([new RegExp(`^(\\${b})\\(([^\\)]+)\\)$`), obj[b]]), a), []);
-  //arr.push([/^([a-z]?)\^?(\d+)$/, '$1min=$2'])
-  //arr.push([/^([a-z]?)(\d+)[-](\d+)$/, (all, $1, $2, $3) => `${$1}min=${$2},${$1}max=${$3}`])
-  return arr;
-}
-var alias = {
-  '*': 'required',
-  'e': 'email',
-  'n': 'number',
-  'f': 'float'
-};
-
-function formatItem(type) {
+function formatItem(type, title) {
   let [t1, t2] = type.split('-');
   let reTypeRange = (type, range) => {
     let msg = '',
         flag = false;
     type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
       flag = true;
-      if ($4) msg = $4;
+      if ($4) msg = $4.replace(/\$/g, title);
       return $1 + range + '=' + $2;
     });
     return flag ? { type, msg } : false;
@@ -266,60 +255,22 @@ function formatItem(type) {
   let reType = type => {
     let msg = '';
     type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
-      if ($3) msg = $3;
-      return alias[$1] || $1;
+      if ($3) msg = $3.replace(/\$/g, title);
+      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
     });
     return { type, msg };
   };
-  if (t2) {
-    return [reTypeRange(t1, 'min'), reTypeRange(t2, 'max')];
-  } else {
-    return [reTypeRange(type, 'min') || reType(type)];
-  }
+  return t2 ? [reTypeRange(t1, 'min'), reTypeRange(t2, 'max')] : [reTypeRange(type, 'min') || reType(type)];
 }
-let maben;
-maben = formatItem('1-7(大$)');
-//console.log(maben);
-//maben = formatItem('1(最大值)-6(最小值)');
-console.dir(maben);
-
-//function formatType(type){
-//  return type.map(v=> {
-//    let msg='';
-//    let type = v.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
-//      $1 = $1.replace(/^([a-z]?)(\d+)[-](\d+)$/, (all, $1, $2, $3) => `${$1}min=${$2},${$1}max=${$3}`)
-//
-//      if($3){
-//        msg = $3;
-//        return alias[$1] || $1;
-//      }else{
-//        return all;
-//      }
-//    })
-//    return {type, msg}
-//  })
-//}
-
 
 function jsonFormat(data) {
-  let { type } = data;
+  let { type, title } = data;
   if (!type) return [];
   if (typeof type === 'string') type = type.split(/\s*,\s*/);
-
-  console.log(formatType(['required(请填写$)', 'min=6, max=10']));
-
-  //将*, 6-10替换成 ['required', 'min=6, max=10'] 并转换成 ['required', 'min=6', 'max=10']
-  //type = type.map(v=> A.reduce((a, b)=> a.replace(b[0], b[1]), v))
-  //type = type.map(v=> alias.reduce((a, b)=> {
-  //  a.replace(b[0], (all, $1, $2)=> {
-  //    //console.log($1);
-  //    //console.log($2);
-  //    return $1;
-  //  })
-  //}), v))
-  //.reduce((a, b)=> ([].push.apply(a, b.split(/\s*,\s*/)), a), []);
-  //console.log(type);
-  //return {...data, element: data.element, type};
+  type = type.reduce((a, b) => {
+    return [].push.apply(a, formatItem(b, title)), a;
+  }, []);
+  return _extends({}, data, { element: data.element, type });
 }
 
 /*
@@ -332,7 +283,7 @@ function attrToJson(element, form, rules) {
   let prefix = 'valid';
   let attr = element.attr(prefix).split('|');
   let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
-  let msg = type => element.attr(`${prefix}-${type}-msg`);
+  let msg = type => element.attr(`${prefix}-${type}`);
   let obj = {
     title,
     type,
@@ -469,11 +420,12 @@ class Validate {
     })();
   }
   validItem(validType, item) {
-    let { element } = item;
     return new Promise((resolve, reject) => {
-      let [_type, val] = validType.split('=');
+      let { element } = item;
+      let { type, msg } = validType;
+      let [_type, val] = type.split('=');
       if (!this.validRules[_type]) resolve();
-      let result = this.validRules[_type].call(this, _extends({}, item, { val: element.val() }), val);
+      let result = this.validRules[_type].call(this, msg ? _extends({}, item, { val: element.val(), msg }) : _extends({}, item, { val: element.val() }), val);
       if (result instanceof Promise) {
         let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__lib_loading__["a" /* default */])(element);
         result.then(resolve).catch(msg => {
@@ -524,34 +476,7 @@ $.fn[pluginName] = function (...arg) {
 */
 
 /***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = lang;
-function lang(lang = 'cn') {
-  let cn = {
-    required: '请填写$title !',
-    select_required: '请选择$title !',
-    length_max: '$title不能大于$max个字 !',
-    length_min: '$title不能小于$min个字 !',
-    number_max: '$title不能大于$max !',
-    number_min: '$title不能小于$min !',
-    checked_min: '$title至少选择$min项 !',
-    checked_max: '$title最多选择$max项 !',
-    email: '$title格式输入不正确 !',
-    number: '$title请填写整数 !',
-    float: '$title请填写数字 !',
-    mobile: '$title输入不正确 !',
-    pattern: '$title不符合规范 !',
-    ismax: '结束$title不能小于开始$title',
-    repassword: '两次输入的密码不一致'
-  };
-  let en = {};
-  return eval(lang);
-};
-
-/***/ }),
+/* 5 */,
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3086,6 +3011,8 @@ module.exports = g;
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(16);
 /* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 
 let namespace = 'valid';
 let dataMsg = 'data-valid-error-msg';
@@ -3094,11 +3021,19 @@ let isRadioCheck = element => {
   return _type === 'radio' || _type === 'checkbox' ? true : false;
 };
 let getElementTips = element => isRadioCheck(element) ? element.closest('[valid]') : element;
-
+let defaultStyle = {
+  act: 'hide',
+  cssStyle: 'error',
+  top: 2,
+  left: 15,
+  css: {
+    padding: '5px 10px'
+  }
+};
 class BindAlertTips {
   constructor(form, options) {
     this.form = form;
-    this.options = options;
+    this.options = $.extend(true, { ui: defaultStyle }, options);
     this.lastElementMsg;
     this.bindEvent();
     this.submit();
@@ -3110,16 +3045,7 @@ class BindAlertTips {
       this.hide(this.lastElementMsg);
     }
     if (!msg) msg = element.attr(dataMsg) || '';
-    element.AlertTs({
-      act: 'hide',
-      cssStyle: 'error',
-      top: 2,
-      left: 15,
-      content: msg,
-      css: {
-        padding: '5px 10px'
-      }
-    }).AlertTs('show');
+    element.AlertTs(_extends({}, this.options.ui, { content: msg })).AlertTs('show');
     this.lastElementMsg = element;
   }
   hide(element = this.lastElementMsg) {
@@ -3160,7 +3086,7 @@ class BindAlertTips {
         validFor($this);
       } else {
         validFor($this);
-        if ($this.val() === '') return;
+        if ($this.val() === '' && !$this.attr(dataMsg)) return;
       }
       $this.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
     }
@@ -3811,6 +3737,43 @@ if(false) {
 	// When the module is disposed, remove the <style> tags
 	module.hot.dispose(function() { update(); });
 }
+
+/***/ }),
+/* 19 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
+const alias = {
+  '*': 'required',
+  'e': 'email',
+  'n': 'number',
+  'f': 'float'
+};
+/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
+
+
+function lang(lang = 'cn') {
+  let cn = {
+    required: '请填写$title !',
+    select_required: '请选择$title !',
+    length_max: '$title不能大于$max个字 !',
+    length_min: '$title不能小于$min个字 !',
+    number_max: '$title不能大于$max !',
+    number_min: '$title不能小于$min !',
+    checked_min: '$title至少选择$min项 !',
+    checked_max: '$title最多选择$max项 !',
+    email: '$title格式输入不正确 !',
+    number: '$title请填写整数 !',
+    float: '$title请填写数字 !',
+    mobile: '$title输入不正确 !',
+    pattern: '$title不符合规范 !',
+    ismax: '结束$title不能小于开始$title',
+    repassword: '两次输入的密码不一致'
+  };
+  let en = {};
+  return eval(lang);
+};
 
 /***/ })
 /******/ ]);

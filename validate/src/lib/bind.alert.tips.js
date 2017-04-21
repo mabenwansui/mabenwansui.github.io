@@ -6,11 +6,19 @@ let isRadioCheck = element => {
   return (_type==='radio' || _type==='checkbox') ? true : false;
 }
 let getElementTips = element => isRadioCheck(element) ? element.closest('[valid]') : element;
-
+let defaultStyle = {
+  act: 'hide',
+  cssStyle: 'error',
+  top: 2,
+  left: 15,
+  css: {
+    padding: '5px 10px'
+  }
+}
 class BindAlertTips{
   constructor(form, options){
     this.form = form;
-    this.options = options;
+    this.options = $.extend(true, {ui:defaultStyle}, options);
     this.lastElementMsg;
     this.bindEvent();
     this.submit();
@@ -22,16 +30,7 @@ class BindAlertTips{
       this.hide(this.lastElementMsg);
     }
     if(!msg) msg = element.attr(dataMsg) || '';
-    element.AlertTs({
-      act: 'hide',
-      cssStyle: 'error',
-      top: 2,
-      left: 15,
-      content: msg,
-      css: {
-        padding: '5px 10px'
-      }
-    }).AlertTs('show');
+    element.AlertTs({...this.options.ui, content: msg}).AlertTs('show');
     this.lastElementMsg = element;
   }
   hide(element=this.lastElementMsg){
@@ -72,7 +71,7 @@ class BindAlertTips{
         validFor($this);   
       }else{
         validFor($this);    
-        if($this.val()==='') return;  
+        if($this.val()==='' && !$this.attr(dataMsg)) return;  
       }
       $this.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
     }

@@ -1,4 +1,4 @@
-import lang from './lang';
+import {lang} from './config';
 export default function rule(){
   let that = this;
   let empty = val => !/^[\w\W]+$/.test(val);

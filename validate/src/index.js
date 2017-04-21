@@ -44,11 +44,16 @@ class Validate{
     failArr.length===0 ? successCallback.call(this, items) : failCallback.call(this, failArr);
   }
   validItem(validType, item){
-    let {element} = item;
     return new Promise((resolve, reject)=> {
-      let [_type, val] = validType.split('=');
+      let {element} = item;
+      let {type, msg} = validType;
+      let [_type, val] = type.split('=');
       if(!this.validRules[_type]) resolve();
-      let result = this.validRules[_type].call(this, {...item, val: element.val()}, val);
+      let result = this.validRules[_type].call(
+        this, 
+        msg ? {...item, val: element.val(), msg} : {...item, val: element.val()}, 
+        val
+      );
       if(result instanceof Promise){
         let _loading = loading(element);
         result.then(resolve).catch(msg=> {

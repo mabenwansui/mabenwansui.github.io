@@ -1,4 +1,11 @@
-export default function lang(lang='cn'){
+export const alias ={
+  '*': 'required',
+  'e': 'email',
+  'n': 'number',
+  'f': 'float'
+}
+
+export function lang(lang='cn'){
   let cn = {
     required        : '请填写$title !',
     select_required : '请选择$title !',
