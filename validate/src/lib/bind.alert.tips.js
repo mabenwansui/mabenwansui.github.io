@@ -1,5 +1,5 @@
 import '@liepin/jquery-AlertTs';
-let namespace = Date.now();
+let namespace = 'valid';
 let dataMsg = 'data-valid-error-msg';
 let isRadioCheck = element => {
   let _type = element.attr('type');
@@ -8,10 +8,12 @@ let isRadioCheck = element => {
 let getElementTips = element => isRadioCheck(element) ? element.closest('[valid]') : element;
 
 class BindAlertTips{
-  constructor(form){
+  constructor(form, options){
     this.form = form;
+    this.options = options;
     this.lastElementMsg;
     this.bindEvent();
+    this.submit();
   }
   show(element, msg){
     element = getElementTips(element);
@@ -45,6 +47,7 @@ class BindAlertTips{
   itemSuccessCallback(element){
     this.highlight(element, 'hide');
     this.hide(element);
+    element.removeAttr(dataMsg);
   }
   itemFailCallback(arr){
     let [v] = arr;
@@ -60,9 +63,15 @@ class BindAlertTips{
     }
     function change(){
       let $this = $(this);
+      let validFor = element => {
+        element = element.data('valid-for');
+        if(element) setTimeout(()=> element.trigger('change.'+namespace), 0);    
+      }
       if(isRadioCheck($this)){
         $this = $this.closest('[valid]');
+        validFor($this);   
       }else{
+        validFor($this);    
         if($this.val()==='') return;  
       }
       $this.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
@@ -75,15 +84,16 @@ class BindAlertTips{
       .on('change.'+namespace, validDom, change)
       .on('blur.'+namespace, validDom, blur);
   }
-  submit(form){
+  submit(){
     let that = this;
-    form.on('submit', function(){
-      $(this).validate('scan', $.noop, function(arr){
+    this.form.on('submit', function(){
+      $(this).validate('scan', that.options.success, function(arr){
         for(let v of arr){
           that.highlight(v.element, 'show');
           v.element.attr(dataMsg, v.msg);
         }
         that.show(getElementTips(arr[0].element), arr[0].msg);
+        that.options.fail(arr);
       });
       return false;
     });

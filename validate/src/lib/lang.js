@@ -12,7 +12,9 @@ export default function lang(lang='cn'){
     number          : '$title请填写整数 !',
     float           : '$title请填写数字 !',
     mobile          : '$title输入不正确 !',
-    pattern         : '$title不符合规范 !'
+    pattern         : '$title不符合规范 !',
+    ismax           : '结束$title不能小于开始$title',
+    repassword      : '两次输入的密码不一致'
   }
   let en = {}
   return eval(lang);

@@ -54,12 +54,17 @@
   </p>
 
   <p> 
-    用户名：<input type="text" id="user" name="user" valid="用户名|*, maben, s1-5, for=edu" class="text" value="" />
+    用户名: <input type="text" id="user" name="user" valid="用户名|*(请填写$), maben, 1($不能小于1)-5($不能大于5)," class="text" value="" />
   </p>
-
+  <p>
+    密码: <input type="password" name="pwd1" class="pwd" valid="密码|*, 1-6, 2-8" class="text" value="" />
+  </p>
+  <p>
+    重复密码: <input type="password" name="repwd" valid="密码|*, repassword, for=.pwd" class="text" value="" />
+  </p>
   <p> 
-    年薪：<input type="text" name="low" valid="年薪|*, n" class="text" value="" /> -
-    <input type="text" name="high" valid="年薪|*, n, linkage=max, for=low" class="text" value="" />
+    年薪: <input type="text" name="low" valid="年薪|*, n, n1-99" class="text" value="" /> -
+    <input type="text" name="high" valid="年薪|*, n, ismax, for=low" class="text" value="" />
   </p>
 
   <p valid="性别|*">
@@ -70,37 +75,37 @@
   </p>
 
   <p>密码: <input type="text" name="user" valid="密码|*, s2-3" class="text" value="" /></p>
-  <p valid='语言|*, 2-3'>
+  <p class="lang" valid='语言|*, 2-3'>
     语言:
-    <label><input type="checkbox" name="langue"> 英语</label>
-    <label><input type="checkbox" name="langue"> 法语</label>
-    <label><input type="checkbox" name="langue"> 德语</label>
-    <label><input type="checkbox" name="langue"> 日语</label>
-    <label><input type="checkbox" name="langue"> 韩语</label>
+    <label><input type="checkbox" name="langue" value="1"> 英语</label>
+    <label><input type="checkbox" name="langue" value="1"> 法语</label>
+    <label><input type="checkbox" name="langue" value="1"> 德语</label>
+    <label><input type="checkbox" name="langue" value="1"> 日语</label>
+    <label><input type="checkbox" name="langue" value="1"> 韩语</label>
   </p>
 
-  <p><input type="submit" value="提交" /></p>
+  <p>
+    <input type="submit" value="提交" /> &nbsp;&nbsp;&nbsp; 
+    <input type="button" class="add" value="添加一个必填项"> &nbsp;&nbsp;&nbsp; 
+    <input type="button" class="change" value="改变规则">
+  </p>
 </form>
-
 </body>
 <script src="../../bulid/index.js"></script>
 <script>
-$('form').validate({
-  salary({element, title}){
+let i = 0;
+$('.add').on('click', function(){
+  let html = `<input type="text" name="${++i}" valid="*, s2-3"/>`;
+  $(':submit').closest('p').before(html);
+});
+$('.change').on('click', function(){
+  $('form').find('.lang').attr('valid', '改变后的语言|*')
+})
 
-  },
-  ajax({element, title}){
-    return new Promise((resolve, reject)=> {
-      $.post('www').fail(()=> {
-        //resolve();
-        reject('这是啥');
-      })
-    });
-  },
-  maben({element, title, forElement}){
-    console.log(forElement);
-    return title+'maben';
-    return true;
+
+$('form').validate({
+  fail(arr){
+    console.log(arr);
   },
   success(){
     console.log('ok');  

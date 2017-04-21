@@ -5,7 +5,7 @@ export default function rule(){
   let getMsg = (tipMsg) => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b)=> a.replace(new RegExp('\\$'+b, 'g'), obj[b]), tipMsg[key]);
   getMsg = getMsg(lang());
   return {
-    required({element, title, type, val, msg}) {
+    required({element, forElement, title, type, val, msg}) {
       switch(element.attr('type') || element[0].tagName.toLowerCase()){
         case 'select':
           if(element[0].selectedIndex === 0) return getMsg(msg, 'select_required', {title});
@@ -37,9 +37,9 @@ export default function rule(){
       }
       return true;
     },
-    smax({element, title, val, msg}, max){
-      if(val.length > max){
-        return getMsg(msg, 'length_max', {title, max});
+    nmin({element, title, val, msg}, min){
+      if(parseInt(val, 10) < parseInt(min,10)){
+        return getMsg(msg, 'number_min', {title, min});
       }
       return true;
     },
@@ -48,18 +48,10 @@ export default function rule(){
         if(element.filter(':checked').length > max){
           return getMsg(msg, 'checked_max', {title, max});
         }
-      }    
-      return true;
-    },
-    nmin({element, title, val, msg}, min){
-      if(parseInt(val, 10) < parseInt(min,10)){
-        return getMsg(msg, 'number_min', {title, min});
-      }
-      return true;
-    },
-    smin({element, title, val, msg}, min){
-      if(val.length < min){
-        return getMsg(msg, 'length_min', {title, min});
+      }else{
+        if(val.length > max){
+          return getMsg(msg, 'length_max', {title, max});
+        }
       }
       return true;
     },
@@ -68,7 +60,11 @@ export default function rule(){
         if(element.filter(':checked').length < min){
           return getMsg(msg, 'checked_min', {title, min});
         }
-      }            
+      }else{
+        if(val.length < min){
+          return getMsg(msg, 'length_min', {title, min});
+        }
+      }  
       return true;
     },
     email({element, title, val, msg}){
@@ -82,6 +78,22 @@ export default function rule(){
         return getMsg(msg, 'pattern', {title});
       }
       return true;
+    },
+    ismax({element, forElement, title, val, msg}){
+      if(element.val() < forElement.val()){
+        return getMsg(msg, 'ismax', {title});
+      }else{
+        return true;
+      }
+    },
+    repassword({element, forElement, title, val, msg}){
+      let [v1, v2] = [element.val(), forElement.val()];
+      if(v1 === '') return;
+      if(v1 === v2){
+        return true;
+      }else{
+        return getMsg(msg, 'repassword', {title});
+      }
     }
   }
 }

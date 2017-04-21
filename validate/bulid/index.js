@@ -122,7 +122,7 @@ function rule() {
   let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
   getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__lang__["a" /* default */])());
   return {
-    required({ element, title, type, val, msg }) {
+    required({ element, forElement, title, type, val, msg }) {
       switch (element.attr('type') || element[0].tagName.toLowerCase()) {
         case 'select':
           if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
@@ -154,9 +154,9 @@ function rule() {
       }
       return true;
     },
-    smax({ element, title, val, msg }, max) {
-      if (val.length > max) {
-        return getMsg(msg, 'length_max', { title, max });
+    nmin({ element, title, val, msg }, min) {
+      if (parseInt(val, 10) < parseInt(min, 10)) {
+        return getMsg(msg, 'number_min', { title, min });
       }
       return true;
     },
@@ -165,18 +165,10 @@ function rule() {
         if (element.filter(':checked').length > max) {
           return getMsg(msg, 'checked_max', { title, max });
         }
-      }
-      return true;
-    },
-    nmin({ element, title, val, msg }, min) {
-      if (parseInt(val, 10) < parseInt(min, 10)) {
-        return getMsg(msg, 'number_min', { title, min });
-      }
-      return true;
-    },
-    smin({ element, title, val, msg }, min) {
-      if (val.length < min) {
-        return getMsg(msg, 'length_min', { title, min });
+      } else {
+        if (val.length > max) {
+          return getMsg(msg, 'length_max', { title, max });
+        }
       }
       return true;
     },
@@ -184,6 +176,10 @@ function rule() {
       if (element.attr('type') === 'checkbox') {
         if (element.filter(':checked').length < min) {
           return getMsg(msg, 'checked_min', { title, min });
+        }
+      } else {
+        if (val.length < min) {
+          return getMsg(msg, 'length_min', { title, min });
         }
       }
       return true;
@@ -199,6 +195,22 @@ function rule() {
         return getMsg(msg, 'pattern', { title });
       }
       return true;
+    },
+    ismax({ element, forElement, title, val, msg }) {
+      if (element.val() < forElement.val()) {
+        return getMsg(msg, 'ismax', { title });
+      } else {
+        return true;
+      }
+    },
+    repassword({ element, forElement, title, val, msg }) {
+      let [v1, v2] = [element.val(), forElement.val()];
+      if (v1 === '') return;
+      if (v1 === v2) {
+        return true;
+      } else {
+        return getMsg(msg, 'repassword', { title });
+      }
     }
   };
 }
@@ -226,19 +238,88 @@ function getJQelement(element, form = 'form') {
   return element.length > 0 ? element : false;
 }
 
-//将从dom上，或者js里获取的验证规则转换为对象
-function jsonFormat(data) {
-  let getType = type => {
-    if (!type) return [];
-    if (typeof type === 'string') type = type.split(/\s*,\s*/);
-    let A = [[/^\*$/, 'required'], [/^e$/, 'email'], [/^n$/, 'number'], [/^f$/, 'float'], [/^([a-z]?)\^?(\d+)$/, '$1min=$2'], [/^([a-z]?)(\d+)\$$/g, '$1max=$2'], [/^([a-z]?)(\d+)[-](\d+)$/, (all, $1, $2, $3) => `${$1}min=${$2},${$1}max=${$3}`]];
-    //将 '*, s6-10' 替换成 ['required', 'smin=6, smax=10']
-    type = type.map((v, i) => A.reduce((a, b) => a.replace(b[0], b[1]), v));
-    //平铺数组 ['required', 'min=6, max=10', 'number'] 转换成 ['required', 'min=6', 'max=10', 'number']
-    type.forEach((v, i) => [].splice.apply(type, [i, 1].concat(v.split(/\s*,\s*/))));
-    return type;
+function aliasFunc(obj) {
+  let arr = Object.keys(obj).reduce((a, b) => (a.push([new RegExp(`^(\\${b})\\(([^\\)]+)\\)$`), obj[b]]), a), []);
+  //arr.push([/^([a-z]?)\^?(\d+)$/, '$1min=$2'])
+  //arr.push([/^([a-z]?)(\d+)[-](\d+)$/, (all, $1, $2, $3) => `${$1}min=${$2},${$1}max=${$3}`])
+  return arr;
+}
+var alias = {
+  '*': 'required',
+  'e': 'email',
+  'n': 'number',
+  'f': 'float'
+};
+
+function formatItem(type) {
+  let [t1, t2] = type.split('-');
+  let reTypeRange = (type, range) => {
+    let msg = '',
+        flag = false;
+    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
+      flag = true;
+      if ($4) msg = $4;
+      return $1 + range + '=' + $2;
+    });
+    return flag ? { type, msg } : false;
   };
-  return _extends({}, data, { element: getJQelement(data.element), type: getType(data.type) });
+  let reType = type => {
+    let msg = '';
+    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
+      if ($3) msg = $3;
+      return alias[$1] || $1;
+    });
+    return { type, msg };
+  };
+  if (t2) {
+    return [reTypeRange(t1, 'min'), reTypeRange(t2, 'max')];
+  } else {
+    return [reTypeRange(type, 'min') || reType(type)];
+  }
+}
+let maben;
+maben = formatItem('1-7(大$)');
+//console.log(maben);
+//maben = formatItem('1(最大值)-6(最小值)');
+console.dir(maben);
+
+//function formatType(type){
+//  return type.map(v=> {
+//    let msg='';
+//    let type = v.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
+//      $1 = $1.replace(/^([a-z]?)(\d+)[-](\d+)$/, (all, $1, $2, $3) => `${$1}min=${$2},${$1}max=${$3}`)
+//
+//      if($3){
+//        msg = $3;
+//        return alias[$1] || $1;
+//      }else{
+//        return all;
+//      }
+//    })
+//    return {type, msg}
+//  })
+//}
+
+
+function jsonFormat(data) {
+  let { type } = data;
+  if (!type) return [];
+  if (typeof type === 'string') type = type.split(/\s*,\s*/);
+
+  console.log(formatType(['required(请填写$)', 'min=6, max=10']));
+
+  //将*, 6-10替换成 ['required', 'min=6, max=10'] 并转换成 ['required', 'min=6', 'max=10']
+  //type = type.map(v=> A.reduce((a, b)=> a.replace(b[0], b[1]), v))
+  //type = type.map(v=> alias.reduce((a, b)=> {
+  //  a.replace(b[0], (all, $1, $2)=> {
+  //    //console.log($1);
+  //    //console.log($2);
+  //    return $1;
+  //  })
+  //}), v))
+  //.reduce((a, b)=> ([].push.apply(a, b.split(/\s*,\s*/)), a), []);
+  //console.log(type);
+  //return {...data, element: data.element, type};
 }
 
 /*
@@ -246,7 +327,7 @@ function jsonFormat(data) {
   valid-required-msg=""
   valid-error-msg=""
 */
-function attrToJson(element) {
+function attrToJson(element, form, rules) {
   element = $(element);
   let prefix = 'valid';
   let attr = element.attr(prefix).split('|');
@@ -255,10 +336,13 @@ function attrToJson(element) {
   let obj = {
     title,
     type,
-    forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : ''))(type),
-    required: msg('required'),
-    error: msg('error')
+    forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
+    msg: msg('required') || msg('error') || false
   };
+
+  if (obj.forElement) {
+    obj.forElement.data('valid-for', element);
+  }
 
   if (/input|select|textarea/i.test(element[0].tagName)) {
     return jsonFormat(_extends({}, obj, { element }));
@@ -345,11 +429,7 @@ class Validate {
     this.options = _extends({}, defaults, options);
     __WEBPACK_IMPORTED_MODULE_3__lib_unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
     this.validRules = _extends({}, __WEBPACK_IMPORTED_MODULE_1__lib_rules__["a" /* default */].apply(this), this.options.rules);
-    this.alertTips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__["a" /* default */])(this.form);
-    this.submit();
-  }
-  submit() {
-    this.alertTips.submit(this.form);
+    this.alertTips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__["a" /* default */])(this.form, this.options);
   }
   scan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
     var _this = this;
@@ -363,7 +443,7 @@ class Validate {
       if (items.is('form')) items = items.find('[valid]');
       let failArr = [];
       let arr = items.filter(':not([ignore])').toArray().map(function (v) {
-        return __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v);
+        return __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, _this.form);
       });
       for (let v of arr) yield function (item) {
         return new Promise((() => {
@@ -389,8 +469,7 @@ class Validate {
     })();
   }
   validItem(validType, item) {
-    let { element, forElement } = item;
-    console.log(forElement);
+    let { element } = item;
     return new Promise((resolve, reject) => {
       let [_type, val] = validType.split('=');
       if (!this.validRules[_type]) resolve();
@@ -464,7 +543,9 @@ function lang(lang = 'cn') {
     number: '$title请填写整数 !',
     float: '$title请填写数字 !',
     mobile: '$title输入不正确 !',
-    pattern: '$title不符合规范 !'
+    pattern: '$title不符合规范 !',
+    ismax: '结束$title不能小于开始$title',
+    repassword: '两次输入的密码不一致'
   };
   let en = {};
   return eval(lang);
@@ -3006,7 +3087,7 @@ module.exports = g;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(16);
 /* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
 
-let namespace = Date.now();
+let namespace = 'valid';
 let dataMsg = 'data-valid-error-msg';
 let isRadioCheck = element => {
   let _type = element.attr('type');
@@ -3015,10 +3096,12 @@ let isRadioCheck = element => {
 let getElementTips = element => isRadioCheck(element) ? element.closest('[valid]') : element;
 
 class BindAlertTips {
-  constructor(form) {
+  constructor(form, options) {
     this.form = form;
+    this.options = options;
     this.lastElementMsg;
     this.bindEvent();
+    this.submit();
   }
   show(element, msg) {
     element = getElementTips(element);
@@ -3052,6 +3135,7 @@ class BindAlertTips {
   itemSuccessCallback(element) {
     this.highlight(element, 'hide');
     this.hide(element);
+    element.removeAttr(dataMsg);
   }
   itemFailCallback(arr) {
     let [v] = arr;
@@ -3067,9 +3151,15 @@ class BindAlertTips {
     }
     function change() {
       let $this = $(this);
+      let validFor = element => {
+        element = element.data('valid-for');
+        if (element) setTimeout(() => element.trigger('change.' + namespace), 0);
+      };
       if (isRadioCheck($this)) {
         $this = $this.closest('[valid]');
+        validFor($this);
       } else {
+        validFor($this);
         if ($this.val() === '') return;
       }
       $this.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
@@ -3081,15 +3171,16 @@ class BindAlertTips {
     let validDom = 'input:not(:submit,:button), select, textarea';
     this.form.on('focus.' + namespace, validDom, focus).on('change.' + namespace, validDom, change).on('blur.' + namespace, validDom, blur);
   }
-  submit(form) {
+  submit() {
     let that = this;
-    form.on('submit', function () {
-      $(this).validate('scan', $.noop, function (arr) {
+    this.form.on('submit', function () {
+      $(this).validate('scan', that.options.success, function (arr) {
         for (let v of arr) {
           that.highlight(v.element, 'show');
           v.element.attr(dataMsg, v.msg);
         }
         that.show(getElementTips(arr[0].element), arr[0].msg);
+        that.options.fail(arr);
       });
       return false;
     });

@@ -20,11 +20,7 @@ class Validate{
     this.options = {...defaults, ...options};
     unit.rulesMerge(options, defaults, (key, val)=> (this.options.rules[key]=val));
     this.validRules = {...rules.apply(this), ...this.options.rules}
-    this.alertTips = bindAlertTips(this.form);
-    this.submit();
-  }
-  submit(){
-    this.alertTips.submit(this.form);
+    this.alertTips = bindAlertTips(this.form, this.options);
   }
   async scan(items=this.form, successCallback=$.noop, failCallback=$.noop){
     if(typeof items === 'function'){
@@ -34,7 +30,7 @@ class Validate{
     }
     if(items.is('form')) items = items.find('[valid]');
     let failArr = [];
-    let arr = items.filter(':not([ignore])').toArray().map(v=> unit.attrToJson(v));
+    let arr = items.filter(':not([ignore])').toArray().map(v=> unit.attrToJson(v, this.form));
     for(let v of arr) await (item=> {
       return new Promise(async (resolve, reject)=> {
         let error;
@@ -48,8 +44,7 @@ class Validate{
     failArr.length===0 ? successCallback.call(this, items) : failCallback.call(this, failArr);
   }
   validItem(validType, item){
-    let {element, forElement} = item;
-    console.log(forElement);
+    let {element} = item;
     return new Promise((resolve, reject)=> {
       let [_type, val] = validType.split('=');
       if(!this.validRules[_type]) resolve();
