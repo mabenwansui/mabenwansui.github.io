@@ -1,6 +1,6 @@
 import '@liepin/jquery-AlertTs';
 let namespace = 'valid';
-let dataMsg = 'data-valid-error-msg';
+let dataMsg = 'valid-error-msg-forplugin';
 let isRadioCheck = element => {
   let _type = element.attr('type');
   return (_type==='radio' || _type==='checkbox') ? true : false;
@@ -30,7 +30,9 @@ class BindAlertTips{
       this.hide(this.lastElementMsg);
     }
     if(!msg) msg = element.attr(dataMsg) || '';
-    element.AlertTs({...this.options.ui, content: msg}).AlertTs('show');
+    let addui = (ui => ui ? eval(`(${ui})`) : false )(element.attr('valid-ui'));
+    let ui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
+    element.AlertTs({...ui, content: msg}).AlertTs('show');
     this.lastElementMsg = element;
   }
   hide(element=this.lastElementMsg){

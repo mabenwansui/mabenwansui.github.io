@@ -290,11 +290,9 @@ function attrToJson(element, form, rules) {
     forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
     msg: msg('required') || msg('error') || false
   };
-
   if (obj.forElement) {
     obj.forElement.data('valid-for', element);
   }
-
   if (/input|select|textarea/i.test(element[0].tagName)) {
     return jsonFormat(_extends({}, obj, { element }));
   } else {
@@ -379,7 +377,7 @@ class Validate {
     this.form = element.is('form') ? element : element.closest('form');
     this.options = _extends({}, defaults, options);
     __WEBPACK_IMPORTED_MODULE_3__lib_unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
-    this.validRules = _extends({}, __WEBPACK_IMPORTED_MODULE_1__lib_rules__["a" /* default */].apply(this), this.options.rules);
+    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_1__lib_rules__["a" /* default */].apply(this), this.options.rules);
     this.alertTips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__["a" /* default */])(this.form, this.options);
   }
   scan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
@@ -424,8 +422,8 @@ class Validate {
       let { element } = item;
       let { type, msg } = validType;
       let [_type, val] = type.split('=');
-      if (!this.validRules[_type]) resolve();
-      let result = this.validRules[_type].call(this, msg ? _extends({}, item, { val: element.val(), msg }) : _extends({}, item, { val: element.val() }), val);
+      if (!this.rules[_type]) resolve();
+      let result = this.rules[_type].call(this, msg ? _extends({}, item, { val: element.val(), msg }) : _extends({}, item, { val: element.val() }), val);
       if (result instanceof Promise) {
         let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__lib_loading__["a" /* default */])(element);
         result.then(resolve).catch(msg => {
@@ -3015,7 +3013,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 
 let namespace = 'valid';
-let dataMsg = 'data-valid-error-msg';
+let dataMsg = 'valid-error-msg-forplugin';
 let isRadioCheck = element => {
   let _type = element.attr('type');
   return _type === 'radio' || _type === 'checkbox' ? true : false;
@@ -3045,7 +3043,9 @@ class BindAlertTips {
       this.hide(this.lastElementMsg);
     }
     if (!msg) msg = element.attr(dataMsg) || '';
-    element.AlertTs(_extends({}, this.options.ui, { content: msg })).AlertTs('show');
+    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
+    let ui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
+    element.AlertTs(_extends({}, ui, { content: msg })).AlertTs('show');
     this.lastElementMsg = element;
   }
   hide(element = this.lastElementMsg) {

@@ -19,7 +19,7 @@ class Validate{
     this.form = element.is('form') ? element : element.closest('form');
     this.options = {...defaults, ...options};
     unit.rulesMerge(options, defaults, (key, val)=> (this.options.rules[key]=val));
-    this.validRules = {...rules.apply(this), ...this.options.rules}
+    this.rules = {...rules.apply(this), ...this.options.rules}
     this.alertTips = bindAlertTips(this.form, this.options);
   }
   async scan(items=this.form, successCallback=$.noop, failCallback=$.noop){
@@ -48,8 +48,8 @@ class Validate{
       let {element} = item;
       let {type, msg} = validType;
       let [_type, val] = type.split('=');
-      if(!this.validRules[_type]) resolve();
-      let result = this.validRules[_type].call(
+      if(!this.rules[_type]) resolve();
+      let result = this.rules[_type].call(
         this, 
         msg ? {...item, val: element.val(), msg} : {...item, val: element.val()}, 
         val

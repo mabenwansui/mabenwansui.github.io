@@ -62,11 +62,9 @@ export function attrToJson(element, form, rules){
     forElement: (_type=> getJQelement(_type.indexOf('for')>-1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
     msg: msg('required') || msg('error') || false
   };
-
   if(obj.forElement){
     obj.forElement.data('valid-for', element);
   }
-
   if(/input|select|textarea/i.test(element[0].tagName)){
     return jsonFormat({...obj, element})
   }else{
