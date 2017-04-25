@@ -74,8 +74,12 @@ export default function rule(){
       return true;
     },
     pattern({element, title, val, msg}, reg){
-      if(!reg.test(val)){
-        return getMsg(msg, 'pattern', {title});
+      try{
+        if(!eval(reg).test(val)){
+          return getMsg(msg, 'pattern', {title});
+        }
+      }catch(e){
+        console.error(title+'pattern的正则不正确');
       }
       return true;
     },
@@ -94,6 +98,9 @@ export default function rule(){
       }else{
         return getMsg(msg, 'repassword', {title});
       }
+    },
+    every(){
+
     }
   }
 }

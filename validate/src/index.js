@@ -34,6 +34,7 @@ class Validate{
     for(let v of arr) await (item=> {
       return new Promise(async (resolve, reject)=> {
         let error;
+        console.log(item);
         for(let validType of item.type){
           await this.validItem(validType, item).catch(e=> reject(error=e));
           if(error) break;

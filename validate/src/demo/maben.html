@@ -54,16 +54,16 @@
   </p>
 
   <p> 
-    用户名: <input type="text" id="user" name="user" 
-    valid="用户名|*(maben$), maben=100, 2(小)-3(大)" 
+    用户名: <input type="text" id="user" name="user" value="12312"
+    valid="用户名|*, pattern=/^[z].*$/, e(请填写,邮箱), 2(min)-3(max)" 
     valid-ui="{position: 'right'}" 
     class="text" value="" />
   </p>
   <p>
     密码: 
     <input type="password" name="pwd1" class="pwd" 
-      valid="密码|*, 1-2||*, 5-6" 
-      valid-required="请填写$" 
+      valid="密码|*, every=[email, number]"
+      valid-required="请写$" 
       valid-error="$必须填写1-2或5-6" 
       class="text" value="" />
   </p>
@@ -109,6 +109,15 @@ $('.add').on('click', function(){
 $('.change').on('click', function(){
   $('form').find('.lang').attr('valid', '改变后的语言|*')
 })
+
+/*
+
+{
+  element: 
+  title: 'title'
+}
+
+*/
 
 
 $('form').validate({

@@ -191,8 +191,12 @@ function rule() {
       return true;
     },
     pattern({ element, title, val, msg }, reg) {
-      if (!reg.test(val)) {
-        return getMsg(msg, 'pattern', { title });
+      try {
+        if (!eval(reg).test(val)) {
+          return getMsg(msg, 'pattern', { title });
+        }
+      } catch (e) {
+        console.error(title + 'pattern的正则不正确');
       }
       return true;
     },
@@ -211,7 +215,8 @@ function rule() {
       } else {
         return getMsg(msg, 'repassword', { title });
       }
-    }
+    },
+    every() {}
   };
 }
 
@@ -263,16 +268,19 @@ function formatItem(type, title) {
   return t2 ? [reTypeRange(t1, 'min'), reTypeRange(t2, 'max')] : [reTypeRange(type, 'min') || reType(type)];
 }
 
+//{title, type, forElement, msg}
+/*
+  type: {type: 'required', msg}
+*/
 function jsonFormat(data) {
   let { type, title } = data;
   if (!type) return [];
-  if (typeof type === 'string') type = type.split(/\s*,\s*/);
+  if (typeof type === 'string') type = type.match(/([^,\s]+=\/[^/]+\/)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
   type = type.reduce((a, b) => {
     return [].push.apply(a, formatItem(b, title)), a;
   }, []);
   return _extends({}, data, { element: data.element, type });
 }
-
 /*
   valid="用户名|*, maben, s10-15"
   valid-required-msg=""
@@ -281,18 +289,19 @@ function jsonFormat(data) {
 function attrToJson(element, form, rules) {
   element = $(element);
   let prefix = 'valid';
-  let attr = element.attr(prefix).split('|');
+  let attr = element.attr(prefix).split(/\|/);
   let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
-  let msg = type => element.attr(`${prefix}-${type}`);
+  let msg = type => {
+    type = element.attr(`${prefix}-${type}`);
+    return type ? type.replace('$', title) : false;
+  };
   let obj = {
     title,
     type,
     forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
     msg: msg('required') || msg('error') || false
   };
-  if (obj.forElement) {
-    obj.forElement.data('valid-for', element);
-  }
+  if (obj.forElement) obj.forElement.data('valid-for', element);
   if (/input|select|textarea/i.test(element[0].tagName)) {
     return jsonFormat(_extends({}, obj, { element }));
   } else {
@@ -398,6 +407,7 @@ class Validate {
         return new Promise((() => {
           var _ref = _asyncToGenerator(function* (resolve, reject) {
             let error;
+            console.log(item);
             for (let validType of item.type) {
               yield _this.validItem(validType, item).catch(function (e) {
                 return reject(error = e);

@@ -35,16 +35,19 @@ function formatItem(type, title){
     [reTypeRange(type, 'min') || reType(type)];
 }
 
+//{title, type, forElement, msg}
+/*
+  type: {type: 'required', msg}
+*/
 export function jsonFormat(data){
   let {type, title} = data;
   if(!type) return [];
-  if(typeof type === 'string') type = type.split(/\s*,\s*/);
+  if(typeof type === 'string') type = type.match(/([^,\s]+=\/[^/]+\/)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
   type = type.reduce((a, b)=> {
     return [].push.apply(a, formatItem(b, title)), a;
   }, []);
   return {...data, element: data.element, type};
 }
-
 /*
   valid="用户名|*, maben, s10-15"
   valid-required-msg=""
@@ -53,18 +56,19 @@ export function jsonFormat(data){
 export function attrToJson(element, form, rules){
   element = $(element);
   let prefix = 'valid';
-  let attr = element.attr(prefix).split('|');
+  let attr = element.attr(prefix).split(/\|/);
   let [title, type] = attr.length>1 ? attr : ['', attr[0]];
-  let msg = type => element.attr(`${prefix}-${type}`);
+  let msg = type => {
+    type = element.attr(`${prefix}-${type}`);
+    return type ? type.replace('$', title) : false;
+  }
   let obj = {
     title,
     type,
     forElement: (_type=> getJQelement(_type.indexOf('for')>-1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
     msg: msg('required') || msg('error') || false
   };
-  if(obj.forElement){
-    obj.forElement.data('valid-for', element);
-  }
+  if(obj.forElement) obj.forElement.data('valid-for', element);
   if(/input|select|textarea/i.test(element[0].tagName)){
     return jsonFormat({...obj, element})
   }else{
