@@ -12,7 +12,6 @@ class Loading{
   }
   resize(){
     let pos = this.element.position();
-    console.log(this.element);
     this.dom.css({
       position: 'absolute',
       top: pos.top + this.element.outerHeight()/2 - this.dom.outerHeight()/2,

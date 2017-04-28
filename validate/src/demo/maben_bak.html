@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>es6浏览器</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+  <script src="/Users/maben/Documents/jquery.js"></script>
+</head>
+<body>
+<style>
+  body{
+    font-size: 14px;
+    padding: 30px 0px 0px 100px; 
+  }
+  p{
+    padding: 5px 0;
+  }
+  input{margin-right: 5px; padding:7px; border-width:1px;}
+  label{ margin-right: 10px; }
+  .valid-error{
+    border-color: #ff6555;
+    color: #cc0000!important;
+  }
+
+  .loader{width: 22px; height: 22px;}
+  .loader .ball-clip-rotate > div {
+    background-color: #ccc;
+    border-radius: 100%;
+    margin: 2px;
+    border: 2px solid #ccc;
+    border-bottom-color: transparent;
+    height: 14px;
+    width: 14px;
+    background: transparent !important;
+    display: inline-block;
+    animation: rotate 0.6s 0s linear infinite; 
+  }
+  @keyframes rotate {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);} 
+  }
+</style>
+<form action="">
+  <p>
+    学历:
+    <select name="edu" valid="学历|*">
+      <option>请选择</option>
+      <option value="1">初中</option>
+      <option value="2">高中</option>
+      <option value="3">大学</option>
+    </select>    
+  </p>
+
+  <p> 
+    用户名: <input type="text" id="user" name="user" value="fa"
+    valid="用户名|*(1221312), pattern=/^[z].*$/, e(请填写,邮箱), 2(min)-3(max)" 
+    valid-ui="{position: 'right'}" valid-error="$必须填写或" 
+    class="text" value="" />
+  </p>
+  <p>
+    密码: 
+    <input type="password" name="pwd1" class="pwd" 
+      valid="密码|*(请), some='email, n(11111)'"
+      valid-error="$必须填写或" 
+      class="text" value="" />
+  </p>
+  <p>
+    重复密码: <input type="password" name="repwd" valid="密码|*, repassword, for=.pwd" class="text" value="" />
+  </p>
+  <p> 
+    年薪: <input type="text" name="low" valid="年薪|n, n1-99" class="text" value="" /> -
+    <input type="text" name="high" valid="年薪|*, n, higher, for=low" class="text" value="" />
+  </p>
+
+  <p valid="性别|*">
+    性别: 
+    <label><input type="radio" name="r1">男</label>
+    <label><input type="radio" name="r1">女</label>
+    <label><input type="radio" name="r1">不限</label>
+  </p>
+
+  <p>密码: <input type="text" name="user" valid="密码|*, 2-3" class="text" value="" /></p>
+  <p class="lang" valid='语言|*, 2-3' valid-ui="{left:0}">
+    语言:
+    <label><input type="checkbox" name="langue" value="1"> 英语</label>
+    <label><input type="checkbox" name="langue" value="1"> 法语</label>
+    <label><input type="checkbox" name="langue" value="1"> 德语</label>
+    <label><input type="checkbox" name="langue" value="1"> 日语</label>
+    <label><input type="checkbox" name="langue" value="1"> 韩语</label>
+  </p>
+
+  <p>
+    <input type="submit" value="提交" /> &nbsp;&nbsp;&nbsp; 
+    <input type="button" class="add" value="添加一个必填项"> &nbsp;&nbsp;&nbsp; 
+    <input type="button" class="change" value="改变规则">
+  </p>
+</form>
+</body>
+<script src="../../bulid/index.js"></script>
+<script>
+let i = 0;
+$('.add').on('click', function(){
+  let html = `<input type="text" name="${++i}" valid="*, s2-3"/>`;
+  $(':submit').closest('p').before(html);
+});
+$('.change').on('click', function(){
+  $('form').find('.lang').attr('valid', '改变后的语言|*')
+})
+
+$('form').validate({
+  //ui: {
+  //  position: 'right',
+  //  top: -3,
+  //  left: 4,
+  //  arrow: 'center'
+  //},
+  ajaxtest({element}){
+    return new Promise((resolve, reject)=> {
+      setTimeout(()=>{
+        reject('error');
+      }, 1000);      
+    })
+  },
+  maben(options, num){
+    console.log(num);
+    let result = this.rules.email(options)
+    console.log(result);
+    return result;
+  },
+  fail(arr){
+    //console.log(arr);
+  },
+  success(){
+    console.log('ok');  
+  }
+})
+
+</script>
+</html>

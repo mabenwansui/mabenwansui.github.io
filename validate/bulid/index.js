@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,296 +71,60 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = loading;
-class Loading {
-  constructor(element) {
-    this.element = element;
-    this.show();
-  }
-  bulid() {
-    this.dom = $(`
-      <div class="loader">
-        <div class="ball-clip-rotate"><div></div></div>
-      </div>
-    `).appendTo('body');
-  }
-  resize() {
-    let pos = this.element.position();
-    console.log(this.element);
-    this.dom.css({
-      position: 'absolute',
-      top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
-      left: pos.left + this.element.outerWidth() - this.dom.outerWidth() - 3
-    });
-  }
-  show() {
-    this.bulid();
-    this.resize();
-    return this;
-  }
-  hide() {
-    this.dom && this.dom.fadeOut('slow', () => this.dom.remove());
-    return this;
-  }
-}
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_validate__ = __webpack_require__(1);
 
-function loading(element) {
-  return new Loading(...arguments);
-}
+
+const pluginName = 'validate';
+$.fn[pluginName] = function (...arg) {
+  if (typeof arg[0] === 'string') {
+    let method = arg[0];
+    let $this = $(this).is('form') ? $(this) : $(this).closest('form');
+    let plugin = $this.data('plugin_' + pluginName);
+    switch (method) {
+      case "getClass":
+        return plugin;
+      default:
+        return $this.each(function () {
+          if (plugin && plugin[method]) plugin[method].apply(plugin, arg.splice(1));
+        });
+    };
+  } else {
+    return this.each(function () {
+      let plugin = $(this).data('plugin_' + pluginName);
+      if (plugin) {
+        return;
+      } else {
+        let options = arg[0];
+        if (typeof options === 'function') options = { success: options };
+        $(this).data('plugin_' + pluginName, new __WEBPACK_IMPORTED_MODULE_1__lib_validate__["a" /* default */]($(this), options));
+      }
+    });
+  };
+};
+
+/*
+  api
+  $('form').validate({
+    maben(){
+      
+    }
+  }).done(data => {
+    
+  })
+*/
 
 /***/ }),
 /* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(19);
-/* harmony export (immutable) */ __webpack_exports__["a"] = rule;
-
-function rule() {
-  let that = this;
-  let empty = val => !/^[\w\W]+$/.test(val);
-  let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
-  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
-  return {
-    required({ element, forElement, title, type, val, msg }) {
-      switch (element.attr('type') || element[0].tagName.toLowerCase()) {
-        case 'select':
-          if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
-          break;
-        case 'checkbox':
-        case 'radio':
-          if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
-          break;
-        default:
-          if (empty(val)) return getMsg(msg, 'required', { title });
-      }
-      return true;
-    },
-    number({ element, title, val, msg }) {
-      if (!empty(val) && !/^\d+(\.\d+)?$/.test(val)) {
-        return getMsg(msg, 'number', { title });
-      }
-      return true;
-    },
-    integer({ element, title, val, msg }) {
-      if (!empty(val) && !/^\d+$/.test(val)) {
-        return getMsg(msg, 'integer', { title });
-      }
-      return true;
-    },
-    nmax({ element, title, val, msg }, max) {
-      if (parseInt(val, 10) > parseInt(max, 10)) {
-        return getMsg(msg, 'number_max', { title, max });
-      }
-      return true;
-    },
-    nmin({ element, title, val, msg }, min) {
-      if (parseInt(val, 10) < parseInt(min, 10)) {
-        return getMsg(msg, 'number_min', { title, min });
-      }
-      return true;
-    },
-    max({ element, title, val, msg }, max) {
-      if (element.attr('type') === 'checkbox') {
-        if (element.filter(':checked').length > max) {
-          return getMsg(msg, 'checked_max', { title, max });
-        }
-      } else {
-        if (val.length > max) {
-          return getMsg(msg, 'length_max', { title, max });
-        }
-      }
-      return true;
-    },
-    min({ element, title, val, msg }, min) {
-      if (element.attr('type') === 'checkbox') {
-        if (element.filter(':checked').length < min) {
-          return getMsg(msg, 'checked_min', { title, min });
-        }
-      } else {
-        if (val.length < min) {
-          return getMsg(msg, 'length_min', { title, min });
-        }
-      }
-      return true;
-    },
-    email({ element, title, val, msg }) {
-      if (val !== "" && !/^[a-z_0-9-\.]+@([a-z_0-9-]+\.)+[a-z0-9]{2,8}$/i.test(val)) {
-        return getMsg(msg, 'email', { title });
-      }
-      return true;
-    },
-    pattern({ element, title, val, msg }, reg) {
-      try {
-        if (!eval(reg).test(val)) {
-          return getMsg(msg, 'pattern', { title });
-        }
-      } catch (e) {
-        console.error(title + 'pattern的正则不正确');
-      }
-      return true;
-    },
-    ismax({ element, forElement, title, val, msg }) {
-      if (element.val() < forElement.val()) {
-        return getMsg(msg, 'ismax', { title });
-      } else {
-        return true;
-      }
-    },
-    repassword({ element, forElement, title, val, msg }) {
-      let [v1, v2] = [element.val(), forElement.val()];
-      if (v1 === '') return;
-      if (v1 === v2) {
-        return true;
-      } else {
-        return getMsg(msg, 'repassword', { title });
-      }
-    },
-    every() {}
-  };
-}
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(19);
-/* unused harmony export getJQelement */
-/* unused harmony export jsonFormat */
-/* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
-/* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-
-function getJQelement(element, form = 'form') {
-  if (!element) return;
-  if (typeof element === 'string') {
-    element = /^[.#]/.test(element) ? $(element, form) : $(`[name='${element}']`, form);
-  } else if (element instanceof jQuery) {
-    element = element;
-  } else {
-    element = $(element, form);
-  }
-  return element.length > 0 ? element : false;
-}
-
-function formatItem(type, title) {
-  let [t1, t2] = type.split('-');
-  let reTypeRange = (type, range) => {
-    let msg = '',
-        flag = false;
-    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
-      flag = true;
-      if ($4) msg = $4.replace(/\$/g, title);
-      return $1 + range + '=' + $2;
-    });
-    return flag ? { type, msg } : false;
-  };
-  let reType = type => {
-    let msg = '';
-    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
-      if ($3) msg = $3.replace(/\$/g, title);
-      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
-    });
-    return { type, msg };
-  };
-  return t2 ? [reTypeRange(t1, 'min'), reTypeRange(t2, 'max')] : [reTypeRange(type, 'min') || reType(type)];
-}
-
-//{title, type, forElement, msg}
-/*
-  type: {type: 'required', msg}
-*/
-function jsonFormat(data) {
-  let { type, title } = data;
-  if (!type) return [];
-  if (typeof type === 'string') type = type.match(/([^,\s]+=\/[^/]+\/)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
-  type = type.reduce((a, b) => {
-    return [].push.apply(a, formatItem(b, title)), a;
-  }, []);
-  return _extends({}, data, { element: data.element, type });
-}
-/*
-  valid="用户名|*, maben, s10-15"
-  valid-required-msg=""
-  valid-error-msg=""
-*/
-function attrToJson(element, form, rules) {
-  element = $(element);
-  let prefix = 'valid';
-  let attr = element.attr(prefix).split(/\|/);
-  let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
-  let msg = type => {
-    type = element.attr(`${prefix}-${type}`);
-    return type ? type.replace('$', title) : false;
-  };
-  let obj = {
-    title,
-    type,
-    forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
-    msg: msg('required') || msg('error') || false
-  };
-  if (obj.forElement) obj.forElement.data('valid-for', element);
-  if (/input|select|textarea/i.test(element[0].tagName)) {
-    return jsonFormat(_extends({}, obj, { element }));
-  } else {
-    return jsonFormat(_extends({}, obj, {
-      element: (() => {
-        let [ele1, ele2] = [element.find(':checkbox'), element.find(':radio')];
-        return ele1.length > ele2.length ? ele1 : ele2;
-      })()
-    }));
-  }
-}
-
-/*
-  将options里的自定义规则放到rules里面
-*/
-function rulesMerge(options, defaultOptions, callback) {
-  Object.keys(options).forEach(v => {
-    if (!(v in defaultOptions) && typeof options[v] === 'function') callback(v, options[v]);
-  });
-}
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(8);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(12)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.less", function() {
-			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.less");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_rules__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_loading__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_unit__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__rules__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__loading__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__unit__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__bind_alert_tips__ = __webpack_require__(15);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -370,9 +134,7 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 
 
-
 'use strict';
-const [pluginName, className] = ['validate', 'validate'];
 var defaults = {
   rules: {},
   debug: false, //回调不执行
@@ -385,9 +147,9 @@ class Validate {
     this.element = element;
     this.form = element.is('form') ? element : element.closest('form');
     this.options = _extends({}, defaults, options);
-    __WEBPACK_IMPORTED_MODULE_3__lib_unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
-    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_1__lib_rules__["a" /* default */].apply(this), this.options.rules);
-    this.alertTips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__["a" /* default */])(this.form, this.options);
+    __WEBPACK_IMPORTED_MODULE_2__unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
+    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_0__rules__["a" /* default */].apply(this), this.options.rules);
+    this.tips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__bind_alert_tips__["a" /* default */])(this.form, this.options);
   }
   scan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
     var _this = this;
@@ -400,14 +162,13 @@ class Validate {
       }
       if (items.is('form')) items = items.find('[valid]');
       let failArr = [];
-      let arr = items.filter(':not([ignore])').toArray().map(function (v) {
-        return __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, _this.form);
+      let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
+        return __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, _this.form);
       });
       for (let v of arr) yield function (item) {
         return new Promise((() => {
           var _ref = _asyncToGenerator(function* (resolve, reject) {
             let error;
-            console.log(item);
             for (let validType of item.type) {
               yield _this.validItem(validType, item).catch(function (e) {
                 return reject(error = e);
@@ -433,9 +194,10 @@ class Validate {
       let { type, msg } = validType;
       let [_type, val] = type.split('=');
       if (!this.rules[_type]) resolve();
-      let result = this.rules[_type].call(this, msg ? _extends({}, item, { val: element.val(), msg }) : _extends({}, item, { val: element.val() }), val);
+      let obj = _extends({}, item, { type, val: element.val() });
+      let result = _type !== 'required' && _type !== 'isrequired' && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
       if (result instanceof Promise) {
-        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__lib_loading__["a" /* default */])(element);
+        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__loading__["a" /* default */])(element);
         result.then(resolve).catch(msg => {
           reject({ msg, valid: false, element });
           _loading.hide();
@@ -446,46 +208,36 @@ class Validate {
     });
   }
 }
-
-$.fn[pluginName] = function (...arg) {
-  if (typeof arg[0] === 'string') {
-    let method = arg[0];
-    let $this = $(this).is('form') ? $(this) : $(this).closest('form');
-    let plugin = $this.data('plugin_' + pluginName);
-    switch (method) {
-      case "getClass":
-        return plugin;
-      default:
-        return $this.each(function () {
-          if (plugin && plugin[method]) plugin[method].apply(plugin, arg.splice(1));
-        });
-    };
-  } else {
-    return this.each(function () {
-      let plugin = $(this).data('plugin_' + pluginName);
-      if (plugin) {
-        return;
-      } else {
-        $(this).data('plugin_' + pluginName, new Validate($(this), arg[0]));
-      }
-    });
-  };
-};
-
-/*
-  api
-  $('form').validate({
-    maben(){
-      
-    }
-  }).done(data => {
-    
-  })
-*/
+/* harmony default export */ __webpack_exports__["a"] = (Validate);
 
 /***/ }),
-/* 5 */,
-/* 6 */
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(5);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(9)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -606,7 +358,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 7 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -620,9 +372,9 @@ function fromByteArray (uint8) {
 
 
 
-var base64 = __webpack_require__(6)
-var ieee754 = __webpack_require__(10)
-var isArray = __webpack_require__(11)
+var base64 = __webpack_require__(3)
+var ieee754 = __webpack_require__(7)
+var isArray = __webpack_require__(8)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2400,24 +2152,24 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ }),
-/* 8 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(9)(undefined);
+exports = module.exports = __webpack_require__(6)(undefined);
 // imports
 
 
 // module
-exports.push([module.i, ".valid-error {\n  border-color: #ff6555;\n  color: #cc0000!important;\n}\n.loader {\n  width: 22px;\n  height: 22px;\n}\n.loader .ball-clip-rotate > div {\n  background-color: #ccc;\n  border-radius: 100%;\n  margin: 2px;\n  border: 2px solid #ccc;\n  border-bottom-color: transparent;\n  height: 14px;\n  width: 14px;\n  background: transparent !important;\n  display: inline-block;\n  animation: rotate 0.6s 0s linear infinite;\n}\n@keyframes rotate {\n  0% {\n    transform: rotate(0deg);\n  }\n  100% {\n    transform: rotate(360deg);\n  }\n}\n", ""]);
+exports.push([module.i, ".valid-error {\n  border-color: #ff6555!important;\n  color: #cc0000!important;\n}\n.loader {\n  width: 22px;\n  height: 22px;\n}\n.loader .ball-clip-rotate > div {\n  background-color: #ccc;\n  border-radius: 100%;\n  margin: 2px;\n  border: 2px solid #ccc;\n  border-bottom-color: transparent;\n  height: 14px;\n  width: 14px;\n  background: transparent !important;\n  display: inline-block;\n  animation: rotate 0.6s 0s linear infinite;\n}\n@keyframes rotate {\n  0% {\n    transform: rotate(0deg);\n  }\n  100% {\n    transform: rotate(360deg);\n  }\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 9 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {/*
@@ -2496,10 +2248,10 @@ function toComment(sourceMap) {
   return '/*# ' + data + ' */';
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer))
 
 /***/ }),
-/* 10 */
+/* 7 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2589,7 +2341,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 11 */
+/* 8 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2600,7 +2352,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 12 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -2632,7 +2384,7 @@ var stylesInDom = {},
 	singletonElement = null,
 	singletonCounter = 0,
 	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(13);
+	fixUrls = __webpack_require__(10);
 
 module.exports = function(list, options) {
 	if(typeof DEBUG !== "undefined" && DEBUG) {
@@ -2891,7 +2643,7 @@ function updateLink(linkElement, options, obj) {
 
 
 /***/ }),
-/* 13 */
+/* 10 */
 /***/ (function(module, exports) {
 
 
@@ -2986,7 +2738,7 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 14 */
+/* 11 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3013,125 +2765,157 @@ module.exports = g;
 
 
 /***/ }),
-/* 15 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(16);
-/* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
+/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
+const alias = {
+  '*': 'required',
+  'e': 'email',
+  'n': 'number',
+  'm': 'mobile'
+};
+/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
+
+
+function lang(lang = 'cn') {
+  let cn = {
+    required: '请填写$title !',
+    select_required: '请选择$title !',
+    length_max: '$title不能大于$max个字 !',
+    length_min: '$title不能小于$min个字 !',
+    number_max: '$title不能大于$max !',
+    number_min: '$title不能小于$min !',
+    checked_min: '$title至少选择$min项 !',
+    checked_max: '$title最多选择$max项 !',
+    email: '请填写正确的$title !',
+    mobile: '请填写正确的$title !',
+    phone: '请填写正确的$title !',
+    url: '请填写正确的$title !',
+    idcard: '请填写正确的$title !',
+    repeat: '请填写正确的$title',
+    some: '请填写正确的$title',
+    not: '请填写正确的$title',
+    number: '$title请填写数字 !',
+    integer: '$title请填写整数',
+    float: '$title请填写数字 !',
+    mobile: '$title输入不正确 !',
+    pattern: '$title不符合规范 !',
+    higher: '结束$title不能小于开始$title',
+    repassword: '两次填写的密码不一致'
+  };
+  let en = {};
+  return eval(lang);
+};
+
+/***/ }),
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(12);
+/* unused harmony export getJQelement */
+/* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
+/* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
+/* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
-let namespace = 'valid';
-let dataMsg = 'valid-error-msg-forplugin';
-let isRadioCheck = element => {
-  let _type = element.attr('type');
-  return _type === 'radio' || _type === 'checkbox' ? true : false;
-};
-let getElementTips = element => isRadioCheck(element) ? element.closest('[valid]') : element;
-let defaultStyle = {
-  act: 'hide',
-  cssStyle: 'error',
-  top: 2,
-  left: 15,
-  css: {
-    padding: '5px 10px'
+function getJQelement(element, form = 'form') {
+  if (!element) return;
+  if (typeof element === 'string') {
+    element = /^[.#]/.test(element) ? $(element, form) : $(`[name='${element}']`, form);
+  } else if (element instanceof jQuery) {
+    element = element;
+  } else {
+    element = $(element, form);
   }
-};
-class BindAlertTips {
-  constructor(form, options) {
-    this.form = form;
-    this.options = $.extend(true, { ui: defaultStyle }, options);
-    this.lastElementMsg;
-    this.bindEvent();
-    this.submit();
-  }
-  show(element, msg) {
-    element = getElementTips(element);
-    if (this.lastElementMsg) {
-      if (this.lastElementMsg[0] === element[0]) return;
-      this.hide(this.lastElementMsg);
-    }
-    if (!msg) msg = element.attr(dataMsg) || '';
-    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
-    let ui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
-    element.AlertTs(_extends({}, ui, { content: msg })).AlertTs('show');
-    this.lastElementMsg = element;
-  }
-  hide(element = this.lastElementMsg) {
-    element = element ? getElementTips(element) : false;
-    if (element && element.AlertTs) {
-      element.AlertTs('hide');
-      this.lastElementMsg = null;
-    }
-  }
-  highlight(element, type) {
-    type === 'show' ? getElementTips(element).addClass('valid-error') : getElementTips(element).removeClass('valid-error');
-  }
-  itemSuccessCallback(element) {
-    this.highlight(element, 'hide');
-    this.hide(element);
-    element.removeAttr(dataMsg);
-  }
-  itemFailCallback(arr) {
-    let [v] = arr;
-    v.element.attr(dataMsg, v.msg);
-    this.highlight(v.element, 'show');
-    this.show(v.element, v.msg);
-  }
-  bindEvent() {
-    let that = this;
-    function focus() {
-      if (!$(this).hasClass('valid-error')) return;
-      that.show($(this));
-    }
-    function change() {
-      let $this = $(this);
-      let validFor = element => {
-        element = element.data('valid-for');
-        if (element) setTimeout(() => element.trigger('change.' + namespace), 0);
-      };
-      if (isRadioCheck($this)) {
-        $this = $this.closest('[valid]');
-        validFor($this);
-      } else {
-        validFor($this);
-        if ($this.val() === '' && !$this.attr(dataMsg)) return;
-      }
-      $this.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
-    }
-    function blur() {
-      that.hide();
-    }
+  return element.length > 0 ? element : false;
+}
 
-    let validDom = 'input:not(:submit,:button), select, textarea';
-    this.form.on('focus.' + namespace, validDom, focus).on('change.' + namespace, validDom, change).on('blur.' + namespace, validDom, blur);
+function formatItem(type, title) {
+  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) {
+    return [{ type, msg: '' }];
   }
-  submit() {
-    let that = this;
-    this.form.on('submit', function () {
-      $(this).validate('scan', that.options.success, function (arr) {
-        for (let v of arr) {
-          that.highlight(v.element, 'show');
-          v.element.attr(dataMsg, v.msg);
-        }
-        that.show(getElementTips(arr[0].element), arr[0].msg);
-        that.options.fail(arr);
-      });
-      return false;
+  let [t1, t2] = type.split('-');
+  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';
+  let reTypeRange = (type, range, prefix) => {
+    let msg = '',
+        flag = false;
+    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
+      flag = true;
+      if ($4) msg = $4.replace(/\$/g, title);
+      return prefix + range + '=' + $2;
+    });
+    return flag ? { type, msg } : false;
+  };
+  let reType = type => {
+    let msg = '';
+    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
+      if ($3) msg = $3.replace(/\$/g, title);
+      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
+    });
+    return { type, msg };
+  };
+  return t2 ? [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] : [reTypeRange(type, 'min') || reType(type)];
+}
+
+function jsonFormat(type, title) {
+  if (!type) return [];
+  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
+  type = type.reduce((a, b) => {
+    return [].push.apply(a, formatItem(b, title)), a;
+  }, []);
+  return type;
+}
+/*
+  valid="用户名|*, maben, s10-15"
+  valid-required-msg=""
+  valid-error-msg=""
+*/
+function attrToJson(element, form, rules) {
+  element = $(element);
+  let prefix = 'valid';
+  let attr = element.attr(prefix).split(/\s*\|\s*/);
+  let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
+  let msg = type => {
+    type = element.attr(`${prefix}-${type}`);
+    return type ? type.replace('$', title) : false;
+  };
+  let obj = {
+    title,
+    forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
+    msg: msg('error') || false
+  };
+  if (obj.forElement) obj.forElement.data('valid-for', element);
+  if (/input|select|textarea/i.test(element[0].tagName)) {
+    return _extends({}, obj, { type: jsonFormat(type, title), element });
+  } else {
+    return _extends({}, obj, {
+      type: jsonFormat(type, title),
+      element: (() => {
+        let [ele1, ele2] = [element.find(':checkbox'), element.find(':radio')];
+        return ele1.length > ele2.length ? ele1 : ele2;
+      })()
     });
   }
 }
-function bindAlertTips() {
-  return new BindAlertTips(...arguments);
+/*
+  将options里的自定义规则放到rules里面
+*/
+function rulesMerge(options, defaultOptions, callback) {
+  Object.keys(options).forEach(v => {
+    if (!(v in defaultOptions) && typeof options[v] === 'function') callback(v, options[v]);
+  });
 }
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_style_css__);
 
 
@@ -3709,10 +3493,355 @@ function bindAlertTips() {
 }(jQuery, window));
 
 /***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(14);
+/* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+let namespace = 'valid';
+let dataMsg = 'valid-error-msg-forplugin';
+let isRadioCheck = element => {
+  return element.is(':radio') || element.is(':checkbox') ? true : false;
+};
+let getElement = element => isRadioCheck(element) ? element.closest('[valid]') : element;
+let defaultStyle = {
+  act: 'hide',
+  cssStyle: 'error',
+  top: 2,
+  left: 15,
+  css: {
+    padding: '5px 10px'
+  }
+};
+class BindAlertTips {
+  constructor(form, options) {
+    this.form = form;
+    this.options = $.extend(true, { ui: defaultStyle }, options);
+    this.timer;
+    this.lastElement;
+    this.bindEvent();
+    this.submit();
+  }
+  show(element, msg) {
+    element = getElement(element);
+    if (!msg) msg = element.attr(dataMsg) || '';
+    if (this.lastElement) {
+      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
+      this.hide(this.lastElement.element);
+    }
+    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
+    let ui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
+    element.AlertTs(_extends({}, ui, { content: msg })).AlertTs('show');
+    this.lastElement = { element, msg };
+  }
+  hide(element = this.lastElement && this.lastElement.element) {
+    element = element ? getElement(element) : false;
+    if (element && element.AlertTs) {
+      element.AlertTs('hide');
+      this.lastElement = null;
+    }
+  }
+  highlight(element, type) {
+    type === 'show' ? getElement(element).addClass('valid-error') : getElement(element).removeClass('valid-error');
+  }
+  itemSuccessCallback(element) {
+    this.highlight(element, 'hide');
+    this.hide(element);
+    element.removeAttr(dataMsg);
+  }
+  itemFailCallback(arr) {
+    let [v] = arr;
+    getElement(v.element).attr(dataMsg, v.msg);
+    v.element.trigger('focus.' + namespace, [true]);
+    this.highlight(v.element, 'show');
+    this.show(v.element, v.msg);
+  }
+  bindEvent() {
+    let that = this;
+    function focus(flag) {
+      if (!$(this).hasClass('valid-error') || flag === true) return;
+      that.show($(this));
+    }
+    function change() {
+      let $this = $(this);
+      let validFor = element => {
+        element = element.data('valid-for');
+        if (element) setTimeout(() => element.trigger('change.' + namespace), 0);
+      };
+      if (isRadioCheck($this)) {
+        $this = $this.closest('[valid]');
+        validFor($this);
+      } else {
+        validFor($this);
+        if ($this.val() === '' && !$this.attr(dataMsg)) return;
+      }
+      that.form.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
+    }
+    function blur() {
+      let $this = $(this);
+      let val = $this.val();
+      let dataVal = $this.data('valid-value');
+      if ($this.is(':radio,:checkbox')) {
+        that.hide();
+        return;
+      }
+      if (val !== '' && (!dataVal || val !== dataVal)) {
+        $this.data('valid-value', val);
+        change.call(this);
+      }
+      that.hide();
+    }
+    this.form.on('focus.' + namespace, 'input:not(:submit, :button), select', focus).on('change.' + namespace, 'input:radio, input:checkbox, select', change).on('blur.' + namespace, 'input:not(:submit,:button), textarea', blur);
+  }
+  submit() {
+    let that = this;
+    this.form.on('submit', function () {
+      $(this).validate('scan', that.options.success, function (arr) {
+        for (let v of arr) {
+          that.highlight(v.element, 'show');
+          v.element.attr(dataMsg, v.msg);
+          v.element.data('valid-value', v.element.val());
+        }
+        that.show(getElement(arr[0].element), arr[0].msg);
+        that.options.fail(arr);
+      });
+      return false;
+    });
+  }
+}
+function bindAlertTips() {
+  return new BindAlertTips(...arguments);
+}
+
+/***/ }),
+/* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = loading;
+class Loading {
+  constructor(element) {
+    this.element = element;
+    this.show();
+  }
+  bulid() {
+    this.dom = $(`
+      <div class="loader">
+        <div class="ball-clip-rotate"><div></div></div>
+      </div>
+    `).appendTo('body');
+  }
+  resize() {
+    let pos = this.element.position();
+    this.dom.css({
+      position: 'absolute',
+      top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
+      left: pos.left + this.element.outerWidth() - this.dom.outerWidth() - 3
+    });
+  }
+  show() {
+    this.bulid();
+    this.resize();
+    return this;
+  }
+  hide() {
+    this.dom && this.dom.fadeOut('slow', () => this.dom.remove());
+    return this;
+  }
+}
+
+function loading(element) {
+  return new Loading(...arguments);
+}
+
+/***/ }),
 /* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unit__ = __webpack_require__(13);
+/* harmony export (immutable) */ __webpack_exports__["a"] = rule;
+
+
+function rule() {
+  let that = this;
+  let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
+  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
+  return {
+    required({ element, title = '', val, msg }) {
+      switch (element.attr('type') || element[0].tagName.toLowerCase()) {
+        case 'select':
+          if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
+          break;
+        case 'checkbox':
+        case 'radio':
+          if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
+          break;
+        default:
+          if (!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', { title });
+      }
+      return true;
+    },
+    number({ title = '', val, msg }) {
+      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'number', { title }) : true;
+    },
+    integer({ title = '', val, msg }) {
+      return !/^\d+$/.test(val) ? getMsg(msg, 'integer', { title }) : true;
+    },
+    nmax({ title = '', val, msg }, max) {
+      if (parseInt(val, 10) > parseInt(max, 10)) {
+        return getMsg(msg, 'number_max', { title, max });
+      }
+      return true;
+    },
+    nmin({ title = '', val, msg }, min) {
+      if (parseInt(val, 10) < parseInt(min, 10)) {
+        return getMsg(msg, 'number_min', { title, min });
+      }
+      return true;
+    },
+    max({ element, title = '', val, msg }, max) {
+      if (element.is(':checkbox')) {
+        if (element.filter(':checked').length > max) {
+          return getMsg(msg, 'checked_max', { title, max });
+        }
+      } else {
+        if (val.length > max) {
+          return getMsg(msg, 'length_max', { title, max });
+        }
+      }
+      return true;
+    },
+    min({ element, title = '', val, msg }, min) {
+      if (element.is(':checkbox')) {
+        if (element.filter(':checked').length < min) {
+          return getMsg(msg, 'checked_min', { title, min });
+        }
+      } else {
+        if (val.length < min) {
+          return getMsg(msg, 'length_min', { title, min });
+        }
+      }
+      return true;
+    },
+    email({ title = '', val, msg }) {
+      if (!/^[a-z_0-9-\.]+@([a-z_0-9-]+\.)+[a-z0-9]{2,8}$/i.test(val)) {
+        return getMsg(msg, 'email', { title });
+      }
+      return true;
+    },
+    mobile({ title = '手机号', val, msg }) {
+      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    mobilehk({ title = '手机号', val, msg }) {
+      if (!/^[569]\d{7}$/.test(val)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    mobiletw({ title = '手机号', val, msg }) {
+      if (!/^9\d{8}$/.test(_value)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    phone({ title = '联系方式', val, msg }) {
+      if (!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
+        return getMsg(msg, 'phone', { title });
+      }
+      return true;
+    },
+    url({ title = '', val, msg }) {
+      if (!/^(http:|https:|ftp:)\/\/(?:[0-9a-zA-Z]+|[0-9a-zA-Z][\w-]+)+\.[\w-]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/.test(val)) {
+        return getMsg(msg, 'url', { title });
+      }
+      return true;
+    },
+    idcard({ title = '身份证', val, msg }) {
+      if (!/^\d{17}[xX\d]$|^\d{15}$/.test(val)) {
+        return getMsg(msg, 'idcard', { title });
+      }
+      return true;
+    },
+    repeat({ title = '', val, msg }, max = 5) {
+      if (new RegExp('(\\S)\\1{' + max + '}', 'g').test(val)) {
+        return getMsg(msg, 'repeat', { title });
+      }
+      return true;
+    },
+    pattern({ title = '', val, msg }, reg) {
+      try {
+        if (!eval(reg).test(val)) {
+          return getMsg(msg, 'pattern', { title });
+        }
+      } catch (e) {
+        console.error(title + 'pattern的正则不正确');
+      }
+      return true;
+    },
+    higher({ element, forElement, title = '', val, msg }) {
+      if (parseInt(element.val()) < parseInt(forElement.val())) {
+        return getMsg(msg, 'higher', { title });
+      } else {
+        return true;
+      }
+    },
+    isrequired(options) {
+      let { forElement } = options;
+      if (!forElement.is(':checked')) return true;
+      let result = this.rules.required(options);
+      if (result) {
+        forElement.off('change').on('change', () => {
+          //this.scan(options.element)
+        });
+      }
+      return result;
+    },
+    repassword({ element, forElement, title = '', val, msg }) {
+      let [v1, v2] = [element.val(), forElement.val()];
+      if (v1 === '') return;
+      if (v1 === v2) {
+        return true;
+      } else {
+        return getMsg(msg, 'repassword', { title });
+      }
+    },
+    some({ element, title, type, val, msg }) {
+      let failArr = [];
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      for (let v of type) {
+        let [_type, _val] = v.type.split('=');
+        let result = this.rules[_type].call(this, { element, val }, _val);
+        failArr.push(result);
+      }
+      return failArr.some(v => v === true) || getMsg(msg, 'some', { title });
+    },
+    not({ element, title, type, val, msg }) {
+      let failArr = [];
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      for (let v of type) {
+        let [_type, _val] = v.type.split('=');
+        let result = this.rules[_type].call(this, { element, val }, _val);
+        failArr.push(result);
+      }
+      return failArr.some(v => v === true) ? getMsg(msg, 'not', { title }) : true;
+    }
+  };
+}
+
+/***/ }),
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(9)(undefined);
+exports = module.exports = __webpack_require__(6)(undefined);
 // imports
 
 
@@ -3723,16 +3852,16 @@ exports.push([module.i, ".alert-ts {\n  position: absolute;\n  display: none;\n 
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(17);
+var content = __webpack_require__(18);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(12)(content, {});
+var update = __webpack_require__(9)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -3747,43 +3876,6 @@ if(false) {
 	// When the module is disposed, remove the <style> tags
 	module.hot.dispose(function() { update(); });
 }
-
-/***/ }),
-/* 19 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
-const alias = {
-  '*': 'required',
-  'e': 'email',
-  'n': 'number',
-  'f': 'float'
-};
-/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
-
-
-function lang(lang = 'cn') {
-  let cn = {
-    required: '请填写$title !',
-    select_required: '请选择$title !',
-    length_max: '$title不能大于$max个字 !',
-    length_min: '$title不能小于$min个字 !',
-    number_max: '$title不能大于$max !',
-    number_min: '$title不能小于$min !',
-    checked_min: '$title至少选择$min项 !',
-    checked_max: '$title最多选择$max项 !',
-    email: '$title格式输入不正确 !',
-    number: '$title请填写整数 !',
-    float: '$title请填写数字 !',
-    mobile: '$title输入不正确 !',
-    pattern: '$title不符合规范 !',
-    ismax: '结束$title不能小于开始$title',
-    repassword: '两次输入的密码不一致'
-  };
-  let en = {};
-  return eval(lang);
-};
 
 /***/ })
 /******/ ]);

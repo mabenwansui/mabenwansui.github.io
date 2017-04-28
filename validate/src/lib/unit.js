@@ -12,13 +12,17 @@ export function getJQelement(element, form='form'){
 }
 
 function formatItem(type, title){
+  if(/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)){
+    return [{type, msg:''}];
+  }
   let [t1, t2] = type.split('-');
-  let reTypeRange = (type, range) => {
+  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';
+  let reTypeRange = (type, range, prefix) => {
     let msg = '', flag = false;
     type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4)=> {
       flag = true;
       if($4) msg = $4.replace(/\$/g, title);
-      return $1+range+'='+$2;
+      return prefix+range+'='+$2;
     });
     return flag ? {type, msg} : false;
   }
@@ -31,22 +35,17 @@ function formatItem(type, title){
     return {type, msg};
   }
   return t2 ?
-    [reTypeRange(t1, 'min'), reTypeRange(t2, 'max')] :
+    [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] :
     [reTypeRange(type, 'min') || reType(type)];
 }
 
-//{title, type, forElement, msg}
-/*
-  type: {type: 'required', msg}
-*/
-export function jsonFormat(data){
-  let {type, title} = data;
+export function jsonFormat(type, title){
   if(!type) return [];
-  if(typeof type === 'string') type = type.match(/([^,\s]+=\/[^/]+\/)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
+  if(typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
   type = type.reduce((a, b)=> {
     return [].push.apply(a, formatItem(b, title)), a;
   }, []);
-  return {...data, element: data.element, type};
+  return type;
 }
 /*
   valid="用户名|*, maben, s10-15"
@@ -56,7 +55,7 @@ export function jsonFormat(data){
 export function attrToJson(element, form, rules){
   element = $(element);
   let prefix = 'valid';
-  let attr = element.attr(prefix).split(/\|/);
+  let attr = element.attr(prefix).split(/\s*\|\s*/);
   let [title, type] = attr.length>1 ? attr : ['', attr[0]];
   let msg = type => {
     type = element.attr(`${prefix}-${type}`);
@@ -64,24 +63,23 @@ export function attrToJson(element, form, rules){
   }
   let obj = {
     title,
-    type,
     forElement: (_type=> getJQelement(_type.indexOf('for')>-1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
-    msg: msg('required') || msg('error') || false
+    msg: msg('error') || false
   };
   if(obj.forElement) obj.forElement.data('valid-for', element);
   if(/input|select|textarea/i.test(element[0].tagName)){
-    return jsonFormat({...obj, element})
+    return {...obj, type: jsonFormat(type, title), element};
   }else{
-    return jsonFormat({
-      ...obj,
+    return {
+      ...obj, 
+      type: jsonFormat(type, title), 
       element: (()=> {
         let [ele1, ele2] = [element.find(':checkbox'), element.find(':radio')];
         return ele1.length > ele2.length ? ele1 : ele2;
       })()
-    })
+    };
   }
 }
-
 /*
   将options里的自定义规则放到rules里面
 */

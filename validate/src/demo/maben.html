@@ -1,221 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>es6浏览器</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
-  <script src="/Users/maben/Documents/jquery.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>发布职位_职位管理_猎聘猎头网-LiePin.com</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
+  <link rel="icon" href="https://concat.lietou-static.com/dev/core/pc/v3/static/images/favicon.ico" type="image/x-icon" />
+  <script src="https://concat.lietou-static.com/dev/core/pc/v3/build/js/loader.js"></script>
+  <script>
+  FeLoader.get(
+    'https://concat.lietou-static.com/dev/h/pc/v3/build/js/common.js',
+    'https://concat.lietou-static.com/dev/h/pc/v3/build/css/common.css',
+    'https://concat.lietou-static.com/dev/h/pc/v3/build/css/message/index.css'
+  );
+  </script>
 </head>
-<body>
-<style>
-  body{
-    font-size: 14px;
-    padding: 30px 0px 0px 100px; 
-  }
-  p{
-    padding: 5px 0;
-  }
-  input{margin-right: 5px; padding:7px; border-width:1px;}
-  label{ margin-right: 10px; }
-  .valid-error{
-    border-color: #ff6555;
-    color: #cc0000!important;
-  }
-
-  .loader{width: 22px; height: 22px;}
-  .loader .ball-clip-rotate > div {
-    background-color: #ccc;
-    border-radius: 100%;
-    margin: 2px;
-    border: 2px solid #ccc;
-    border-bottom-color: transparent;
-    height: 14px;
-    width: 14px;
-    background: transparent !important;
-    display: inline-block;
-    animation: rotate 0.6s 0s linear infinite; 
-  }
-  @keyframes rotate {
-    0% {transform: rotate(0deg);}
-    100% {transform: rotate(360deg);} 
-  }
-</style>
-<form action="">
-  <p>
-    学历:
-    <select name="edu" valid="学历|*">
-      <option>请选择</option>
-      <option value="1">初中</option>
-      <option value="2">高中</option>
-      <option value="3">大学</option>
-    </select>    
-  </p>
-
-  <p> 
-    用户名: <input type="text" id="user" name="user" value="12312"
-    valid="用户名|*, pattern=/^[z].*$/, e(请填写,邮箱), 2(min)-3(max)" 
-    valid-ui="{position: 'right'}" 
-    class="text" value="" />
-  </p>
-  <p>
-    密码: 
-    <input type="password" name="pwd1" class="pwd" 
-      valid="密码|*, every=[email, number]"
-      valid-required="请写$" 
-      valid-error="$必须填写1-2或5-6" 
-      class="text" value="" />
-  </p>
-  <p>
-    重复密码: <input type="password" name="repwd" valid="密码|*, repassword, for=.pwd" class="text" value="" />
-  </p>
-  <p> 
-    年薪: <input type="text" name="low" valid="年薪|*, n, n1-99" class="text" value="" /> -
-    <input type="text" name="high" valid="年薪|*, n, ismax, for=low" class="text" value="" />
-  </p>
-
-  <p valid="性别|*">
-    性别: 
-    <label><input type="radio" name="r1">男</label>
-    <label><input type="radio" name="r1">女</label>
-    <label><input type="radio" name="r1">不限</label>
-  </p>
-
-  <p>密码: <input type="text" name="user" valid="密码|*, 2-3" class="text" value="" /></p>
-  <p class="lang" valid='语言|*, 2-3'>
-    语言:
-    <label><input type="checkbox" name="langue" value="1"> 英语</label>
-    <label><input type="checkbox" name="langue" value="1"> 法语</label>
-    <label><input type="checkbox" name="langue" value="1"> 德语</label>
-    <label><input type="checkbox" name="langue" value="1"> 日语</label>
-    <label><input type="checkbox" name="langue" value="1"> 韩语</label>
-  </p>
-
-  <p>
-    <input type="submit" value="提交" /> &nbsp;&nbsp;&nbsp; 
-    <input type="button" class="add" value="添加一个必填项"> &nbsp;&nbsp;&nbsp; 
-    <input type="button" class="change" value="改变规则">
-  </p>
-</form>
+<script type="text/javascript">
+FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.savehcompandhjob.css');
+</script>
+<body id="job-savehcompandhjob">
+<div class="wrap main wrap-shadow">
+  <section class="section" data-selector="step2">
+    <form action="">
+      <h2 class="title"><i>2</i> 职位基本信息</h2>
+      <h3 class="nav-title"><span>基本信息</span></h3>  
+      <table class="form-table">
+        <tr>
+          <th><i class="text-warning">*</i> 职位名称</th>
+          <td>
+            <input type="text" name="hjob_title" placeholder="请输入职位名称" class="text" data-selector="hjob_title"
+              valid="职位名称|not='e, m', *, 1-16, repeat" />
+          </td>
+        </tr>
+        <tr>
+          <th><i class="text-warning">*</i> 职能分类</th>
+          <td>
+            <input type="text" name="hjob_jobtitle" class="text" placeholder="请选择" data-selector="jobs" 
+              valid="职能分类|*" />
+          </td>
+        </tr>
+        <tr>
+          <th><i class="text-warning">*</i>工作地点</th>
+          <td>
+            <input type="text" name="hjob_dq" class="text" placeholder="请选择" data-selector="city" 
+              valid="工作地点|*" />
+          </td>
+        </tr>
+        <tr>
+          <th><i class="text-warning">*</i>所属部门</th>
+          <td>
+            <input type="text" name="hjobDetailForm.detail_dept" class="text"
+              valid="所属部门|*, repeat, 1-16, not='e, m'" />
+          </td>
+        </tr>
+        <tr>
+          <th>下属人数</th>
+          <td>
+            <input type="text" name="hjobDetailForm.detail_subordinate" class="text"
+              valid="下属人数|integer" />
+          </td>
+        </tr>
+        <tr>
+          <th><i class="text-warning">*</i>截止日期</th>
+          <td>
+            <div class="relative">
+              <input type="text" name="hjob_closedate" class="text short" readonly data-selector="datePicker"
+                valid="截止日期|*"
+                data-startDate="2017-05-27" data-endDate="2017-07-27"
+                value="2017-05-27" />
+              <span class="ts muted">仅限设置为职位发布当天日期后的1个月至3个月内</span>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <h3 class="nav-title">
+        <span>薪资福利</span>
+      </h3>
+      <table class="form-table">
+        <tr>
+          <th><i class="text-warning">*</i>税前年薪</th>
+          <td>
+            <input type="text" name="hjob_salarylow" class="text short"
+              valid='税前年薪|*, n, n10(只能填写10-999之内的整数数字)-999(只能填写10-999之内的整数数字)'/>
+            <span class="muted">万元</span>
+            <span class="muted">—</span>
+            <input type="text" name="hjob_salaryhigh" class="text short"
+              valid="税前年薪|*, n, n10-999, higher, for=hjob_salarylow" />
+            <span class='muted'>万元</span>
+            &nbsp;
+            <span class='muted tips hide'>
+              (区间需小于
+              <span class="text-warning">30</span>
+              万元)
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <th><i class="text-warning">*</i>薪资构成</th>
+          <td>
+            <span valid="薪资构成|*">
+              <label>
+                <input type="checkbox" name="hjobDetailForm.detail_salstructure_dixin" value="1" />
+                基本薪资
+              </label>
+              <label>
+                <input type="checkbox" name="hjobDetailForm.detail_salstructure_ticheng" value="1" />
+                奖金/提成
+              </label>
+              <label>
+                <input type="checkbox" name="hjobDetailForm.detail_salstructure_qiquan" value="1" />
+                期权
+              </label>
+              <label>
+                <input type="checkbox" name="hjobDetailForm.detail_salstructure_qita" value="1" data-selector="other" autocomplete="off" />
+                其他2
+              </label>
+            </span>
+            <input type="text" name="hjobDetailForm.detail_salstructure_content" class="text short" data-selector="otherInp" autocomplete="off"
+              valid="mabenwansui|isrequired, 1-3, for=hjobDetailForm.detail_salstructure_qita" />
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td style="padding-top:20px;">
+            <input type="submit" class="btn btn-primary btn-large" value="发布职位">
+          </td>
+        </tr>
+      </table>
+    </form>
+  </section>
+</div>
 </body>
 <script src="../../bulid/index.js"></script>
 <script>
-let i = 0;
-$('.add').on('click', function(){
-  let html = `<input type="text" name="${++i}" valid="*, s2-3"/>`;
-  $(':submit').closest('p').before(html);
-});
-$('.change').on('click', function(){
-  $('form').find('.lang').attr('valid', '改变后的语言|*')
+
+$('form').validate(function(){
+  console.log(this.form);
+  console.log('ok');
 })
-
-/*
-
-{
-  element: 
-  title: 'title'
-}
-
-*/
-
-
-$('form').validate({
-  //ui: {
-  //  position: 'right',
-  //  top: -3,
-  //  left: 4,
-  //  arrow: 'center'
-  //},
-  maben(options, num){
-    console.log(num);
-    let result = this.rules.email(options)
-    console.log(result);
-    return result;
-  },
-  fail(arr){
-    console.log(arr);
-  },
-  success(){
-    console.log('ok');  
-  }
-})
-/*
-  $('form').Validate({
-    dyrules: {
-      maben : function({element, title, val, valid, msg}){
-        console.log(this);
-        return {
-          element : element,
-          valid : false,
-          msg : '有错误'
-        }
-      }
-    },
-    rules : [
-      ['edu', '学历3', '*',{
-        msg : '123'
-      }],
-      //['email', '邮箱2','ajax,*,15-16,email'],
-      [$(':checkbox'), '语言', '*,2-3'],
-      [$('[name=r1]'), '性别', '*', {
-        //tips : $('[name="info"]')      
-      }],
-      //[$(':checkbox'), '语言2', '*'],
-      {
-        name : 'email',
-        title : '邮箱',
-        type : '*',
-        asyc : function(){
-          
-        }
-        //ajax : {},
-        //tips : $('[name="info"]')
-      },
-      //{
-      //  name: 'user_salary',
-      //  title: '年薪',
-      //  type: '*,f'
-      //},
-      //{
-      //  name : 'r1',
-      //  title : '性别',
-      //  type : '*'
-      //},
-      //{
-      //  name : $('.maben').find(':checkbox'),
-      //  title : '语言',
-      //  type : '*,2',
-      //  dy : function(ele, title){
-      //    return {
-      //      valid : true,
-      //      msg : title+'出错了'
-      //    }
-      //  }
-      //},    
-      //{
-      //  name : 'edu',
-      //  title : '学历',
-      //  type : '*'
-      //}
-    ],
-    success: function(data){
-      console.log('');
-      //this代表form
-      //data代表form.serializeArray();
-      //$.post('url', data).done(function(data){
-        //...
-      //});
-    },
-    fail : function(e){
-      //console.dir(e);
-      //return true;
-    }
-  });
-*/
-
-
-/*$('form').trigger('submit');*/
 
 </script>
 </html>
