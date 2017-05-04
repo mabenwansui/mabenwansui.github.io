@@ -74,57 +74,10 @@
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_validate__ = __webpack_require__(1);
-
-
-const pluginName = 'validate';
-$.fn[pluginName] = function (...arg) {
-  if (typeof arg[0] === 'string') {
-    let method = arg[0];
-    let $this = $(this).is('form') ? $(this) : $(this).closest('form');
-    let plugin = $this.data('plugin_' + pluginName);
-    switch (method) {
-      case "getClass":
-        return plugin;
-      default:
-        return $this.each(function () {
-          if (plugin && plugin[method]) plugin[method].apply(plugin, arg.splice(1));
-        });
-    };
-  } else {
-    return this.each(function () {
-      let plugin = $(this).data('plugin_' + pluginName);
-      if (plugin) {
-        return;
-      } else {
-        let options = arg[0];
-        if (typeof options === 'function') options = { success: options };
-        $(this).data('plugin_' + pluginName, new __WEBPACK_IMPORTED_MODULE_1__lib_validate__["a" /* default */]($(this), options));
-      }
-    });
-  };
-};
-
-/*
-  api
-  $('form').validate({
-    maben(){
-      
-    }
-  }).done(data => {
-    
-  })
-*/
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__rules__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__loading__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__unit__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__bind_alert_tips__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_rules__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_loading__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_unit__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__ = __webpack_require__(15);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -134,7 +87,9 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 
 
+
 'use strict';
+const [pluginName, className] = ['validate', 'validate'];
 var defaults = {
   rules: {},
   debug: false, //回调不执行
@@ -147,9 +102,13 @@ class Validate {
     this.element = element;
     this.form = element.is('form') ? element : element.closest('form');
     this.options = _extends({}, defaults, options);
-    __WEBPACK_IMPORTED_MODULE_2__unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
-    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_0__rules__["a" /* default */].apply(this), this.options.rules);
-    this.tips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__bind_alert_tips__["a" /* default */])(this.form, this.options);
+    __WEBPACK_IMPORTED_MODULE_3__lib_unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
+    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_1__lib_rules__["a" /* default */].apply(this), this.options.rules);
+    this.tips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__["a" /* default */])(this.form, this.options);
+    this.init();
+  }
+  init() {
+    this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, this.form));
   }
   scan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
     var _this = this;
@@ -163,7 +122,7 @@ class Validate {
       if (items.is('form')) items = items.find('[valid]');
       let failArr = [];
       let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
-        return __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, _this.form);
+        return __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, _this.form);
       });
       for (let v of arr) yield function (item) {
         return new Promise((() => {
@@ -195,9 +154,9 @@ class Validate {
       let [_type, val] = type.split('=');
       if (!this.rules[_type]) resolve();
       let obj = _extends({}, item, { type, val: element.val() });
-      let result = _type !== 'required' && _type !== 'isrequired' && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
+      let result = !/required/.test(_type) && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
       if (result instanceof Promise) {
-        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__loading__["a" /* default */])(element);
+        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__lib_loading__["a" /* default */])(element);
         result.then(resolve).catch(msg => {
           reject({ msg, valid: false, element });
           _loading.hide();
@@ -208,9 +167,36 @@ class Validate {
     });
   }
 }
-/* harmony default export */ __webpack_exports__["a"] = (Validate);
+
+$.fn[pluginName] = function (...arg) {
+  if (typeof arg[0] === 'string') {
+    let method = arg[0];
+    let $this = $(this).is('form') ? $(this) : $(this).closest('form');
+    let plugin = $this.data('plugin_' + pluginName);
+    switch (method) {
+      case "getClass":
+        return plugin;
+      default:
+        return $this.each(function () {
+          if (plugin && plugin[method]) plugin[method].apply(plugin, arg.splice(1));
+        });
+    };
+  } else {
+    return this.each(function () {
+      let plugin = $(this).data('plugin_' + pluginName);
+      if (plugin) {
+        return;
+      } else {
+        let options = arg[0];
+        if (typeof options === 'function') options = { success: options };
+        $(this).data('plugin_' + pluginName, new Validate($(this), options));
+      }
+    });
+  };
+};
 
 /***/ }),
+/* 1 */,
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2817,6 +2803,7 @@ function lang(lang = 'cn') {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(12);
 /* unused harmony export getJQelement */
 /* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
+/* unused harmony export forElement */
 /* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
 /* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -2835,11 +2822,12 @@ function getJQelement(element, form = 'form') {
 }
 
 function formatItem(type, title) {
-  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) {
-    return [{ type, msg: '' }];
-  }
-  let [t1, t2] = type.split('-');
-  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';
+  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
+  let [t1, t2] = (type => {
+    type = type.match(/^(.*?(?:\(.*?\))?)-(.*?(?:\(.*?\))?)$/) || [];
+    return type.splice(1);
+  })(type);
+  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
   let reTypeRange = (type, range, prefix) => {
     let msg = '',
         flag = false;
@@ -2874,6 +2862,22 @@ function jsonFormat(type, title) {
   valid-required-msg=""
   valid-error-msg=""
 */
+
+//对有for的进行 两个元素相互绑定对象
+function forElement(element, type, form) {
+  let forEle = getJQelement(type.indexOf('for') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
+  if (forEle) {
+    let mergeDataValidFor = (element, forElement) => {
+      let ele = element.data('valid-for');
+      ele = ele ? ele.add(forElement) : forElement;
+      element.data('valid-for', ele);
+    };
+    mergeDataValidFor(forEle, element);
+    mergeDataValidFor(element, forEle);
+  }
+  return forEle;
+}
+
 function attrToJson(element, form, rules) {
   element = $(element);
   let prefix = 'valid';
@@ -2885,10 +2889,10 @@ function attrToJson(element, form, rules) {
   };
   let obj = {
     title,
-    forElement: (_type => getJQelement(_type.indexOf('for') > -1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
+    forElement: forElement(element, type, form),
     msg: msg('error') || false
   };
-  if (obj.forElement) obj.forElement.data('valid-for', element);
+
   if (/input|select|textarea/i.test(element[0].tagName)) {
     return _extends({}, obj, { type: jsonFormat(type, title), element });
   } else {
@@ -3504,10 +3508,10 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 let namespace = 'valid';
 let dataMsg = 'valid-error-msg-forplugin';
-let isRadioCheck = element => {
+let isRadioCheckbox = element => {
   return element.is(':radio') || element.is(':checkbox') ? true : false;
 };
-let getElement = element => isRadioCheck(element) ? element.closest('[valid]') : element;
+let getElement = element => isRadioCheckbox(element) ? element.closest('[valid]') : element;
 let defaultStyle = {
   act: 'hide',
   cssStyle: 'error',
@@ -3548,38 +3552,23 @@ class BindAlertTips {
   highlight(element, type) {
     type === 'show' ? getElement(element).addClass('valid-error') : getElement(element).removeClass('valid-error');
   }
-  itemSuccessCallback(element) {
-    this.highlight(element, 'hide');
-    this.hide(element);
-    element.removeAttr(dataMsg);
-  }
-  itemFailCallback(arr) {
-    let [v] = arr;
-    getElement(v.element).attr(dataMsg, v.msg);
-    v.element.trigger('focus.' + namespace, [true]);
-    this.highlight(v.element, 'show');
-    this.show(v.element, v.msg);
-  }
   bindEvent() {
     let that = this;
     function focus(flag) {
       if (!$(this).hasClass('valid-error') || flag === true) return;
       that.show($(this));
     }
-    function change() {
+    function change(event, once = false) {
       let $this = $(this);
-      let validFor = element => {
-        element = element.data('valid-for');
-        if (element) setTimeout(() => element.trigger('change.' + namespace), 0);
-      };
-      if (isRadioCheck($this)) {
+      if (isRadioCheckbox($this)) {
         $this = $this.closest('[valid]');
-        validFor($this);
       } else {
-        validFor($this);
         if ($this.val() === '' && !$this.attr(dataMsg)) return;
       }
-      that.form.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
+      //对绑定了for的元素触发相互change
+      that.scan($this, function (flag) {
+        if (this && !once) change.call(this, event, true);
+      }.bind($(this).data('valid-for')));
     }
     function blur() {
       let $this = $(this);
@@ -3597,18 +3586,39 @@ class BindAlertTips {
     }
     this.form.on('focus.' + namespace, 'input:not(:submit, :button), select', focus).on('change.' + namespace, 'input:radio, input:checkbox, select', change).on('blur.' + namespace, 'input:not(:submit,:button), textarea', blur);
   }
+  scan(validItems = this.form, callback = $.noop) {
+    let that = this;
+    this.form.validate('scan', validItems, items => {
+      items.each(function () {
+        let element = getElement($(this));
+        that.highlight(element, 'hide');
+        that.hide(element);
+        element.removeAttr(dataMsg);
+      });
+      callback(true);
+    }, items => {
+      if (validItems.is('form')) {
+        let successItems = that.form.find('.valid-error');
+        this.highlight(successItems, 'hide');
+        successItems.removeAttr(dataMsg);
+      }
+      items = items.map(v => {
+        let element = getElement(v.element);
+        this.highlight(element, 'show');
+        element.attr(dataMsg, v.msg);
+        element.data('valid-value', element.val());
+        return { element, msg: v.msg };
+      });
+      items[0].element.trigger('focus.' + namespace, [true]);
+      this.show(items[0].element, items[0].msg);
+      this.options.fail(items);
+      callback(false);
+    });
+  }
   submit() {
     let that = this;
     this.form.on('submit', function () {
-      $(this).validate('scan', that.options.success, function (arr) {
-        for (let v of arr) {
-          that.highlight(v.element, 'show');
-          v.element.attr(dataMsg, v.msg);
-          v.element.data('valid-value', v.element.val());
-        }
-        that.show(getElement(arr[0].element), arr[0].msg);
-        that.options.fail(arr);
-      });
+      that.scan();
       return false;
     });
   }
@@ -3788,22 +3798,17 @@ function rule() {
       return true;
     },
     higher({ element, forElement, title = '', val, msg }) {
+      if (forElement.hasClass('valid-error')) return true;
       if (parseInt(element.val()) < parseInt(forElement.val())) {
         return getMsg(msg, 'higher', { title });
       } else {
         return true;
       }
     },
-    isrequired(options) {
+    checked_required(options) {
       let { forElement } = options;
       if (!forElement.is(':checked')) return true;
-      let result = this.rules.required(options);
-      if (result) {
-        forElement.off('change').on('change', () => {
-          //this.scan(options.element)
-        });
-      }
-      return result;
+      return this.rules.required(options);
     },
     repassword({ element, forElement, title = '', val, msg }) {
       let [v1, v2] = [element.val(), forElement.val()];

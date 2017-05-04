@@ -120,22 +120,17 @@ export default function rule(){
       return true;
     },
     higher({element, forElement, title='', val, msg}){
+      if(forElement.hasClass('valid-error')) return true;
       if(parseInt(element.val()) < parseInt(forElement.val())){
         return getMsg(msg, 'higher', {title});
       }else{
         return true;
       }
     },
-    isrequired(options){
+    checked_required(options){
       let {forElement} = options;
       if(!forElement.is(':checked')) return true;
-      let result = this.rules.required(options);
-      if(result){
-        forElement.off('change').on('change', ()=> {
-          //this.scan(options.element)
-        })
-      }
-      return result;
+      return this.rules.required(options);
     },    
     repassword({element, forElement, title='', val, msg}){
       let [v1, v2] = [element.val(), forElement.val()];

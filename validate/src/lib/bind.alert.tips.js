@@ -1,10 +1,10 @@
 import '@liepin/jquery-AlertTs';
 let namespace = 'valid';
 let dataMsg = 'valid-error-msg-forplugin';
-let isRadioCheck = element => {
+let isRadioCheckbox = element => {
   return (element.is(':radio') || element.is(':checkbox')) ? true : false;
 }
-let getElement = element => isRadioCheck(element) ? element.closest('[valid]') : element;
+let getElement = element => isRadioCheckbox(element) ? element.closest('[valid]') : element;
 let defaultStyle = {
   act: 'hide',
   cssStyle: 'error',
@@ -45,38 +45,23 @@ class BindAlertTips{
   highlight(element, type){
     type==='show' ? getElement(element).addClass('valid-error') : getElement(element).removeClass('valid-error');
   }
-  itemSuccessCallback(element){
-    this.highlight(element, 'hide');
-    this.hide(element);
-    element.removeAttr(dataMsg);
-  }
-  itemFailCallback(arr){
-    let [v] = arr;
-    getElement(v.element).attr(dataMsg, v.msg);
-    v.element.trigger('focus.'+namespace, [true]);
-    this.highlight(v.element, 'show');
-    this.show(v.element, v.msg);
-  }
   bindEvent(){
     let that = this;
     function focus(flag){
       if(!$(this).hasClass('valid-error') || flag===true) return;
       that.show($(this));
     }
-    function change(){
+    function change(event, once=false){
       let $this = $(this);
-      let validFor = element => {
-        element = element.data('valid-for');
-        if(element) setTimeout(()=> element.trigger('change.'+namespace), 0);    
-      }
-      if(isRadioCheck($this)){
+      if(isRadioCheckbox($this)){
         $this = $this.closest('[valid]');
-        validFor($this);
       }else{
-        validFor($this);
-        if($this.val()==='' && !$this.attr(dataMsg)) return;  
+        if($this.val()==='' && !$this.attr(dataMsg)) return;
       }
-      that.form.validate('scan', $this, that.itemSuccessCallback.bind(that), that.itemFailCallback.bind(that));
+      //对绑定了for的元素触发相互change
+      that.scan($this, function(flag){
+        if(this && !once) change.call(this, event, true);
+      }.bind($(this).data('valid-for')))
     }
     function blur(){
       let $this = $(this);
@@ -97,18 +82,39 @@ class BindAlertTips{
       .on('change.'+namespace, 'input:radio, input:checkbox, select', change)
       .on('blur.'+namespace, 'input:not(:submit,:button), textarea', blur)
   }
+  scan(validItems=this.form, callback=$.noop){
+    let that = this;
+    this.form.validate('scan', validItems, items=> {
+      items.each(function(){
+        let element = getElement($(this));
+        that.highlight(element, 'hide');
+        that.hide(element);
+        element.removeAttr(dataMsg);        
+      });
+      callback(true);
+    }, items=> {
+      if(validItems.is('form')){
+        let successItems = that.form.find('.valid-error');
+        this.highlight(successItems, 'hide');
+        successItems.removeAttr(dataMsg);
+      }
+      items = items.map(v=> {
+        let element = getElement(v.element);
+        this.highlight(element, 'show');
+        element.attr(dataMsg, v.msg);
+        element.data('valid-value', element.val());
+        return {element, msg:v.msg};
+      });
+      items[0].element.trigger('focus.'+namespace, [true]);
+      this.show(items[0].element, items[0].msg);
+      this.options.fail(items);
+      callback(false);
+    });
+  }
   submit(){
     let that = this;
     this.form.on('submit', function(){
-      $(this).validate('scan', that.options.success, function(arr){
-        for(let v of arr){
-          that.highlight(v.element, 'show');
-          v.element.attr(dataMsg, v.msg);
-          v.element.data('valid-value', v.element.val());
-        }
-        that.show(getElement(arr[0].element), arr[0].msg);
-        that.options.fail(arr);
-      });
+      that.scan();
       return false;
     });
   }

@@ -84,7 +84,7 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
               valid='税前年薪|*, n, n10(只能填写10-999之内的整数数字)-999(只能填写10-999之内的整数数字)'/>
             <span class="muted">万元</span>
             <span class="muted">—</span>
-            <input type="text" name="hjob_salaryhigh" class="text short"
+            <input type="text" value="11" name="hjob_salaryhigh" class="text short"
               valid="税前年薪|*, n, n10-999, higher, for=hjob_salarylow" />
             <span class='muted'>万元</span>
             &nbsp;
@@ -117,7 +117,7 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
               </label>
             </span>
             <input type="text" name="hjobDetailForm.detail_salstructure_content" class="text short" data-selector="otherInp" autocomplete="off"
-              valid="mabenwansui|isrequired, 1-3, for=hjobDetailForm.detail_salstructure_qita" />
+              valid="mabenwansui|checked_required, 2-3, for=hjobDetailForm.detail_salstructure_qita" />
           </td>
         </tr>
         <tr>

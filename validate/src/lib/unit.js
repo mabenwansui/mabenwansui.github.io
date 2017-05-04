@@ -12,11 +12,12 @@ export function getJQelement(element, form='form'){
 }
 
 function formatItem(type, title){
-  if(/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)){
-    return [{type, msg:''}];
-  }
-  let [t1, t2] = type.split('-');
-  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';
+  if(/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{type, msg:''}];
+  let [t1, t2] = (type=> {
+    type = type.match(/^(.*?(?:\(.*?\))?)-(.*?(?:\(.*?\))?)$/) || [];
+    return type.splice(1);
+  })(type);
+  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';   //取出类似于n这样的字母
   let reTypeRange = (type, range, prefix) => {
     let msg = '', flag = false;
     type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4)=> {
@@ -52,6 +53,22 @@ export function jsonFormat(type, title){
   valid-required-msg=""
   valid-error-msg=""
 */
+
+//对有for的进行 两个元素相互绑定对象
+export function forElement(element, type, form){
+  let forEle = getJQelement(type.indexOf('for')>-1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
+  if(forEle) {
+    let mergeDataValidFor = (element, forElement) => {
+      let ele = element.data('valid-for');
+      ele = ele ? ele.add(forElement) : forElement;
+      element.data('valid-for', ele);
+    }
+    mergeDataValidFor(forEle, element);
+    mergeDataValidFor(element, forEle);
+  }
+  return forEle;
+}
+
 export function attrToJson(element, form, rules){
   element = $(element);
   let prefix = 'valid';
@@ -63,10 +80,10 @@ export function attrToJson(element, form, rules){
   }
   let obj = {
     title,
-    forElement: (_type=> getJQelement(_type.indexOf('for')>-1 ? _type.replace(/^.*for=([^,]+).*$/, '$1') : '', form))(type),
+    forElement: forElement(element, type, form),
     msg: msg('error') || false
   };
-  if(obj.forElement) obj.forElement.data('valid-for', element);
+
   if(/input|select|textarea/i.test(element[0].tagName)){
     return {...obj, type: jsonFormat(type, title), element};
   }else{
