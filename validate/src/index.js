@@ -1,4 +1,4 @@
-import './css/index';
+import './css/index.css';
 import rules from './lib/rules';
 import loading from './lib/loading';
 import * as unit from './lib/unit';

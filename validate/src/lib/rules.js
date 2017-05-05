@@ -121,7 +121,7 @@ export default function rule(){
     },
     higher({element, forElement, title='', val, msg}){
       if(forElement.hasClass('valid-error')) return true;
-      if(parseInt(element.val()) < parseInt(forElement.val())){
+      if(parseInt(val.replace(/\D/g, '')) < parseInt(forElement.val().replace(/\D/g, ''))){
         return getMsg(msg, 'higher', {title});
       }else{
         return true;

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,13 +71,1506 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(1);
+/* unused harmony export getJQelement */
+/* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
+/* unused harmony export forElement */
+/* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
+/* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+function getJQelement(element, form = 'form') {
+  if (!element) return;
+  if (typeof element === 'string') {
+    element = /^[.#]/.test(element) ? $(element, form) : $(`[name='${element}']`, form);
+  } else if (element instanceof jQuery) {
+    element = element;
+  } else {
+    element = $(element, form);
+  }
+  return element.length > 0 ? element : false;
+}
+
+function formatItem(type, title) {
+  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
+  let [t1, t2] = (type => {
+    type = type.match(/^(.*?(?:\(.*?\))?)-(.*?(?:\(.*?\))?)$/) || [];
+    return type.splice(1);
+  })(type);
+  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
+  let reTypeRange = (type, range, prefix) => {
+    let msg = '',
+        flag = false;
+    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
+      flag = true;
+      if ($4) msg = $4.replace(/\$/g, title);
+      return prefix + range + '=' + $2;
+    });
+    return flag ? { type, msg } : false;
+  };
+  let reType = type => {
+    let msg = '';
+    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
+      if ($3) msg = $3.replace(/\$/g, title);
+      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
+    });
+    return { type, msg };
+  };
+  return t2 ? [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] : [reTypeRange(type, 'min') || reType(type)];
+}
+
+function jsonFormat(type, title) {
+  if (!type) return [];
+  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
+  type = type.reduce((a, b) => {
+    return [].push.apply(a, formatItem(b, title)), a;
+  }, []);
+  return type;
+}
+/*
+  valid="用户名|*, maben, s10-15"
+  valid-required-msg=""
+  valid-error-msg=""
+*/
+
+//对有for的进行 两个元素相互绑定对象
+function forElement(element, type, form) {
+  let forEle = getJQelement(type.indexOf('for') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
+  if (forEle) {
+    let mergeDataValidFor = (element, forElement) => {
+      let ele = element.data('valid-for');
+      ele = ele ? ele.add(forElement) : forElement;
+      element.data('valid-for', ele);
+    };
+    mergeDataValidFor(forEle, element);
+    mergeDataValidFor(element, forEle);
+  }
+  return forEle;
+}
+
+function attrToJson(element, form, rules) {
+  element = $(element);
+  let prefix = 'valid';
+  let attr = element.attr(prefix).split(/\s*\|\s*/);
+  let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
+  let msg = type => {
+    type = element.attr(`${prefix}-${type}`);
+    return type ? type.replace('$', title) : false;
+  };
+  let obj = {
+    title,
+    forElement: forElement(element, type, form),
+    msg: msg('error') || false
+  };
+
+  if (/input|select|textarea/i.test(element[0].tagName)) {
+    return _extends({}, obj, { type: jsonFormat(type, title), element });
+  } else {
+    return _extends({}, obj, {
+      type: jsonFormat(type, title),
+      element: (() => {
+        let [ele1, ele2] = [element.find(':checkbox'), element.find(':radio')];
+        return ele1.length > ele2.length ? ele1 : ele2;
+      })()
+    });
+  }
+}
+/*
+  将options里的自定义规则放到rules里面
+*/
+function rulesMerge(options, defaultOptions, callback) {
+  Object.keys(options).forEach(v => {
+    if (!(v in defaultOptions) && typeof options[v] === 'function') callback(v, options[v]);
+  });
+}
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
+const alias = {
+  '*': 'required',
+  'e': 'email',
+  'n': 'number',
+  'm': 'mobile'
+};
+/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
+
+
+function lang(lang = 'cn') {
+  let cn = {
+    required: '请填写$title !',
+    select_required: '请选择$title !',
+    length_max: '$title不能大于$max个字 !',
+    length_min: '$title不能小于$min个字 !',
+    number_max: '$title不能大于$max !',
+    number_min: '$title不能小于$min !',
+    checked_min: '$title至少选择$min项 !',
+    checked_max: '$title最多选择$max项 !',
+    email: '请填写正确的$title !',
+    mobile: '请填写正确的$title !',
+    phone: '请填写正确的$title !',
+    url: '请填写正确的$title !',
+    idcard: '请填写正确的$title !',
+    repeat: '请填写正确的$title',
+    some: '请填写正确的$title',
+    not: '请填写正确的$title',
+    number: '$title请填写数字 !',
+    integer: '$title请填写整数',
+    float: '$title请填写数字 !',
+    mobile: '$title输入不正确 !',
+    pattern: '$title不符合规范 !',
+    higher: '结束$title不能小于开始$title',
+    repassword: '两次填写的密码不一致'
+  };
+  let en = {};
+  return eval(lang);
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(Buffer) {/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap) {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+  var base64 = new Buffer(JSON.stringify(sourceMap)).toString('base64');
+  var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+  return '/*# ' + data + ' */';
+}
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11).Buffer))
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+var stylesInDom = {},
+	memoize = function(fn) {
+		var memo;
+		return function () {
+			if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+			return memo;
+		};
+	},
+	isOldIE = memoize(function() {
+		return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
+	}),
+	getElement = (function(fn) {
+		var memo = {};
+		return function(selector) {
+			if (typeof memo[selector] === "undefined") {
+				memo[selector] = fn.call(this, selector);
+			}
+			return memo[selector]
+		};
+	})(function (styleTarget) {
+		return document.querySelector(styleTarget)
+	}),
+	singletonElement = null,
+	singletonCounter = 0,
+	styleElementsInsertedAtTop = [],
+	fixUrls = __webpack_require__(16);
+
+module.exports = function(list, options) {
+	if(typeof DEBUG !== "undefined" && DEBUG) {
+		if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
+
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the <head> element
+	if (typeof options.insertInto === "undefined") options.insertInto = "head";
+
+	// By default, add <style> tags to the bottom of the target
+	if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+	var styles = listToStyles(list);
+	addStylesToDom(styles, options);
+
+	return function update(newList) {
+		var mayRemove = [];
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+		if(newList) {
+			var newStyles = listToStyles(newList);
+			addStylesToDom(newStyles, options);
+		}
+		for(var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+			if(domStyle.refs === 0) {
+				for(var j = 0; j < domStyle.parts.length; j++)
+					domStyle.parts[j]();
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+};
+
+function addStylesToDom(styles, options) {
+	for(var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+		if(domStyle) {
+			domStyle.refs++;
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles(list) {
+	var styles = [];
+	var newStyles = {};
+	for(var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+		if(!newStyles[id])
+			styles.push(newStyles[id] = {id: id, parts: [part]});
+		else
+			newStyles[id].parts.push(part);
+	}
+	return styles;
+}
+
+function insertStyleElement(options, styleElement) {
+	var styleTarget = getElement(options.insertInto)
+	if (!styleTarget) {
+		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+	}
+	var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+	if (options.insertAt === "top") {
+		if(!lastStyleElementInsertedAtTop) {
+			styleTarget.insertBefore(styleElement, styleTarget.firstChild);
+		} else if(lastStyleElementInsertedAtTop.nextSibling) {
+			styleTarget.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			styleTarget.appendChild(styleElement);
+		}
+		styleElementsInsertedAtTop.push(styleElement);
+	} else if (options.insertAt === "bottom") {
+		styleTarget.appendChild(styleElement);
+	} else {
+		throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+	}
+}
+
+function removeStyleElement(styleElement) {
+	styleElement.parentNode.removeChild(styleElement);
+	var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+	if(idx >= 0) {
+		styleElementsInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement(options) {
+	var styleElement = document.createElement("style");
+	options.attrs.type = "text/css";
+
+	attachTagAttrs(styleElement, options.attrs);
+	insertStyleElement(options, styleElement);
+	return styleElement;
+}
+
+function createLinkElement(options) {
+	var linkElement = document.createElement("link");
+	options.attrs.type = "text/css";
+	options.attrs.rel = "stylesheet";
+
+	attachTagAttrs(linkElement, options.attrs);
+	insertStyleElement(options, linkElement);
+	return linkElement;
+}
+
+function attachTagAttrs(element, attrs) {
+	Object.keys(attrs).forEach(function (key) {
+		element.setAttribute(key, attrs[key]);
+	});
+}
+
+function addStyle(obj, options) {
+	var styleElement, update, remove;
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+		styleElement = singletonElement || (singletonElement = createStyleElement(options));
+		update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+	} else if(obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function") {
+		styleElement = createLinkElement(options);
+		update = updateLink.bind(null, styleElement, options);
+		remove = function() {
+			removeStyleElement(styleElement);
+			if(styleElement.href)
+				URL.revokeObjectURL(styleElement.href);
+		};
+	} else {
+		styleElement = createStyleElement(options);
+		update = applyToTag.bind(null, styleElement);
+		remove = function() {
+			removeStyleElement(styleElement);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle(newObj) {
+		if(newObj) {
+			if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+				return;
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag(styleElement, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = styleElement.childNodes;
+		if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+		if (childNodes.length) {
+			styleElement.insertBefore(cssNode, childNodes[index]);
+		} else {
+			styleElement.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag(styleElement, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		styleElement.setAttribute("media", media)
+	}
+
+	if(styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = css;
+	} else {
+		while(styleElement.firstChild) {
+			styleElement.removeChild(styleElement.firstChild);
+		}
+		styleElement.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink(linkElement, options, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	/* If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
+	and there is no publicPath defined then lets turn convertToAbsoluteUrls
+	on by default.  Otherwise default to the convertToAbsoluteUrls option
+	directly
+	*/
+	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
+
+	if (options.convertToAbsoluteUrls || autoFixUrls){
+		css = fixUrls(css);
+	}
+
+	if(sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = linkElement.href;
+
+	linkElement.href = URL.createObjectURL(blob);
+
+	if(oldSrc)
+		URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(8);
+/* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+let namespace = 'valid';
+let dataMsg = 'valid-error-msg-forplugin';
+let isRadioCheckbox = element => {
+  return element.is(':radio') || element.is(':checkbox') ? true : false;
+};
+let getElement = element => isRadioCheckbox(element) ? element.closest('[valid]') : element;
+let defaultStyle = {
+  act: 'hide',
+  cssStyle: 'error',
+  top: 2,
+  left: 15,
+  css: {
+    padding: '5px 10px'
+  }
+};
+class BindAlertTips {
+  constructor(form, options) {
+    this.form = form;
+    this.options = $.extend(true, { ui: defaultStyle }, options);
+    this.timer;
+    this.lastElement;
+    this.bindEvent();
+    this.submit();
+  }
+  show(element, msg) {
+    element = getElement(element);
+    if (!msg) msg = element.attr(dataMsg) || '';
+    if (this.lastElement) {
+      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
+      this.hide(this.lastElement.element);
+    }
+    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
+    let ui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
+    element.AlertTs(_extends({}, ui, { content: msg })).AlertTs('show');
+    this.lastElement = { element, msg };
+  }
+  hide(element = this.lastElement && this.lastElement.element) {
+    element = element ? getElement(element) : false;
+    if (element && element.AlertTs) {
+      element.AlertTs('hide');
+      this.lastElement = null;
+    }
+  }
+  highlight(element, type) {
+    type === 'show' ? getElement(element).addClass('valid-error') : getElement(element).removeClass('valid-error');
+  }
+  bindEvent() {
+    let that = this;
+    function focus(flag) {
+      if (!$(this).hasClass('valid-error') || flag === true) return;
+      that.show($(this));
+    }
+    function change(event, once = false) {
+      let $this = $(this);
+      if (isRadioCheckbox($this)) {
+        $this = $this.closest('[valid]');
+      } else {
+        if ($this.val() === '' && !$this.attr(dataMsg)) return;
+      }
+      //对绑定了for的元素触发相互change
+      that.scan($this, function (flag) {
+        if (this && !once) change.call(this, event, true);
+      }.bind($(this).data('valid-for')), once);
+    }
+    function blur() {
+      let $this = $(this);
+      let val = $this.val();
+      let dataVal = $this.data('valid-value');
+      if ($this.is(':radio,:checkbox')) {
+        that.hide();
+        return;
+      }
+      if (val !== '' && (!dataVal || val !== dataVal)) {
+        $this.data('valid-value', val);
+        change.call(this);
+      }
+      that.hide();
+    }
+    this.form.on('focus.' + namespace, 'input:not(:submit, :button), select', focus).on('change.' + namespace, 'input:radio, input:checkbox, select', change).on('blur.' + namespace, 'input:not(:submit,:button), textarea', blur);
+  }
+  scan(validItems = this.form, callback = $.noop, notips) {
+    let that = this;
+    this.form.validate('scan', validItems, items => {
+      items.each(function () {
+        let element = getElement($(this));
+        that.highlight(element, 'hide');
+        that.hide(element);
+        element.removeAttr(dataMsg);
+      });
+      callback(true);
+    }, items => {
+      if (validItems.is('form')) {
+        let successItems = that.form.find('.valid-error');
+        this.highlight(successItems, 'hide');
+        successItems.removeAttr(dataMsg);
+      }
+      items = items.map(v => {
+        let element = getElement(v.element);
+        this.highlight(element, 'show');
+        element.attr(dataMsg, v.msg);
+        element.data('valid-value', element.val());
+        return { element, msg: v.msg };
+      });
+      if (notips !== true) {
+        items[0].element.trigger('focus.' + namespace, [true]);
+        this.show(items[0].element, items[0].msg);
+      };
+      this.options.fail(items);
+      callback(false);
+    });
+  }
+  submit() {
+    let that = this;
+    this.form.on('submit', function () {
+      that.scan();
+      return false;
+    });
+  }
+}
+function bindAlertTips() {
+  return new BindAlertTips(...arguments);
+}
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = loading;
+class Loading {
+  constructor(element) {
+    this.element = element;
+    this.show();
+  }
+  bulid() {
+    this.dom = $(`
+      <div class="loader">
+        <div class="ball-clip-rotate"><div></div></div>
+      </div>
+    `).appendTo('body');
+  }
+  resize() {
+    let pos = this.element.position();
+    this.dom.css({
+      position: 'absolute',
+      top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
+      left: pos.left + this.element.outerWidth() - this.dom.outerWidth() - 3
+    });
+  }
+  show() {
+    this.bulid();
+    this.resize();
+    return this;
+  }
+  hide() {
+    this.dom && this.dom.fadeOut('slow', () => this.dom.remove());
+    return this;
+  }
+}
+
+function loading(element) {
+  return new Loading(...arguments);
+}
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unit__ = __webpack_require__(0);
+/* harmony export (immutable) */ __webpack_exports__["a"] = rule;
+
+
+function rule() {
+  let that = this;
+  let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
+  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
+  return {
+    required({ element, title = '', val, msg }) {
+      switch (element.attr('type') || element[0].tagName.toLowerCase()) {
+        case 'select':
+          if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
+          break;
+        case 'checkbox':
+        case 'radio':
+          if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
+          break;
+        default:
+          if (!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', { title });
+      }
+      return true;
+    },
+    number({ title = '', val, msg }) {
+      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'number', { title }) : true;
+    },
+    integer({ title = '', val, msg }) {
+      return !/^\d+$/.test(val) ? getMsg(msg, 'integer', { title }) : true;
+    },
+    nmax({ title = '', val, msg }, max) {
+      if (parseInt(val, 10) > parseInt(max, 10)) {
+        return getMsg(msg, 'number_max', { title, max });
+      }
+      return true;
+    },
+    nmin({ title = '', val, msg }, min) {
+      if (parseInt(val, 10) < parseInt(min, 10)) {
+        return getMsg(msg, 'number_min', { title, min });
+      }
+      return true;
+    },
+    max({ element, title = '', val, msg }, max) {
+      if (element.is(':checkbox')) {
+        if (element.filter(':checked').length > max) {
+          return getMsg(msg, 'checked_max', { title, max });
+        }
+      } else {
+        if (val.length > max) {
+          return getMsg(msg, 'length_max', { title, max });
+        }
+      }
+      return true;
+    },
+    min({ element, title = '', val, msg }, min) {
+      if (element.is(':checkbox')) {
+        if (element.filter(':checked').length < min) {
+          return getMsg(msg, 'checked_min', { title, min });
+        }
+      } else {
+        if (val.length < min) {
+          return getMsg(msg, 'length_min', { title, min });
+        }
+      }
+      return true;
+    },
+    email({ title = '', val, msg }) {
+      if (!/^[a-z_0-9-\.]+@([a-z_0-9-]+\.)+[a-z0-9]{2,8}$/i.test(val)) {
+        return getMsg(msg, 'email', { title });
+      }
+      return true;
+    },
+    mobile({ title = '手机号', val, msg }) {
+      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    mobilehk({ title = '手机号', val, msg }) {
+      if (!/^[569]\d{7}$/.test(val)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    mobiletw({ title = '手机号', val, msg }) {
+      if (!/^9\d{8}$/.test(_value)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    phone({ title = '联系方式', val, msg }) {
+      if (!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
+        return getMsg(msg, 'phone', { title });
+      }
+      return true;
+    },
+    url({ title = '', val, msg }) {
+      if (!/^(http:|https:|ftp:)\/\/(?:[0-9a-zA-Z]+|[0-9a-zA-Z][\w-]+)+\.[\w-]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/.test(val)) {
+        return getMsg(msg, 'url', { title });
+      }
+      return true;
+    },
+    idcard({ title = '身份证', val, msg }) {
+      if (!/^\d{17}[xX\d]$|^\d{15}$/.test(val)) {
+        return getMsg(msg, 'idcard', { title });
+      }
+      return true;
+    },
+    repeat({ title = '', val, msg }, max = 5) {
+      if (new RegExp('(\\S)\\1{' + max + '}', 'g').test(val)) {
+        return getMsg(msg, 'repeat', { title });
+      }
+      return true;
+    },
+    pattern({ title = '', val, msg }, reg) {
+      try {
+        if (!eval(reg).test(val)) {
+          return getMsg(msg, 'pattern', { title });
+        }
+      } catch (e) {
+        console.error(title + 'pattern的正则不正确');
+      }
+      return true;
+    },
+    higher({ element, forElement, title = '', val, msg }) {
+      if (forElement.hasClass('valid-error')) return true;
+      if (parseInt(val.replace(/\D/g, '')) < parseInt(forElement.val().replace(/\D/g, ''))) {
+        return getMsg(msg, 'higher', { title });
+      } else {
+        return true;
+      }
+    },
+    checked_required(options) {
+      let { forElement } = options;
+      if (!forElement.is(':checked')) return true;
+      return this.rules.required(options);
+    },
+    repassword({ element, forElement, title = '', val, msg }) {
+      let [v1, v2] = [element.val(), forElement.val()];
+      if (v1 === '') return;
+      if (v1 === v2) {
+        return true;
+      } else {
+        return getMsg(msg, 'repassword', { title });
+      }
+    },
+    some({ element, title, type, val, msg }) {
+      let failArr = [];
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      for (let v of type) {
+        let [_type, _val] = v.type.split('=');
+        let result = this.rules[_type].call(this, { element, val }, _val);
+        failArr.push(result);
+      }
+      return failArr.some(v => v === true) || getMsg(msg, 'some', { title });
+    },
+    not({ element, title, type, val, msg }) {
+      let failArr = [];
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      for (let v of type) {
+        let [_type, _val] = v.type.split('=');
+        let result = this.rules[_type].call(this, { element, val }, _val);
+        failArr.push(result);
+      }
+      return failArr.some(v => v === true) ? getMsg(msg, 'not', { title }) : true;
+    }
+  };
+}
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(13);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(3)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_style_css__);
+
+
+(function($, window, undefined) {
+  'use strict';
+  const pluginName = 'AlertTs';
+  const className = 'alert-ts';
+  const defaults = {
+    position: 'top',           //对齐方向  top,right,bottom,left
+    left: 0,                   //弹框左偏移
+    top: 3,                    //弹框上偏移
+    act: 'hover',              //鼠标事件  hover, click(点击显示，空白消失), false(直接弹框，没有事件)
+    hoverdelay : 200,
+    proxy : false,             //事件代理 例 $('body').AlertTs({ proxy : '.btn' });
+    arrow: {                   //可以简写为 arrow: 'center,8,0' 第一个数字为left，第二个为size, 类css随便调换位置
+      align: 'left',           //角的对齐方式
+      left: 0,                 //角的偏移
+      size: 8,                 //角的大小
+    },
+    animation: 'fadein',       //动画效果  fadein, zoomin, bounceout
+    zindex: 'auto',            //z轴层级，auto时，会自动获取，建议auto
+    closex: false,             //true 则显示x按钮
+    content: '',               //显示内容
+    width: 'auto',             //宽度设置
+    height: 'auto',            //高度设置
+    cache: false,              //缓存，当弹层关闭时会删除插件创建的dom， true时，会保留。
+    css: {                     //样式
+      'close-color' : '',
+      'close-size' : 14
+    },
+    cssStyle: 'default',       //皮肤  default,info,warning,error
+    timeout: false,             //数字型 多少毫秒后弹框消失
+    callback: {
+      init: $.noop,
+      show: $.noop,
+      beforeshow: $.noop,
+      hide: $.noop,
+      windowborder: $.noop     //当弹框遇到浏览器边界时会处发  $('.btn').AlertTs({ windowborder : (v) => console.log(v) });
+    }
+  }
+
+  class AlertTs {
+    constructor(element, options){
+      this.alias(options);
+      this.element  = element;
+      this.options  = $.extend(true, {}, defaults, options);
+      this.helper   = null;
+      this.$content = null;
+      this.closex   = null;
+      this.$arrow   = null;
+      this.loading  = null;
+      this._id      = ++$[pluginName].id;
+      this._left    = 0;
+      this._top     = 0;
+      this._visible = false;
+      this._timeout = false;
+      this._timer   = false;
+      this._helper  = false;  //_helper代表helper是否已经插入到dom结构中
+      this._off     = false;
+      this.initialAttr();
+      this.mergeOptions();
+      this.toNumber();
+      this.createUi();
+      this.bindEvent();
+      this.options.callback.init.call(this);
+    }
+    createUi(){
+      let helper = $(`<div class="${className}"></div>`).css(this.options.css).data('plugin_' + pluginName, this.element);
+      this.$content = $(`<div>${this.options.content}</div>`).appendTo(helper);
+      if(this.options.arrow){
+        this.$arrow = $(`<div class="${className}-arrow"><i></i><i class="a1"></i></div>`).appendTo(helper);
+      }
+      if(this.options.closex){
+        helper.css('padding-right', Number.parseInt(helper.css('padding-right'), 10) + 8);
+        this.closex = $("<span class='closex'>×</span>").appendTo(helper);
+        if(this.options.css['close-size']) this.closex.css('font-size', this.options.css['close-size']);
+        if(this.options.css['close-color']) this.closex.css('color', this.options.css['close-color']);
+        if(this.options.position === 'left'){
+          helper.css({
+            'padding-left' : Number.parseInt(helper.css('padding-left'),10) + Number.parseInt(this.options.css['close-size']/2)
+          })      
+          this.closex.css({
+            top : -4,
+            left : 1
+          });
+        }else{
+          helper.css({
+            'padding-right' : Number.parseInt(helper.css('padding-right'),10) + Number.parseInt(this.options.css['close-size']/2)
+          })
+          this.closex.css({
+            top : -4,
+            right : 1
+          });
+        }
+        this.closex.on('click', () => {
+          if(typeof this.options.closex === 'function') this.options.closex.call(this);
+          this.hide()
+        });}
+      this.options.cssStyle && helper.addClass(className + '-' + this.options.cssStyle);
+      this.helper = helper;
+    }
+    createLoading(){
+      this.loading = this.$content.html(`<div class="loading"><div><i/><i/><i/></div></div>`).children('.loading');
+      let box = this.loading.find('div');
+      box.css({
+        'margin-left': -box.innerWidth() / 2,
+        'margin-top' : -box.innerHeight() / 2
+      });
+    }
+    show(options=false){
+      if(this.options.callback.beforeshow.call(this) === false) return this;
+      if(this._visible) return this;
+      this._visible = true;
+      this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
+        if (this.helper &&
+          this.helper.has(event.target).length === 0 &&
+          this.helper[0] != event.target &&
+          this.element[0] != event.target &&
+          this.element.has(event.target).length === 0) {
+          this.hide();
+        };
+      });
+
+      this.options.timeout && setTimeout( ()=> this.hide(), this.options.timeout );
+      if(this._helper){
+        this.helper.show();
+      }else{
+        this.helper.appendTo('body').css('display','block');
+        this._helper = true;
+      }
+      !this.options.content && this.createLoading();
+      this.refresh(options);
+      this.options.callback.show.call(this);
+      this.options.callback.windowborder && this._windowborder( this.options.callback.windowborder );
+      switch(this.options.animation){
+        case 'fadein' :
+          this.helper.addClass('animated-'+this.options.animation+'-'+this.options.position);
+        default :
+          this.options.animation && this.helper.addClass('animated-'+this.options.animation)
+      }
+      return this;
+    }
+    hide(){
+      if(!this._visible) return this;
+      this._visible = false;
+      this.options.act === 'click' && $(document).off('click.' + pluginName + this._id);
+      this.options.callback.hide.call(this);
+      this.helper.removeClass('animated-zoomin');
+      this.options.cache ? this.helper.hide() : this.removeTag();
+      return this;
+    }
+    removeTag(){
+      this.stop();
+      this.helper.detach();
+      this._helper = false;
+    }
+    destroy() {
+      this._off && this._off();
+      this.removeTag();
+      this.element.removeData('plugin_' + pluginName);
+    }
+    reArrow(){
+      if(!this.element || !this.helper.is(':visible')) return this;
+      let that = this,
+          size = this.options.arrow.size,
+          position = this.options.position,
+          left = this.options.arrow.left,
+          a1 = this.$arrow.find('i:eq(0)'),
+          a2 = this.$arrow.find('i:eq(1)'),
+          aw = parseInt(this.helper.css('border-left-width'),10);
+      this.$arrow.add(a1).add(a2).removeAttr('style');
+      this._top = 0;
+      this._left = 0;
+      a1.css({
+        'border-width' : that.options.arrow.size,
+        ['border-' + position + '-color'] : that.helper.css('background-color')
+      });
+      a2.css({
+        'border-width' : that.options.arrow.size,
+        ['border-' + position + '-color'] : that.helper.css('border-left-color')
+      });
+
+      let arrowPoint = 0;
+      let arrowBoxPoint;
+      {
+        let obj = {
+          left : ()=>{
+            arrowPoint = ((position == "top" || position == "bottom") && 10 || 5) + left;
+            arrowBoxPoint = -arrowPoint-size+3;
+          },
+          center : ()=>{
+            if (position == "top" || position == "bottom") {
+              arrowPoint = that.helper.innerWidth() / 2 - size + left;
+              arrowBoxPoint = -arrowPoint-size + that.element.outerWidth() / 2;
+            } else {
+              arrowPoint = that.helper.innerHeight() / 2 - size + left;
+              arrowBoxPoint = -arrowPoint-size + that.element.outerHeight() / 2;
+            };
+          },
+          right : ()=>{
+            if (position == "top" || position == "bottom") {
+              arrowPoint = that.helper.innerWidth() - size * 2 - 10 + left;
+            } else {
+              arrowPoint = that.helper.innerHeight() - size - 14 + left;
+            };
+            arrowBoxPoint = -arrowPoint-size+that.element.outerWidth()-3;
+          }
+        }
+        obj[that.options.arrow.align]();
+      };
+
+      let helperPoint = {
+        top : ()=>{
+          this.$arrow.css({
+            bottom: -size,
+            left: arrowPoint,
+            height: size + aw,
+            width: size*2
+          });
+          a2.css('top', aw);
+          this._left = arrowBoxPoint;
+        },
+        right : ()=>{
+          this.$arrow.css({
+            left: -size,
+            top: arrowPoint,
+            height: size*2,
+            width : size + aw
+          });
+          a1.css('right', 0);
+          a2.css('right', aw);
+          this._top = arrowBoxPoint;
+        },
+        bottom : ()=>{
+          this.$arrow.css({
+            top: -size-aw,
+            left: arrowPoint,
+            height: size + aw,
+            width: size*2
+          });
+          a1.css('bottom', 0);
+          a2.css('bottom', aw);
+          this._left = arrowBoxPoint;
+        },
+        left : ()=>{
+          this.$arrow.css({
+            right: -size,
+            top: arrowPoint,
+            height: size*2,
+            width : size + aw          
+          });
+          a2.css('left', aw);
+          this._top = arrowBoxPoint;
+        }
+      }
+      helperPoint[position]();
+      return this;
+    }
+    rePosition(){
+      if(!this.element || !this.helper.is(':visible')) return this;
+      let $ele = this.element,
+          that = this,
+          x = 0,
+          y = 0,
+          top = this.options.top,
+          left = this.options.left,
+          offset = this.element.offset(),
+          arrow  = this.options.arrow,
+          size   = arrow.size;
+      x = offset.left;
+      y = offset.top;
+      let point = {
+        top : ()=>{
+          x = x + left;
+          y = y - that.helper.outerHeight() - arrow.size - top;
+        },
+        right : ()=>{
+          x = x + $ele.outerWidth() + arrow.size + left;
+          y = y + top;
+        },
+        bottom : ()=>{
+          x = x + left;
+          y = y + $ele.outerHeight() + top + arrow.size;
+        },
+        left : ()=>{
+          x = x - that.helper.outerWidth() - arrow.size - left;
+          y = y + top;
+        }
+      }
+      point[this.options.position]();
+      this.helper.css({left: x + this._left, top: y + this._top});
+      return this;
+    }
+    play(){
+      this._timer = setTimeout( ()=> {
+        if(!this.element || !this.helper){
+          this.stop();
+          return this;
+        };
+        if (!this._visible || !this.element.is(":visible")) {
+          this.helper.hide();
+          this.stop();
+          return this;
+        };
+        this.rePosition();
+        this.play();
+      }, 250);
+      return this;
+    }
+    stop(){
+      this._timer && clearTimeout(this._timer);
+      return this;
+    }
+    reContent(str){
+      if(!str) return this;
+      if(!this._helper){
+        this.helper.appendTo('body');
+        this._helper = true;
+      };
+      this.$content.html(str);
+      return this;
+    }
+    refresh(options){
+      if(!this.element) return this;
+      if(options){
+        this.alias(options);
+        $.extend(true, this.options, options); 
+        this.mergeOptions().toNumber();
+        this.reContent(options.content);
+      }
+      this.helper.css(this.options.css);
+      this.options.cssStyle && this.helper.addClass(className + '-' + this.options.cssStyle);
+      this.setZindex();
+      this.reArrow();
+      this.rePosition();
+      return this;
+    }
+    bindEvent(){
+      let $ele = this.element;
+      let that = this;
+      let proxy = this.options.proxy;
+      switch(this.options.act){
+        case 'click' :
+          let eventFunc = function(options){ that.show(options) }
+          if(proxy){
+            $ele.on('click.' + pluginName, proxy, function(){
+              setTimeout(()=>{
+                that.options.proxy = $ele;
+                that.element = $(this);
+                eventFunc.call(this, that.initialAttr());
+              });
+            });
+          }else{
+            $ele.on('click.' + pluginName, eventFunc);   
+          }
+          this._off = function(){
+            $ele.off('click.' + pluginName);
+            $(document).off('click.' + pluginName + this._id);
+          };
+          break;
+        case 'hover' :
+          let _in = {}, 
+              _out = {}, 
+              _delay = this.options.hoverdelay,
+              _outfunc = ()=> that.hide();
+          let mouseenterFunc = function(index=0, options){
+            clearTimeout(_out[index]);
+            _in[index] = setTimeout(()=> {
+              that.show(options);
+              if(that.helper){
+                that.helper.off(`.${pluginName}`)
+                           .on(`mouseenter.${pluginName}`, ()=> clearTimeout(_out[index]))
+                           .on(`mouseleave.${pluginName}`, ()=> {_out[index] = setTimeout(_outfunc, _delay)});
+              }            
+            }, _delay);
+          };
+          let mouseleaveFunc = function(index){
+            clearTimeout(_in[index]);
+            _out[index] = setTimeout(_outfunc, _delay);   
+          };
+          if(this.options.proxy){
+            $ele.on('mouseenter.' + pluginName, this.options.proxy, function(){
+              that.options.proxy = $ele;
+              that.element = $(this);
+              mouseenterFunc.call(this, $(this).index(proxy), that.initialAttr());
+            }).on('mouseleave.' + pluginName, this.options.proxy, function(){
+              that.options.proxy = $ele;
+              that.element = $(this);
+              mouseleaveFunc.call(this, $(this).index(proxy));
+            });
+          }else{
+            $ele.on('mouseenter.' + pluginName, mouseenterFunc)
+                .on('mouseleave.' + pluginName, mouseleaveFunc);
+          }
+          this._off = function(){
+            $ele.off('mouseenter.' + pluginName)
+                .off('mouseleave.' + pluginName);
+          };
+          break;
+        case 'hide' :
+          break;
+        default :
+          this.show();
+          this.play();
+      }
+    }
+    initialAttr(){
+      let that = this;
+      let obj = {};
+      //:代表别名
+      ['position', 'title:content', 'zindex', 'top', 'left'].forEach(v => {  
+        let arr = v.split(":");
+        if (arr.length > 1) {
+          if(this.element.attr("data-" + arr[0]) ) {
+            this.options[arr[1]] = obj[arr[1]] = this.element.attr("data-" + arr[0]);
+          }
+        } else {
+          if(this.element.attr("data-" + v) ) {
+            this.options[v] = obj[arr[v]] = this.element.attr("data-" + v);
+          }
+        }
+      });
+      return obj;
+    }
+    toNumber(){
+      var reg = new RegExp('^[-0-9]+(px|em|rem)?$');
+      ['left', 'top', 'zindex', 'width', 'height', 'timeout', 'css>close-size', 'arrow>size', 'arrow>left'].forEach(v => {
+        let arr = v.split('>');
+        if(arr.length > 1){
+          var key = this.options[arr[0]][arr[1]];
+          if(!key)
+            this.options[arr[0]][arr[1]] = 0;
+          else if(reg.test(key))
+            this.options[arr[0]][arr[1]] = parseInt(key, 10);
+        }else{
+          if(!this.options[v])
+            this.options[v] = 0;
+          else if(reg.test(this.options[v]))
+            this.options[v] = parseInt(this.options[v], 10);
+        }
+      });
+      return this;
+    }
+    mergeOptions(){
+      Object.keys(this.options).forEach(v => {
+        if(['size', 'align'].indexOf(v) > -1){
+          this.options.arrow[v] = this.options[v];
+        }else if(['init', 'show', 'windowborder', 'beforeshow', 'hide'].indexOf(v) > -1){
+          this.options.callback[v] = this.options[v];
+        }else if(/^padding/i.test(v) || /^border/i.test(v) || /^background/i.test(v) || v==='font-size' || v==='font-size' || v==='line-height' || v==='height' || v==='width' ){
+          this.options.css[v] = this.options[v];
+        }
+      });
+      return this;
+    }
+    setZindex(){
+      let getAutoIndex = ()=>{
+        let maxindex = 0;
+        this.element.parents().each(function () {
+          let getindex = parseInt($(this).css('z-index'), 10);
+          if (maxindex < getindex) maxindex = getindex;
+        });
+        return maxindex + (++$[pluginName].zindex);
+      };
+      let zindex = this.options.zindex;
+      if (zindex.toString().indexOf('auto') > -1) {
+        this.helper.css('z-index', getAutoIndex());
+      }else if(typeof zindex === 'string' && /^(\-|\+)/.test(zindex)){
+        this.helper.css('z-index', getAutoIndex() + parseInt(zindex, 10));
+      }else{
+        this.helper.css('z-index', zindex);
+      }
+      return this;
+    }
+    alias(options){
+      //arrow 简写
+      if( typeof options.arrow === 'string' ){
+        let arrowArr = options.arrow.split(',') ;
+        let arrKey = [];
+        for(let i in defaults.arrow) defaults.arrow.hasOwnProperty(i) && arrKey.push(i);
+        options.arrow = $.extend({},defaults.arrow);
+        arrowArr.forEach((v, i) => {
+          v = v.trim();
+          if(v) options.arrow[ arrKey[i] ] = v;
+        });
+      }
+    }
+    _windowborder(func) {
+      let pad = 3,
+          A, B,
+          offsetLeft   = this.helper.offset().left,
+          offsetTop    = this.helper.offset().top,
+          scrollTop    = $(document).scrollTop(),
+          scrollLeft   = $(document).scrollLeft(),
+          windowWidth  = $(window).width(),
+          windowHeight = $(window).height(),
+          data = {
+            top: false,
+            right: false,
+            bottom: false,
+            left: false,
+            width: this.helper.outerWidth(),
+            height: this.helper.outerHeight()
+          };
+
+      A = offsetTop - pad;
+      B = scrollTop;
+      A < B && (data.top = B - A);
+
+      A = offsetLeft + data.width + pad;
+      B = scrollLeft + windowWidth;
+      A > B && (data.right = A - B);
+
+      A = offsetTop + data.height + pad;
+      B = scrollTop + windowHeight;
+      A > B && (data.bottom = A - B);
+
+      A = offsetLeft - pad;
+      B = scrollLeft;
+      A < B && (data.left = B - A);
+      func && func.call(this, data);
+    };
+  }
+
+  $.fn[pluginName] = $.fn.alertTs = function (options) {
+    options = options || {};
+    if (typeof options == 'string') {
+      let args = arguments,
+          method = options;
+      Array.prototype.shift.call(args);
+      switch (method) {
+        case "getClass":
+          return $(this).data('plugin_' + pluginName);
+        default:
+          return this.each(function () {
+            let plugin = $(this).data('plugin_' + pluginName);
+            if (plugin && plugin[method]) plugin[method].apply(plugin, args);
+          });
+      };
+    } else {
+      return this.each(function () {
+        if(options.proxy){
+          let ele = $(this).find(options.proxy);
+          let plugin = ele.data('plugin_' + pluginName);
+          if(plugin){
+            if(!['click', 'hover', 'hide'].some(v => v===options.act)){
+              plugin.show(options);
+            }else{
+              plugin.refresh(options);
+            }
+          }else{
+            ele.data('plugin_' + pluginName, new AlertTs($(this), options));
+          }
+        }else{
+          let plugin = $(this).data('plugin_' + pluginName);
+          if(plugin){
+            if(!['click', 'hover', 'hide'].some(v => v===options.act)){
+              plugin.show(options);
+            }else{
+              plugin.refresh(options);
+            }
+          }else{
+            $(this).data('plugin_' + pluginName, new AlertTs($(this), options));
+          }
+        }
+      });
+    };
+  };
+
+  $[pluginName] = {
+    id : 0,
+    zindex : 100,
+    parent: (element) => $(element).closest('.'+className).data("plugin_" + pluginName).data("plugin_" + pluginName)    
+  }
+}(jQuery, window));
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_rules__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_loading__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_unit__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index_css__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_rules__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_loading__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_unit__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__ = __webpack_require__(4);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -196,34 +1689,7 @@ $.fn[pluginName] = function (...arg) {
 };
 
 /***/ }),
-/* 1 */,
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(5);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(9)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.css", function() {
-			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./index.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 3 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -344,7 +1810,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 4 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -358,9 +1824,9 @@ function fromByteArray (uint8) {
 
 
 
-var base64 = __webpack_require__(3)
-var ieee754 = __webpack_require__(7)
-var isArray = __webpack_require__(8)
+var base64 = __webpack_require__(10)
+var ieee754 = __webpack_require__(14)
+var isArray = __webpack_require__(15)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2138,13 +3604,27 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
 
 /***/ }),
-/* 5 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(6)(undefined);
+exports = module.exports = __webpack_require__(2)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".alert-ts {\n  position: absolute;\n  display: none;\n  left: 0;\n  top: 0;\n  font-size: 12px;\n  line-height: 22px;\n  border-radius: 2px;\n  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);\n}\n.alert-ts .closex {\n  font-family: Verdana;\n  padding-bottom: 1px;\n  transition: all 0.3s ease-out;\n  position: absolute;\n  z-index: 3;\n  cursor: pointer;\n}\n.alert-ts .closex:hover {\n  -webkit-transform: rotate(180deg);\n}\n.alert-ts .alert-ts-arrow {\n  position: absolute;\n  overflow: hidden;\n}\n.alert-ts .alert-ts-arrow i {\n  display: block;\n  width: 0px;\n  height: 0px;\n  overflow: hidden;\n  position: absolute;\n  z-index: 2;\n  border-style: solid;\n  border-width: 1px;\n  border-color: transparent transparent transparent transparent;\n}\n.alert-ts .alert-ts-arrow .a1 {\n  z-index: 1;\n}\n.alert-ts .loading {\n  min-width: 80px;\n  min-height: 30px;\n}\n.alert-ts .loading div {\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  font-size: 0;\n  line-height: 0;\n  text-align: center;\n}\n.alert-ts .loading div i {\n  background-color: #fff;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  margin: 2px;\n  -webkit-animation-fill-mode: both;\n  animation-fill-mode: both;\n  display: inline-block;\n  animation: ball-beat 0.7s 0s infinite linear;\n}\n.alert-ts .loading div i:nth-child(2n-1) {\n  -webkit-animation-delay: 0.35s;\n  animation-delay: 0.35s;\n}\n/* \n  皮肤 \n*/\n/* default */\n.alert-ts-default {\n  padding: 8px 10px;\n  border: 1px solid #e2e2e2;\n  background-color: #fff;\n  color: #666;\n}\n.alert-ts-default .loading i {\n  background-color: #d2d2d2 !important;\n}\n.alert-ts-default .closex {\n  color: #d2d2d2;\n}\n/* info */\n.alert-ts-info {\n  padding: 8px 10px;\n  border: 1px solid #ceeaff;\n  background-color: #e8f8ff;\n  color: #6699cc;\n}\n.alert-ts-info .loading i {\n  background-color: #b7e7fe !important;\n}\n.alert-ts-info .closex {\n  color: #a8d7f5;\n}\n/* warning */\n.alert-ts-warning {\n  padding: 8px 10px;\n  border: 1px solid #ffe99d;\n  background-color: #fff8d2;\n  color: #cc8c28;\n}\n.alert-ts-warning .loading i {\n  background-color: #f9d574 !important;\n}\n.alert-ts-warning .closex {\n  color: #ebd97b;\n}\n/* error */\n.alert-ts-error {\n  padding: 8px 10px;\n  border: 1px solid #ffd0d0;\n  background-color: #fff0ee;\n  color: #cc0000;\n}\n.alert-ts-error .loading i {\n  background-color: #ffbaba !important;\n}\n.alert-ts-error .closex {\n  color: #edb6b6;\n}\n.animated-zoomin {\n  animation: zoomin 0.2s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-top {\n  animation: fadein-top 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-right {\n  animation: fadein-right 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-bottom {\n  animation: fadein-bottom 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-left {\n  animation: fadein-left 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-bounceout {\n  animation: bounce-in 0.75s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n/* 动画 */\n@-webkit-keyframes zoomin {\n  from {\n    opacity: 0;\n    -webkit-transform: scale3d(0.1, 0.1, 0.1);\n  }\n  to {\n    opacity: 1;\n  }\n}\n@keyframes zoomin {\n  from {\n    opacity: 0;\n    transform: scale3d(0.1, 0.1, 0.1);\n  }\n  to {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes ball-beat {\n  50% {\n    opacity: 0.2;\n    -webkit-transform: scale(0.75);\n  }\n  100% {\n    opacity: 1;\n    -webkit-transform: scale(1);\n  }\n}\n@keyframes ball-beat {\n  50% {\n    opacity: 0.2;\n    transform: scale(0.75);\n  }\n  100% {\n    opacity: 1;\n    transform: scale(1);\n  }\n}\n@-webkit-keyframes bounce-in {\n  from,\n  20%,\n  40%,\n  60%,\n  80%,\n  to {\n    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);\n    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);\n  }\n  0% {\n    opacity: 0;\n    -webkit-transform: scale3d(0.3, 0.3, 0.3);\n    transform: scale3d(0.3, 0.3, 0.3);\n  }\n  20% {\n    -webkit-transform: scale3d(1.1, 1.1, 1.1);\n    transform: scale3d(1.1, 1.1, 1.1);\n  }\n  40% {\n    -webkit-transform: scale3d(0.9, 0.9, 0.9);\n    transform: scale3d(0.9, 0.9, 0.9);\n  }\n  60% {\n    opacity: 1;\n    -webkit-transform: scale3d(1.03, 1.03, 1.03);\n    transform: scale3d(1.03, 1.03, 1.03);\n  }\n  80% {\n    -webkit-transform: scale3d(0.97, 0.97, 0.97);\n    transform: scale3d(0.97, 0.97, 0.97);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: scale3d(1, 1, 1);\n    transform: scale3d(1, 1, 1);\n  }\n}\n@keyframes bounce-in {\n  from,\n  20%,\n  40%,\n  60%,\n  80%,\n  to {\n    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);\n  }\n  0% {\n    opacity: 0;\n    transform: scale3d(0.3, 0.3, 0.3);\n  }\n  20% {\n    transform: scale3d(1.1, 1.1, 1.1);\n  }\n  40% {\n    transform: scale3d(0.9, 0.9, 0.9);\n  }\n  60% {\n    opacity: 1;\n    transform: scale3d(1.03, 1.03, 1.03);\n  }\n  80% {\n    transform: scale3d(0.97, 0.97, 0.97);\n  }\n  to {\n    opacity: 1;\n    transform: scale3d(1, 1, 1);\n  }\n}\n@-webkit-keyframes fadein-bottom {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(0, -10px, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-bottom {\n  from {\n    opacity: 0;\n    transform: translate3d(0, -10px, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n@-webkit-keyframes fadein-right {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(-10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-right {\n  from {\n    opacity: 0;\n    transform: translate3d(-10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n@-webkit-keyframes fadein-left {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-left {\n  from {\n    opacity: 0;\n    transform: translate3d(10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n@-webkit-keyframes fadein-top {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(0, 10px, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-top {\n  from {\n    opacity: 0;\n    transform: translate3d(0, 10px, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(2)(undefined);
 // imports
 
 
@@ -2155,89 +3635,7 @@ exports.push([module.i, ".valid-error {\n  border-color: #ff6555!important;\n  c
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(Buffer) {/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-// css base code, injected by the css-loader
-module.exports = function(useSourceMap) {
-	var list = [];
-
-	// return the list of modules as css string
-	list.toString = function toString() {
-		return this.map(function (item) {
-			var content = cssWithMappingToString(item, useSourceMap);
-			if(item[2]) {
-				return "@media " + item[2] + "{" + content + "}";
-			} else {
-				return content;
-			}
-		}).join("");
-	};
-
-	// import a list of modules into the list
-	list.i = function(modules, mediaQuery) {
-		if(typeof modules === "string")
-			modules = [[null, modules, ""]];
-		var alreadyImportedModules = {};
-		for(var i = 0; i < this.length; i++) {
-			var id = this[i][0];
-			if(typeof id === "number")
-				alreadyImportedModules[id] = true;
-		}
-		for(i = 0; i < modules.length; i++) {
-			var item = modules[i];
-			// skip already imported module
-			// this implementation is not 100% perfect for weird media query combinations
-			//  when a module is imported multiple times with different media queries.
-			//  I hope this will never occur (Hey this way we have smaller bundles)
-			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-				if(mediaQuery && !item[2]) {
-					item[2] = mediaQuery;
-				} else if(mediaQuery) {
-					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-				}
-				list.push(item);
-			}
-		}
-	};
-	return list;
-};
-
-function cssWithMappingToString(item, useSourceMap) {
-	var content = item[1] || '';
-	var cssMapping = item[3];
-	if (!cssMapping) {
-		return content;
-	}
-
-	if (useSourceMap) {
-		var sourceMapping = toComment(cssMapping);
-		var sourceURLs = cssMapping.sources.map(function (source) {
-			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
-		});
-
-		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
-	}
-
-	return [content].join('\n');
-}
-
-// Adapted from convert-source-map (MIT)
-function toComment(sourceMap) {
-  var base64 = new Buffer(JSON.stringify(sourceMap)).toString('base64');
-  var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
-
-  return '/*# ' + data + ' */';
-}
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer))
-
-/***/ }),
-/* 7 */
+/* 14 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2327,7 +3725,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 8 */
+/* 15 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2338,298 +3736,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-var stylesInDom = {},
-	memoize = function(fn) {
-		var memo;
-		return function () {
-			if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-			return memo;
-		};
-	},
-	isOldIE = memoize(function() {
-		return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
-	}),
-	getElement = (function(fn) {
-		var memo = {};
-		return function(selector) {
-			if (typeof memo[selector] === "undefined") {
-				memo[selector] = fn.call(this, selector);
-			}
-			return memo[selector]
-		};
-	})(function (styleTarget) {
-		return document.querySelector(styleTarget)
-	}),
-	singletonElement = null,
-	singletonCounter = 0,
-	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(10);
-
-module.exports = function(list, options) {
-	if(typeof DEBUG !== "undefined" && DEBUG) {
-		if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-	}
-
-	options = options || {};
-	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
-
-	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-	// tags it will allow on a page
-	if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-
-	// By default, add <style> tags to the <head> element
-	if (typeof options.insertInto === "undefined") options.insertInto = "head";
-
-	// By default, add <style> tags to the bottom of the target
-	if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-
-	var styles = listToStyles(list);
-	addStylesToDom(styles, options);
-
-	return function update(newList) {
-		var mayRemove = [];
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			domStyle.refs--;
-			mayRemove.push(domStyle);
-		}
-		if(newList) {
-			var newStyles = listToStyles(newList);
-			addStylesToDom(newStyles, options);
-		}
-		for(var i = 0; i < mayRemove.length; i++) {
-			var domStyle = mayRemove[i];
-			if(domStyle.refs === 0) {
-				for(var j = 0; j < domStyle.parts.length; j++)
-					domStyle.parts[j]();
-				delete stylesInDom[domStyle.id];
-			}
-		}
-	};
-};
-
-function addStylesToDom(styles, options) {
-	for(var i = 0; i < styles.length; i++) {
-		var item = styles[i];
-		var domStyle = stylesInDom[item.id];
-		if(domStyle) {
-			domStyle.refs++;
-			for(var j = 0; j < domStyle.parts.length; j++) {
-				domStyle.parts[j](item.parts[j]);
-			}
-			for(; j < item.parts.length; j++) {
-				domStyle.parts.push(addStyle(item.parts[j], options));
-			}
-		} else {
-			var parts = [];
-			for(var j = 0; j < item.parts.length; j++) {
-				parts.push(addStyle(item.parts[j], options));
-			}
-			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-		}
-	}
-}
-
-function listToStyles(list) {
-	var styles = [];
-	var newStyles = {};
-	for(var i = 0; i < list.length; i++) {
-		var item = list[i];
-		var id = item[0];
-		var css = item[1];
-		var media = item[2];
-		var sourceMap = item[3];
-		var part = {css: css, media: media, sourceMap: sourceMap};
-		if(!newStyles[id])
-			styles.push(newStyles[id] = {id: id, parts: [part]});
-		else
-			newStyles[id].parts.push(part);
-	}
-	return styles;
-}
-
-function insertStyleElement(options, styleElement) {
-	var styleTarget = getElement(options.insertInto)
-	if (!styleTarget) {
-		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
-	}
-	var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-	if (options.insertAt === "top") {
-		if(!lastStyleElementInsertedAtTop) {
-			styleTarget.insertBefore(styleElement, styleTarget.firstChild);
-		} else if(lastStyleElementInsertedAtTop.nextSibling) {
-			styleTarget.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-		} else {
-			styleTarget.appendChild(styleElement);
-		}
-		styleElementsInsertedAtTop.push(styleElement);
-	} else if (options.insertAt === "bottom") {
-		styleTarget.appendChild(styleElement);
-	} else {
-		throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-	}
-}
-
-function removeStyleElement(styleElement) {
-	styleElement.parentNode.removeChild(styleElement);
-	var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-	if(idx >= 0) {
-		styleElementsInsertedAtTop.splice(idx, 1);
-	}
-}
-
-function createStyleElement(options) {
-	var styleElement = document.createElement("style");
-	options.attrs.type = "text/css";
-
-	attachTagAttrs(styleElement, options.attrs);
-	insertStyleElement(options, styleElement);
-	return styleElement;
-}
-
-function createLinkElement(options) {
-	var linkElement = document.createElement("link");
-	options.attrs.type = "text/css";
-	options.attrs.rel = "stylesheet";
-
-	attachTagAttrs(linkElement, options.attrs);
-	insertStyleElement(options, linkElement);
-	return linkElement;
-}
-
-function attachTagAttrs(element, attrs) {
-	Object.keys(attrs).forEach(function (key) {
-		element.setAttribute(key, attrs[key]);
-	});
-}
-
-function addStyle(obj, options) {
-	var styleElement, update, remove;
-
-	if (options.singleton) {
-		var styleIndex = singletonCounter++;
-		styleElement = singletonElement || (singletonElement = createStyleElement(options));
-		update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-		remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-	} else if(obj.sourceMap &&
-		typeof URL === "function" &&
-		typeof URL.createObjectURL === "function" &&
-		typeof URL.revokeObjectURL === "function" &&
-		typeof Blob === "function" &&
-		typeof btoa === "function") {
-		styleElement = createLinkElement(options);
-		update = updateLink.bind(null, styleElement, options);
-		remove = function() {
-			removeStyleElement(styleElement);
-			if(styleElement.href)
-				URL.revokeObjectURL(styleElement.href);
-		};
-	} else {
-		styleElement = createStyleElement(options);
-		update = applyToTag.bind(null, styleElement);
-		remove = function() {
-			removeStyleElement(styleElement);
-		};
-	}
-
-	update(obj);
-
-	return function updateStyle(newObj) {
-		if(newObj) {
-			if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-				return;
-			update(obj = newObj);
-		} else {
-			remove();
-		}
-	};
-}
-
-var replaceText = (function () {
-	var textStore = [];
-
-	return function (index, replacement) {
-		textStore[index] = replacement;
-		return textStore.filter(Boolean).join('\n');
-	};
-})();
-
-function applyToSingletonTag(styleElement, index, remove, obj) {
-	var css = remove ? "" : obj.css;
-
-	if (styleElement.styleSheet) {
-		styleElement.styleSheet.cssText = replaceText(index, css);
-	} else {
-		var cssNode = document.createTextNode(css);
-		var childNodes = styleElement.childNodes;
-		if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-		if (childNodes.length) {
-			styleElement.insertBefore(cssNode, childNodes[index]);
-		} else {
-			styleElement.appendChild(cssNode);
-		}
-	}
-}
-
-function applyToTag(styleElement, obj) {
-	var css = obj.css;
-	var media = obj.media;
-
-	if(media) {
-		styleElement.setAttribute("media", media)
-	}
-
-	if(styleElement.styleSheet) {
-		styleElement.styleSheet.cssText = css;
-	} else {
-		while(styleElement.firstChild) {
-			styleElement.removeChild(styleElement.firstChild);
-		}
-		styleElement.appendChild(document.createTextNode(css));
-	}
-}
-
-function updateLink(linkElement, options, obj) {
-	var css = obj.css;
-	var sourceMap = obj.sourceMap;
-
-	/* If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
-	and there is no publicPath defined then lets turn convertToAbsoluteUrls
-	on by default.  Otherwise default to the convertToAbsoluteUrls option
-	directly
-	*/
-	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
-
-	if (options.convertToAbsoluteUrls || autoFixUrls){
-		css = fixUrls(css);
-	}
-
-	if(sourceMap) {
-		// http://stackoverflow.com/a/26603875
-		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-	}
-
-	var blob = new Blob([css], { type: "text/css" });
-
-	var oldSrc = linkElement.href;
-
-	linkElement.href = URL.createObjectURL(blob);
-
-	if(oldSrc)
-		URL.revokeObjectURL(oldSrc);
-}
-
-
-/***/ }),
-/* 10 */
+/* 16 */
 /***/ (function(module, exports) {
 
 
@@ -2724,7 +3831,33 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 11 */
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(12);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(3)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../css-loader/index.js!../../../less-loader/dist/index.js!./style.css", function() {
+			var newContent = require("!!../../../css-loader/index.js!../../../less-loader/dist/index.js!./style.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 18 */
 /***/ (function(module, exports) {
 
 var g;
@@ -2749,1138 +3882,6 @@ try {
 
 module.exports = g;
 
-
-/***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
-const alias = {
-  '*': 'required',
-  'e': 'email',
-  'n': 'number',
-  'm': 'mobile'
-};
-/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
-
-
-function lang(lang = 'cn') {
-  let cn = {
-    required: '请填写$title !',
-    select_required: '请选择$title !',
-    length_max: '$title不能大于$max个字 !',
-    length_min: '$title不能小于$min个字 !',
-    number_max: '$title不能大于$max !',
-    number_min: '$title不能小于$min !',
-    checked_min: '$title至少选择$min项 !',
-    checked_max: '$title最多选择$max项 !',
-    email: '请填写正确的$title !',
-    mobile: '请填写正确的$title !',
-    phone: '请填写正确的$title !',
-    url: '请填写正确的$title !',
-    idcard: '请填写正确的$title !',
-    repeat: '请填写正确的$title',
-    some: '请填写正确的$title',
-    not: '请填写正确的$title',
-    number: '$title请填写数字 !',
-    integer: '$title请填写整数',
-    float: '$title请填写数字 !',
-    mobile: '$title输入不正确 !',
-    pattern: '$title不符合规范 !',
-    higher: '结束$title不能小于开始$title',
-    repassword: '两次填写的密码不一致'
-  };
-  let en = {};
-  return eval(lang);
-};
-
-/***/ }),
-/* 13 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(12);
-/* unused harmony export getJQelement */
-/* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
-/* unused harmony export forElement */
-/* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
-/* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-
-function getJQelement(element, form = 'form') {
-  if (!element) return;
-  if (typeof element === 'string') {
-    element = /^[.#]/.test(element) ? $(element, form) : $(`[name='${element}']`, form);
-  } else if (element instanceof jQuery) {
-    element = element;
-  } else {
-    element = $(element, form);
-  }
-  return element.length > 0 ? element : false;
-}
-
-function formatItem(type, title) {
-  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
-  let [t1, t2] = (type => {
-    type = type.match(/^(.*?(?:\(.*?\))?)-(.*?(?:\(.*?\))?)$/) || [];
-    return type.splice(1);
-  })(type);
-  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
-  let reTypeRange = (type, range, prefix) => {
-    let msg = '',
-        flag = false;
-    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
-      flag = true;
-      if ($4) msg = $4.replace(/\$/g, title);
-      return prefix + range + '=' + $2;
-    });
-    return flag ? { type, msg } : false;
-  };
-  let reType = type => {
-    let msg = '';
-    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
-      if ($3) msg = $3.replace(/\$/g, title);
-      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
-    });
-    return { type, msg };
-  };
-  return t2 ? [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] : [reTypeRange(type, 'min') || reType(type)];
-}
-
-function jsonFormat(type, title) {
-  if (!type) return [];
-  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
-  type = type.reduce((a, b) => {
-    return [].push.apply(a, formatItem(b, title)), a;
-  }, []);
-  return type;
-}
-/*
-  valid="用户名|*, maben, s10-15"
-  valid-required-msg=""
-  valid-error-msg=""
-*/
-
-//对有for的进行 两个元素相互绑定对象
-function forElement(element, type, form) {
-  let forEle = getJQelement(type.indexOf('for') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
-  if (forEle) {
-    let mergeDataValidFor = (element, forElement) => {
-      let ele = element.data('valid-for');
-      ele = ele ? ele.add(forElement) : forElement;
-      element.data('valid-for', ele);
-    };
-    mergeDataValidFor(forEle, element);
-    mergeDataValidFor(element, forEle);
-  }
-  return forEle;
-}
-
-function attrToJson(element, form, rules) {
-  element = $(element);
-  let prefix = 'valid';
-  let attr = element.attr(prefix).split(/\s*\|\s*/);
-  let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
-  let msg = type => {
-    type = element.attr(`${prefix}-${type}`);
-    return type ? type.replace('$', title) : false;
-  };
-  let obj = {
-    title,
-    forElement: forElement(element, type, form),
-    msg: msg('error') || false
-  };
-
-  if (/input|select|textarea/i.test(element[0].tagName)) {
-    return _extends({}, obj, { type: jsonFormat(type, title), element });
-  } else {
-    return _extends({}, obj, {
-      type: jsonFormat(type, title),
-      element: (() => {
-        let [ele1, ele2] = [element.find(':checkbox'), element.find(':radio')];
-        return ele1.length > ele2.length ? ele1 : ele2;
-      })()
-    });
-  }
-}
-/*
-  将options里的自定义规则放到rules里面
-*/
-function rulesMerge(options, defaultOptions, callback) {
-  Object.keys(options).forEach(v => {
-    if (!(v in defaultOptions) && typeof options[v] === 'function') callback(v, options[v]);
-  });
-}
-
-/***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_style_css__);
-
-
-(function($, window, undefined) {
-  'use strict';
-  const pluginName = 'AlertTs';
-  const className = 'alert-ts';
-  const defaults = {
-    position: 'top',           //对齐方向  top,right,bottom,left
-    left: 0,                   //弹框左偏移
-    top: 3,                    //弹框上偏移
-    act: 'hover',              //鼠标事件  hover, click(点击显示，空白消失), false(直接弹框，没有事件)
-    hoverdelay : 200,
-    proxy : false,             //事件代理 例 $('body').AlertTs({ proxy : '.btn' });
-    arrow: {                   //可以简写为 arrow: 'center,8,0' 第一个数字为left，第二个为size, 类css随便调换位置
-      align: 'left',           //角的对齐方式
-      left: 0,                 //角的偏移
-      size: 8,                 //角的大小
-    },
-    animation: 'fadein',       //动画效果  fadein, zoomin, bounceout
-    zindex: 'auto',            //z轴层级，auto时，会自动获取，建议auto
-    closex: false,             //true 则显示x按钮
-    content: '',               //显示内容
-    width: 'auto',             //宽度设置
-    height: 'auto',            //高度设置
-    cache: false,              //缓存，当弹层关闭时会删除插件创建的dom， true时，会保留。
-    css: {                     //样式
-      'close-color' : '',
-      'close-size' : 14
-    },
-    cssStyle: 'default',       //皮肤  default,info,warning,error
-    timeout: false,             //数字型 多少毫秒后弹框消失
-    callback: {
-      init: $.noop,
-      show: $.noop,
-      beforeshow: $.noop,
-      hide: $.noop,
-      windowborder: $.noop     //当弹框遇到浏览器边界时会处发  $('.btn').AlertTs({ windowborder : (v) => console.log(v) });
-    }
-  }
-
-  class AlertTs {
-    constructor(element, options){
-      this.alias(options);
-      this.element  = element;
-      this.options  = $.extend(true, {}, defaults, options);
-      this.helper   = null;
-      this.$content = null;
-      this.closex   = null;
-      this.$arrow   = null;
-      this.loading  = null;
-      this._id      = ++$[pluginName].id;
-      this._left    = 0;
-      this._top     = 0;
-      this._visible = false;
-      this._timeout = false;
-      this._timer   = false;
-      this._helper  = false;  //_helper代表helper是否已经插入到dom结构中
-      this._off     = false;
-      this.initialAttr();
-      this.mergeOptions();
-      this.toNumber();
-      this.createUi();
-      this.bindEvent();
-      this.options.callback.init.call(this);
-    }
-    createUi(){
-      let helper = $(`<div class="${className}"></div>`).css(this.options.css).data('plugin_' + pluginName, this.element);
-      this.$content = $(`<div>${this.options.content}</div>`).appendTo(helper);
-      if(this.options.arrow){
-        this.$arrow = $(`<div class="${className}-arrow"><i></i><i class="a1"></i></div>`).appendTo(helper);
-      }
-      if(this.options.closex){
-        helper.css('padding-right', Number.parseInt(helper.css('padding-right'), 10) + 8);
-        this.closex = $("<span class='closex'>×</span>").appendTo(helper);
-        if(this.options.css['close-size']) this.closex.css('font-size', this.options.css['close-size']);
-        if(this.options.css['close-color']) this.closex.css('color', this.options.css['close-color']);
-        if(this.options.position === 'left'){
-          helper.css({
-            'padding-left' : Number.parseInt(helper.css('padding-left'),10) + Number.parseInt(this.options.css['close-size']/2)
-          })      
-          this.closex.css({
-            top : -4,
-            left : 1
-          });
-        }else{
-          helper.css({
-            'padding-right' : Number.parseInt(helper.css('padding-right'),10) + Number.parseInt(this.options.css['close-size']/2)
-          })
-          this.closex.css({
-            top : -4,
-            right : 1
-          });
-        }
-        this.closex.on('click', () => {
-          if(typeof this.options.closex === 'function') this.options.closex.call(this);
-          this.hide()
-        });}
-      this.options.cssStyle && helper.addClass(className + '-' + this.options.cssStyle);
-      this.helper = helper;
-    }
-    createLoading(){
-      this.loading = this.$content.html(`<div class="loading"><div><i/><i/><i/></div></div>`).children('.loading');
-      let box = this.loading.find('div');
-      box.css({
-        'margin-left': -box.innerWidth() / 2,
-        'margin-top' : -box.innerHeight() / 2
-      });
-    }
-    show(options=false){
-      if(this.options.callback.beforeshow.call(this) === false) return this;
-      if(this._visible) return this;
-      this._visible = true;
-      this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
-        if (this.helper &&
-          this.helper.has(event.target).length === 0 &&
-          this.helper[0] != event.target &&
-          this.element[0] != event.target &&
-          this.element.has(event.target).length === 0) {
-          this.hide();
-        };
-      });
-
-      this.options.timeout && setTimeout( ()=> this.hide(), this.options.timeout );
-      if(this._helper){
-        this.helper.show();
-      }else{
-        this.helper.appendTo('body').css('display','block');
-        this._helper = true;
-      }
-      !this.options.content && this.createLoading();
-      this.refresh(options);
-      this.options.callback.show.call(this);
-      this.options.callback.windowborder && this._windowborder( this.options.callback.windowborder );
-      switch(this.options.animation){
-        case 'fadein' :
-          this.helper.addClass('animated-'+this.options.animation+'-'+this.options.position);
-        default :
-          this.options.animation && this.helper.addClass('animated-'+this.options.animation)
-      }
-      return this;
-    }
-    hide(){
-      if(!this._visible) return this;
-      this._visible = false;
-      this.options.act === 'click' && $(document).off('click.' + pluginName + this._id);
-      this.options.callback.hide.call(this);
-      this.helper.removeClass('animated-zoomin');
-      this.options.cache ? this.helper.hide() : this.removeTag();
-      return this;
-    }
-    removeTag(){
-      this.stop();
-      this.helper.detach();
-      this._helper = false;
-    }
-    destroy() {
-      this._off && this._off();
-      this.removeTag();
-      this.element.removeData('plugin_' + pluginName);
-    }
-    reArrow(){
-      if(!this.element || !this.helper.is(':visible')) return this;
-      let that = this,
-          size = this.options.arrow.size,
-          position = this.options.position,
-          left = this.options.arrow.left,
-          a1 = this.$arrow.find('i:eq(0)'),
-          a2 = this.$arrow.find('i:eq(1)'),
-          aw = parseInt(this.helper.css('border-left-width'),10);
-      this.$arrow.add(a1).add(a2).removeAttr('style');
-      this._top = 0;
-      this._left = 0;
-      a1.css({
-        'border-width' : that.options.arrow.size,
-        ['border-' + position + '-color'] : that.helper.css('background-color')
-      });
-      a2.css({
-        'border-width' : that.options.arrow.size,
-        ['border-' + position + '-color'] : that.helper.css('border-left-color')
-      });
-
-      let arrowPoint = 0;
-      let arrowBoxPoint;
-      {
-        let obj = {
-          left : ()=>{
-            arrowPoint = ((position == "top" || position == "bottom") && 10 || 5) + left;
-            arrowBoxPoint = -arrowPoint-size+3;
-          },
-          center : ()=>{
-            if (position == "top" || position == "bottom") {
-              arrowPoint = that.helper.innerWidth() / 2 - size + left;
-              arrowBoxPoint = -arrowPoint-size + that.element.outerWidth() / 2;
-            } else {
-              arrowPoint = that.helper.innerHeight() / 2 - size + left;
-              arrowBoxPoint = -arrowPoint-size + that.element.outerHeight() / 2;
-            };
-          },
-          right : ()=>{
-            if (position == "top" || position == "bottom") {
-              arrowPoint = that.helper.innerWidth() - size * 2 - 10 + left;
-            } else {
-              arrowPoint = that.helper.innerHeight() - size - 14 + left;
-            };
-            arrowBoxPoint = -arrowPoint-size+that.element.outerWidth()-3;
-          }
-        }
-        obj[that.options.arrow.align]();
-      };
-
-      let helperPoint = {
-        top : ()=>{
-          this.$arrow.css({
-            bottom: -size,
-            left: arrowPoint,
-            height: size + aw,
-            width: size*2
-          });
-          a2.css('top', aw);
-          this._left = arrowBoxPoint;
-        },
-        right : ()=>{
-          this.$arrow.css({
-            left: -size,
-            top: arrowPoint,
-            height: size*2,
-            width : size + aw
-          });
-          a1.css('right', 0);
-          a2.css('right', aw);
-          this._top = arrowBoxPoint;
-        },
-        bottom : ()=>{
-          this.$arrow.css({
-            top: -size-aw,
-            left: arrowPoint,
-            height: size + aw,
-            width: size*2
-          });
-          a1.css('bottom', 0);
-          a2.css('bottom', aw);
-          this._left = arrowBoxPoint;
-        },
-        left : ()=>{
-          this.$arrow.css({
-            right: -size,
-            top: arrowPoint,
-            height: size*2,
-            width : size + aw          
-          });
-          a2.css('left', aw);
-          this._top = arrowBoxPoint;
-        }
-      }
-      helperPoint[position]();
-      return this;
-    }
-    rePosition(){
-      if(!this.element || !this.helper.is(':visible')) return this;
-      let $ele = this.element,
-          that = this,
-          x = 0,
-          y = 0,
-          top = this.options.top,
-          left = this.options.left,
-          offset = this.element.offset(),
-          arrow  = this.options.arrow,
-          size   = arrow.size;
-      x = offset.left;
-      y = offset.top;
-      let point = {
-        top : ()=>{
-          x = x + left;
-          y = y - that.helper.outerHeight() - arrow.size - top;
-        },
-        right : ()=>{
-          x = x + $ele.outerWidth() + arrow.size + left;
-          y = y + top;
-        },
-        bottom : ()=>{
-          x = x + left;
-          y = y + $ele.outerHeight() + top + arrow.size;
-        },
-        left : ()=>{
-          x = x - that.helper.outerWidth() - arrow.size - left;
-          y = y + top;
-        }
-      }
-      point[this.options.position]();
-      this.helper.css({left: x + this._left, top: y + this._top});
-      return this;
-    }
-    play(){
-      this._timer = setTimeout( ()=> {
-        if(!this.element || !this.helper){
-          this.stop();
-          return this;
-        };
-        if (!this._visible || !this.element.is(":visible")) {
-          this.helper.hide();
-          this.stop();
-          return this;
-        };
-        this.rePosition();
-        this.play();
-      }, 250);
-      return this;
-    }
-    stop(){
-      this._timer && clearTimeout(this._timer);
-      return this;
-    }
-    reContent(str){
-      if(!str) return this;
-      if(!this._helper){
-        this.helper.appendTo('body');
-        this._helper = true;
-      };
-      this.$content.html(str);
-      return this;
-    }
-    refresh(options){
-      if(!this.element) return this;
-      if(options){
-        this.alias(options);
-        $.extend(true, this.options, options); 
-        this.mergeOptions().toNumber();
-        this.reContent(options.content);
-      }
-      this.helper.css(this.options.css);
-      this.options.cssStyle && this.helper.addClass(className + '-' + this.options.cssStyle);
-      this.setZindex();
-      this.reArrow();
-      this.rePosition();
-      return this;
-    }
-    bindEvent(){
-      let $ele = this.element;
-      let that = this;
-      let proxy = this.options.proxy;
-      switch(this.options.act){
-        case 'click' :
-          let eventFunc = function(options){ that.show(options) }
-          if(proxy){
-            $ele.on('click.' + pluginName, proxy, function(){
-              setTimeout(()=>{
-                that.options.proxy = $ele;
-                that.element = $(this);
-                eventFunc.call(this, that.initialAttr());
-              });
-            });
-          }else{
-            $ele.on('click.' + pluginName, eventFunc);   
-          }
-          this._off = function(){
-            $ele.off('click.' + pluginName);
-            $(document).off('click.' + pluginName + this._id);
-          };
-          break;
-        case 'hover' :
-          let _in = {}, 
-              _out = {}, 
-              _delay = this.options.hoverdelay,
-              _outfunc = ()=> that.hide();
-          let mouseenterFunc = function(index=0, options){
-            clearTimeout(_out[index]);
-            _in[index] = setTimeout(()=> {
-              that.show(options);
-              if(that.helper){
-                that.helper.off(`.${pluginName}`)
-                           .on(`mouseenter.${pluginName}`, ()=> clearTimeout(_out[index]))
-                           .on(`mouseleave.${pluginName}`, ()=> {_out[index] = setTimeout(_outfunc, _delay)});
-              }            
-            }, _delay);
-          };
-          let mouseleaveFunc = function(index){
-            clearTimeout(_in[index]);
-            _out[index] = setTimeout(_outfunc, _delay);   
-          };
-          if(this.options.proxy){
-            $ele.on('mouseenter.' + pluginName, this.options.proxy, function(){
-              that.options.proxy = $ele;
-              that.element = $(this);
-              mouseenterFunc.call(this, $(this).index(proxy), that.initialAttr());
-            }).on('mouseleave.' + pluginName, this.options.proxy, function(){
-              that.options.proxy = $ele;
-              that.element = $(this);
-              mouseleaveFunc.call(this, $(this).index(proxy));
-            });
-          }else{
-            $ele.on('mouseenter.' + pluginName, mouseenterFunc)
-                .on('mouseleave.' + pluginName, mouseleaveFunc);
-          }
-          this._off = function(){
-            $ele.off('mouseenter.' + pluginName)
-                .off('mouseleave.' + pluginName);
-          };
-          break;
-        case 'hide' :
-          break;
-        default :
-          this.show();
-          this.play();
-      }
-    }
-    initialAttr(){
-      let that = this;
-      let obj = {};
-      //:代表别名
-      ['position', 'title:content', 'zindex', 'top', 'left'].forEach(v => {  
-        let arr = v.split(":");
-        if (arr.length > 1) {
-          if(this.element.attr("data-" + arr[0]) ) {
-            this.options[arr[1]] = obj[arr[1]] = this.element.attr("data-" + arr[0]);
-          }
-        } else {
-          if(this.element.attr("data-" + v) ) {
-            this.options[v] = obj[arr[v]] = this.element.attr("data-" + v);
-          }
-        }
-      });
-      return obj;
-    }
-    toNumber(){
-      var reg = new RegExp('^[-0-9]+(px|em|rem)?$');
-      ['left', 'top', 'zindex', 'width', 'height', 'timeout', 'css>close-size', 'arrow>size', 'arrow>left'].forEach(v => {
-        let arr = v.split('>');
-        if(arr.length > 1){
-          var key = this.options[arr[0]][arr[1]];
-          if(!key)
-            this.options[arr[0]][arr[1]] = 0;
-          else if(reg.test(key))
-            this.options[arr[0]][arr[1]] = parseInt(key, 10);
-        }else{
-          if(!this.options[v])
-            this.options[v] = 0;
-          else if(reg.test(this.options[v]))
-            this.options[v] = parseInt(this.options[v], 10);
-        }
-      });
-      return this;
-    }
-    mergeOptions(){
-      Object.keys(this.options).forEach(v => {
-        if(['size', 'align'].indexOf(v) > -1){
-          this.options.arrow[v] = this.options[v];
-        }else if(['init', 'show', 'windowborder', 'beforeshow', 'hide'].indexOf(v) > -1){
-          this.options.callback[v] = this.options[v];
-        }else if(/^padding/i.test(v) || /^border/i.test(v) || /^background/i.test(v) || v==='font-size' || v==='font-size' || v==='line-height' || v==='height' || v==='width' ){
-          this.options.css[v] = this.options[v];
-        }
-      });
-      return this;
-    }
-    setZindex(){
-      let getAutoIndex = ()=>{
-        let maxindex = 0;
-        this.element.parents().each(function () {
-          let getindex = parseInt($(this).css('z-index'), 10);
-          if (maxindex < getindex) maxindex = getindex;
-        });
-        return maxindex + (++$[pluginName].zindex);
-      };
-      let zindex = this.options.zindex;
-      if (zindex.toString().indexOf('auto') > -1) {
-        this.helper.css('z-index', getAutoIndex());
-      }else if(typeof zindex === 'string' && /^(\-|\+)/.test(zindex)){
-        this.helper.css('z-index', getAutoIndex() + parseInt(zindex, 10));
-      }else{
-        this.helper.css('z-index', zindex);
-      }
-      return this;
-    }
-    alias(options){
-      //arrow 简写
-      if( typeof options.arrow === 'string' ){
-        let arrowArr = options.arrow.split(',') ;
-        let arrKey = [];
-        for(let i in defaults.arrow) defaults.arrow.hasOwnProperty(i) && arrKey.push(i);
-        options.arrow = $.extend({},defaults.arrow);
-        arrowArr.forEach((v, i) => {
-          v = v.trim();
-          if(v) options.arrow[ arrKey[i] ] = v;
-        });
-      }
-    }
-    _windowborder(func) {
-      let pad = 3,
-          A, B,
-          offsetLeft   = this.helper.offset().left,
-          offsetTop    = this.helper.offset().top,
-          scrollTop    = $(document).scrollTop(),
-          scrollLeft   = $(document).scrollLeft(),
-          windowWidth  = $(window).width(),
-          windowHeight = $(window).height(),
-          data = {
-            top: false,
-            right: false,
-            bottom: false,
-            left: false,
-            width: this.helper.outerWidth(),
-            height: this.helper.outerHeight()
-          };
-
-      A = offsetTop - pad;
-      B = scrollTop;
-      A < B && (data.top = B - A);
-
-      A = offsetLeft + data.width + pad;
-      B = scrollLeft + windowWidth;
-      A > B && (data.right = A - B);
-
-      A = offsetTop + data.height + pad;
-      B = scrollTop + windowHeight;
-      A > B && (data.bottom = A - B);
-
-      A = offsetLeft - pad;
-      B = scrollLeft;
-      A < B && (data.left = B - A);
-      func && func.call(this, data);
-    };
-  }
-
-  $.fn[pluginName] = $.fn.alertTs = function (options) {
-    options = options || {};
-    if (typeof options == 'string') {
-      let args = arguments,
-          method = options;
-      Array.prototype.shift.call(args);
-      switch (method) {
-        case "getClass":
-          return $(this).data('plugin_' + pluginName);
-        default:
-          return this.each(function () {
-            let plugin = $(this).data('plugin_' + pluginName);
-            if (plugin && plugin[method]) plugin[method].apply(plugin, args);
-          });
-      };
-    } else {
-      return this.each(function () {
-        if(options.proxy){
-          let ele = $(this).find(options.proxy);
-          let plugin = ele.data('plugin_' + pluginName);
-          if(plugin){
-            if(!['click', 'hover', 'hide'].some(v => v===options.act)){
-              plugin.show(options);
-            }else{
-              plugin.refresh(options);
-            }
-          }else{
-            ele.data('plugin_' + pluginName, new AlertTs($(this), options));
-          }
-        }else{
-          let plugin = $(this).data('plugin_' + pluginName);
-          if(plugin){
-            if(!['click', 'hover', 'hide'].some(v => v===options.act)){
-              plugin.show(options);
-            }else{
-              plugin.refresh(options);
-            }
-          }else{
-            $(this).data('plugin_' + pluginName, new AlertTs($(this), options));
-          }
-        }
-      });
-    };
-  };
-
-  $[pluginName] = {
-    id : 0,
-    zindex : 100,
-    parent: (element) => $(element).closest('.'+className).data("plugin_" + pluginName).data("plugin_" + pluginName)    
-  }
-}(jQuery, window));
-
-/***/ }),
-/* 15 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(14);
-/* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-
-let namespace = 'valid';
-let dataMsg = 'valid-error-msg-forplugin';
-let isRadioCheckbox = element => {
-  return element.is(':radio') || element.is(':checkbox') ? true : false;
-};
-let getElement = element => isRadioCheckbox(element) ? element.closest('[valid]') : element;
-let defaultStyle = {
-  act: 'hide',
-  cssStyle: 'error',
-  top: 2,
-  left: 15,
-  css: {
-    padding: '5px 10px'
-  }
-};
-class BindAlertTips {
-  constructor(form, options) {
-    this.form = form;
-    this.options = $.extend(true, { ui: defaultStyle }, options);
-    this.timer;
-    this.lastElement;
-    this.bindEvent();
-    this.submit();
-  }
-  show(element, msg) {
-    element = getElement(element);
-    if (!msg) msg = element.attr(dataMsg) || '';
-    if (this.lastElement) {
-      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
-      this.hide(this.lastElement.element);
-    }
-    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
-    let ui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
-    element.AlertTs(_extends({}, ui, { content: msg })).AlertTs('show');
-    this.lastElement = { element, msg };
-  }
-  hide(element = this.lastElement && this.lastElement.element) {
-    element = element ? getElement(element) : false;
-    if (element && element.AlertTs) {
-      element.AlertTs('hide');
-      this.lastElement = null;
-    }
-  }
-  highlight(element, type) {
-    type === 'show' ? getElement(element).addClass('valid-error') : getElement(element).removeClass('valid-error');
-  }
-  bindEvent() {
-    let that = this;
-    function focus(flag) {
-      if (!$(this).hasClass('valid-error') || flag === true) return;
-      that.show($(this));
-    }
-    function change(event, once = false) {
-      let $this = $(this);
-      if (isRadioCheckbox($this)) {
-        $this = $this.closest('[valid]');
-      } else {
-        if ($this.val() === '' && !$this.attr(dataMsg)) return;
-      }
-      //对绑定了for的元素触发相互change
-      that.scan($this, function (flag) {
-        if (this && !once) change.call(this, event, true);
-      }.bind($(this).data('valid-for')));
-    }
-    function blur() {
-      let $this = $(this);
-      let val = $this.val();
-      let dataVal = $this.data('valid-value');
-      if ($this.is(':radio,:checkbox')) {
-        that.hide();
-        return;
-      }
-      if (val !== '' && (!dataVal || val !== dataVal)) {
-        $this.data('valid-value', val);
-        change.call(this);
-      }
-      that.hide();
-    }
-    this.form.on('focus.' + namespace, 'input:not(:submit, :button), select', focus).on('change.' + namespace, 'input:radio, input:checkbox, select', change).on('blur.' + namespace, 'input:not(:submit,:button), textarea', blur);
-  }
-  scan(validItems = this.form, callback = $.noop) {
-    let that = this;
-    this.form.validate('scan', validItems, items => {
-      items.each(function () {
-        let element = getElement($(this));
-        that.highlight(element, 'hide');
-        that.hide(element);
-        element.removeAttr(dataMsg);
-      });
-      callback(true);
-    }, items => {
-      if (validItems.is('form')) {
-        let successItems = that.form.find('.valid-error');
-        this.highlight(successItems, 'hide');
-        successItems.removeAttr(dataMsg);
-      }
-      items = items.map(v => {
-        let element = getElement(v.element);
-        this.highlight(element, 'show');
-        element.attr(dataMsg, v.msg);
-        element.data('valid-value', element.val());
-        return { element, msg: v.msg };
-      });
-      items[0].element.trigger('focus.' + namespace, [true]);
-      this.show(items[0].element, items[0].msg);
-      this.options.fail(items);
-      callback(false);
-    });
-  }
-  submit() {
-    let that = this;
-    this.form.on('submit', function () {
-      that.scan();
-      return false;
-    });
-  }
-}
-function bindAlertTips() {
-  return new BindAlertTips(...arguments);
-}
-
-/***/ }),
-/* 16 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = loading;
-class Loading {
-  constructor(element) {
-    this.element = element;
-    this.show();
-  }
-  bulid() {
-    this.dom = $(`
-      <div class="loader">
-        <div class="ball-clip-rotate"><div></div></div>
-      </div>
-    `).appendTo('body');
-  }
-  resize() {
-    let pos = this.element.position();
-    this.dom.css({
-      position: 'absolute',
-      top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
-      left: pos.left + this.element.outerWidth() - this.dom.outerWidth() - 3
-    });
-  }
-  show() {
-    this.bulid();
-    this.resize();
-    return this;
-  }
-  hide() {
-    this.dom && this.dom.fadeOut('slow', () => this.dom.remove());
-    return this;
-  }
-}
-
-function loading(element) {
-  return new Loading(...arguments);
-}
-
-/***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unit__ = __webpack_require__(13);
-/* harmony export (immutable) */ __webpack_exports__["a"] = rule;
-
-
-function rule() {
-  let that = this;
-  let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
-  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
-  return {
-    required({ element, title = '', val, msg }) {
-      switch (element.attr('type') || element[0].tagName.toLowerCase()) {
-        case 'select':
-          if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
-          break;
-        case 'checkbox':
-        case 'radio':
-          if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
-          break;
-        default:
-          if (!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', { title });
-      }
-      return true;
-    },
-    number({ title = '', val, msg }) {
-      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'number', { title }) : true;
-    },
-    integer({ title = '', val, msg }) {
-      return !/^\d+$/.test(val) ? getMsg(msg, 'integer', { title }) : true;
-    },
-    nmax({ title = '', val, msg }, max) {
-      if (parseInt(val, 10) > parseInt(max, 10)) {
-        return getMsg(msg, 'number_max', { title, max });
-      }
-      return true;
-    },
-    nmin({ title = '', val, msg }, min) {
-      if (parseInt(val, 10) < parseInt(min, 10)) {
-        return getMsg(msg, 'number_min', { title, min });
-      }
-      return true;
-    },
-    max({ element, title = '', val, msg }, max) {
-      if (element.is(':checkbox')) {
-        if (element.filter(':checked').length > max) {
-          return getMsg(msg, 'checked_max', { title, max });
-        }
-      } else {
-        if (val.length > max) {
-          return getMsg(msg, 'length_max', { title, max });
-        }
-      }
-      return true;
-    },
-    min({ element, title = '', val, msg }, min) {
-      if (element.is(':checkbox')) {
-        if (element.filter(':checked').length < min) {
-          return getMsg(msg, 'checked_min', { title, min });
-        }
-      } else {
-        if (val.length < min) {
-          return getMsg(msg, 'length_min', { title, min });
-        }
-      }
-      return true;
-    },
-    email({ title = '', val, msg }) {
-      if (!/^[a-z_0-9-\.]+@([a-z_0-9-]+\.)+[a-z0-9]{2,8}$/i.test(val)) {
-        return getMsg(msg, 'email', { title });
-      }
-      return true;
-    },
-    mobile({ title = '手机号', val, msg }) {
-      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
-        return getMsg(msg, 'mobile', { title });
-      }
-      return true;
-    },
-    mobilehk({ title = '手机号', val, msg }) {
-      if (!/^[569]\d{7}$/.test(val)) {
-        return getMsg(msg, 'mobile', { title });
-      }
-      return true;
-    },
-    mobiletw({ title = '手机号', val, msg }) {
-      if (!/^9\d{8}$/.test(_value)) {
-        return getMsg(msg, 'mobile', { title });
-      }
-      return true;
-    },
-    phone({ title = '联系方式', val, msg }) {
-      if (!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
-        return getMsg(msg, 'phone', { title });
-      }
-      return true;
-    },
-    url({ title = '', val, msg }) {
-      if (!/^(http:|https:|ftp:)\/\/(?:[0-9a-zA-Z]+|[0-9a-zA-Z][\w-]+)+\.[\w-]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/.test(val)) {
-        return getMsg(msg, 'url', { title });
-      }
-      return true;
-    },
-    idcard({ title = '身份证', val, msg }) {
-      if (!/^\d{17}[xX\d]$|^\d{15}$/.test(val)) {
-        return getMsg(msg, 'idcard', { title });
-      }
-      return true;
-    },
-    repeat({ title = '', val, msg }, max = 5) {
-      if (new RegExp('(\\S)\\1{' + max + '}', 'g').test(val)) {
-        return getMsg(msg, 'repeat', { title });
-      }
-      return true;
-    },
-    pattern({ title = '', val, msg }, reg) {
-      try {
-        if (!eval(reg).test(val)) {
-          return getMsg(msg, 'pattern', { title });
-        }
-      } catch (e) {
-        console.error(title + 'pattern的正则不正确');
-      }
-      return true;
-    },
-    higher({ element, forElement, title = '', val, msg }) {
-      if (forElement.hasClass('valid-error')) return true;
-      if (parseInt(element.val()) < parseInt(forElement.val())) {
-        return getMsg(msg, 'higher', { title });
-      } else {
-        return true;
-      }
-    },
-    checked_required(options) {
-      let { forElement } = options;
-      if (!forElement.is(':checked')) return true;
-      return this.rules.required(options);
-    },
-    repassword({ element, forElement, title = '', val, msg }) {
-      let [v1, v2] = [element.val(), forElement.val()];
-      if (v1 === '') return;
-      if (v1 === v2) {
-        return true;
-      } else {
-        return getMsg(msg, 'repassword', { title });
-      }
-    },
-    some({ element, title, type, val, msg }) {
-      let failArr = [];
-      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
-      for (let v of type) {
-        let [_type, _val] = v.type.split('=');
-        let result = this.rules[_type].call(this, { element, val }, _val);
-        failArr.push(result);
-      }
-      return failArr.some(v => v === true) || getMsg(msg, 'some', { title });
-    },
-    not({ element, title, type, val, msg }) {
-      let failArr = [];
-      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
-      for (let v of type) {
-        let [_type, _val] = v.type.split('=');
-        let result = this.rules[_type].call(this, { element, val }, _val);
-        failArr.push(result);
-      }
-      return failArr.some(v => v === true) ? getMsg(msg, 'not', { title }) : true;
-    }
-  };
-}
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(6)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, ".alert-ts {\n  position: absolute;\n  display: none;\n  left: 0;\n  top: 0;\n  font-size: 12px;\n  line-height: 22px;\n  border-radius: 2px;\n  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);\n}\n.alert-ts .closex {\n  font-family: Verdana;\n  padding-bottom: 1px;\n  transition: all 0.3s ease-out;\n  position: absolute;\n  z-index: 3;\n  cursor: pointer;\n}\n.alert-ts .closex:hover {\n  -webkit-transform: rotate(180deg);\n}\n.alert-ts .alert-ts-arrow {\n  position: absolute;\n  overflow: hidden;\n}\n.alert-ts .alert-ts-arrow i {\n  display: block;\n  width: 0px;\n  height: 0px;\n  overflow: hidden;\n  position: absolute;\n  z-index: 2;\n  border-style: solid;\n  border-width: 1px;\n  border-color: transparent transparent transparent transparent;\n}\n.alert-ts .alert-ts-arrow .a1 {\n  z-index: 1;\n}\n.alert-ts .loading {\n  min-width: 80px;\n  min-height: 30px;\n}\n.alert-ts .loading div {\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  font-size: 0;\n  line-height: 0;\n  text-align: center;\n}\n.alert-ts .loading div i {\n  background-color: #fff;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  margin: 2px;\n  -webkit-animation-fill-mode: both;\n  animation-fill-mode: both;\n  display: inline-block;\n  animation: ball-beat 0.7s 0s infinite linear;\n}\n.alert-ts .loading div i:nth-child(2n-1) {\n  -webkit-animation-delay: 0.35s;\n  animation-delay: 0.35s;\n}\n/* \n  皮肤 \n*/\n/* default */\n.alert-ts-default {\n  padding: 8px 10px;\n  border: 1px solid #e2e2e2;\n  background-color: #fff;\n  color: #666;\n}\n.alert-ts-default .loading i {\n  background-color: #d2d2d2 !important;\n}\n.alert-ts-default .closex {\n  color: #d2d2d2;\n}\n/* info */\n.alert-ts-info {\n  padding: 8px 10px;\n  border: 1px solid #ceeaff;\n  background-color: #e8f8ff;\n  color: #6699cc;\n}\n.alert-ts-info .loading i {\n  background-color: #b7e7fe !important;\n}\n.alert-ts-info .closex {\n  color: #a8d7f5;\n}\n/* warning */\n.alert-ts-warning {\n  padding: 8px 10px;\n  border: 1px solid #ffe99d;\n  background-color: #fff8d2;\n  color: #cc8c28;\n}\n.alert-ts-warning .loading i {\n  background-color: #f9d574 !important;\n}\n.alert-ts-warning .closex {\n  color: #ebd97b;\n}\n/* error */\n.alert-ts-error {\n  padding: 8px 10px;\n  border: 1px solid #ffd0d0;\n  background-color: #fff0ee;\n  color: #cc0000;\n}\n.alert-ts-error .loading i {\n  background-color: #ffbaba !important;\n}\n.alert-ts-error .closex {\n  color: #edb6b6;\n}\n.animated-zoomin {\n  animation: zoomin 0.2s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-top {\n  animation: fadein-top 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-right {\n  animation: fadein-right 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-bottom {\n  animation: fadein-bottom 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-fadein-left {\n  animation: fadein-left 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n.animated-bounceout {\n  animation: bounce-in 0.75s cubic-bezier(0.39, 0.58, 0.57, 1);\n}\n/* 动画 */\n@-webkit-keyframes zoomin {\n  from {\n    opacity: 0;\n    -webkit-transform: scale3d(0.1, 0.1, 0.1);\n  }\n  to {\n    opacity: 1;\n  }\n}\n@keyframes zoomin {\n  from {\n    opacity: 0;\n    transform: scale3d(0.1, 0.1, 0.1);\n  }\n  to {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes ball-beat {\n  50% {\n    opacity: 0.2;\n    -webkit-transform: scale(0.75);\n  }\n  100% {\n    opacity: 1;\n    -webkit-transform: scale(1);\n  }\n}\n@keyframes ball-beat {\n  50% {\n    opacity: 0.2;\n    transform: scale(0.75);\n  }\n  100% {\n    opacity: 1;\n    transform: scale(1);\n  }\n}\n@-webkit-keyframes bounce-in {\n  from,\n  20%,\n  40%,\n  60%,\n  80%,\n  to {\n    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);\n    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);\n  }\n  0% {\n    opacity: 0;\n    -webkit-transform: scale3d(0.3, 0.3, 0.3);\n    transform: scale3d(0.3, 0.3, 0.3);\n  }\n  20% {\n    -webkit-transform: scale3d(1.1, 1.1, 1.1);\n    transform: scale3d(1.1, 1.1, 1.1);\n  }\n  40% {\n    -webkit-transform: scale3d(0.9, 0.9, 0.9);\n    transform: scale3d(0.9, 0.9, 0.9);\n  }\n  60% {\n    opacity: 1;\n    -webkit-transform: scale3d(1.03, 1.03, 1.03);\n    transform: scale3d(1.03, 1.03, 1.03);\n  }\n  80% {\n    -webkit-transform: scale3d(0.97, 0.97, 0.97);\n    transform: scale3d(0.97, 0.97, 0.97);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: scale3d(1, 1, 1);\n    transform: scale3d(1, 1, 1);\n  }\n}\n@keyframes bounce-in {\n  from,\n  20%,\n  40%,\n  60%,\n  80%,\n  to {\n    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);\n  }\n  0% {\n    opacity: 0;\n    transform: scale3d(0.3, 0.3, 0.3);\n  }\n  20% {\n    transform: scale3d(1.1, 1.1, 1.1);\n  }\n  40% {\n    transform: scale3d(0.9, 0.9, 0.9);\n  }\n  60% {\n    opacity: 1;\n    transform: scale3d(1.03, 1.03, 1.03);\n  }\n  80% {\n    transform: scale3d(0.97, 0.97, 0.97);\n  }\n  to {\n    opacity: 1;\n    transform: scale3d(1, 1, 1);\n  }\n}\n@-webkit-keyframes fadein-bottom {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(0, -10px, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-bottom {\n  from {\n    opacity: 0;\n    transform: translate3d(0, -10px, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n@-webkit-keyframes fadein-right {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(-10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-right {\n  from {\n    opacity: 0;\n    transform: translate3d(-10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n@-webkit-keyframes fadein-left {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-left {\n  from {\n    opacity: 0;\n    transform: translate3d(10px, 0, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n@-webkit-keyframes fadein-top {\n  from {\n    opacity: 0;\n    -webkit-transform: translate3d(0, 10px, 0);\n  }\n  to {\n    opacity: 1;\n    -webkit-transform: none;\n  }\n}\n@keyframes fadein-top {\n  from {\n    opacity: 0;\n    transform: translate3d(0, 10px, 0);\n  }\n  to {\n    opacity: 1;\n    transform: none;\n  }\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(18);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(9)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../css-loader/index.js!../../../less-loader/dist/index.js!./style.css", function() {
-			var newContent = require("!!../../../css-loader/index.js!../../../less-loader/dist/index.js!./style.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
 
 /***/ })
 /******/ ]);

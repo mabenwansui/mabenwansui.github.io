@@ -61,7 +61,7 @@ class BindAlertTips{
       //对绑定了for的元素触发相互change
       that.scan($this, function(flag){
         if(this && !once) change.call(this, event, true);
-      }.bind($(this).data('valid-for')))
+      }.bind($(this).data('valid-for')), once);
     }
     function blur(){
       let $this = $(this);
@@ -82,7 +82,7 @@ class BindAlertTips{
       .on('change.'+namespace, 'input:radio, input:checkbox, select', change)
       .on('blur.'+namespace, 'input:not(:submit,:button), textarea', blur)
   }
-  scan(validItems=this.form, callback=$.noop){
+  scan(validItems=this.form, callback=$.noop, notips){
     let that = this;
     this.form.validate('scan', validItems, items=> {
       items.each(function(){
@@ -105,8 +105,10 @@ class BindAlertTips{
         element.data('valid-value', element.val());
         return {element, msg:v.msg};
       });
-      items[0].element.trigger('focus.'+namespace, [true]);
-      this.show(items[0].element, items[0].msg);
+      if(notips!==true){
+        items[0].element.trigger('focus.'+namespace, [true]);
+        this.show(items[0].element, items[0].msg);
+      };
       this.options.fail(items);
       callback(false);
     });
