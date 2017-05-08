@@ -8,7 +8,6 @@ import bindAlertTips from './lib/bind.alert.tips';
 const [pluginName, className] = ['validate', 'validate'];
 var defaults = {
   rules   : {},
-  debug   : false,  //回调不执行
   fail    : ()=>{},
   success : ()=>{},
   lang    : 'cn'
@@ -20,7 +19,7 @@ class Validate{
     this.options = {...defaults, ...options};
     unit.rulesMerge(options, defaults, (key, val)=> (this.options.rules[key]=val));
     this.rules = {...rules.apply(this), ...this.options.rules}
-    this.tips = bindAlertTips(this.form, this.options);
+    this.tips = bindAlertTips(this);
     this.init();
   }
   init(){
@@ -56,7 +55,7 @@ class Validate{
       let obj = {...item, type, val: element.val()};
       let result = (!/required/.test(_type) && !/^[\w\W]+$/.test(obj.val)) ? true : 
         this.rules[_type].call(
-          this, 
+          this,
           msg ? {...obj, msg} : obj,
           val
         );
