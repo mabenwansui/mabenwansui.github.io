@@ -11,7 +11,7 @@ class Loading{
     `).appendTo('body');
   }
   resize(){
-    let pos = this.element.position();
+    let pos = this.element.offset();
     this.dom.css({
       position: 'absolute',
       top: pos.top + this.element.outerHeight()/2 - this.dom.outerHeight()/2,

@@ -61,7 +61,10 @@ class Validate{
         );
       if(result instanceof Promise){
         let _loading = loading(element);
-        result.then(resolve).catch(msg=> {
+        result.then(()=>{
+          resolve();
+          _loading.hide();
+        }).catch(msg=> {
           reject({msg, valid: false, element});
           _loading.hide();
         });

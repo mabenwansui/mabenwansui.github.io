@@ -95,7 +95,7 @@ function getJQelement(element, form = 'form') {
 function formatItem(type, title) {
   if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
   let [t1, t2] = (type => {
-    type = type.match(/^(.*?(?:\(.*?\))?)-(.*?(?:\(.*?\))?)$/) || [];
+    type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
     return type.splice(1);
   })(type);
   let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
@@ -122,7 +122,7 @@ function formatItem(type, title) {
 
 function jsonFormat(type, title) {
   if (!type) return [];
-  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
+  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2(\([^)]*\))?)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
   type = type.reduce((a, b) => {
     return [].push.apply(a, formatItem(b, title)), a;
   }, []);
@@ -218,8 +218,7 @@ function lang(lang = 'cn') {
     repeat: '请填写正确的$title',
     some: '请填写正确的$title',
     not: '请填写正确的$title',
-    number: '$title请填写数字 !',
-    integer: '$title请填写整数',
+    number: '$title请填写整数 !',
     float: '$title请填写数字 !',
     mobile: '$title输入不正确 !',
     pattern: '$title不符合规范 !',
@@ -623,6 +622,9 @@ let defaultStyle = {
   left: 15,
   css: {
     padding: '5px 10px'
+  },
+  show() {
+    this.play();
   }
 };
 class BindAlertTips {
@@ -774,7 +776,7 @@ class Loading {
     `).appendTo('body');
   }
   resize() {
-    let pos = this.element.position();
+    let pos = this.element.offset();
     this.dom.css({
       position: 'absolute',
       top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
@@ -825,11 +827,11 @@ function rule() {
       }
       return true;
     },
-    number({ title = '', val, msg }) {
-      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'number', { title }) : true;
+    float({ title = '', val, msg }) {
+      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'float', { title }) : true;
     },
-    integer({ title = '', val, msg }) {
-      return !/^\d+$/.test(val) ? getMsg(msg, 'integer', { title }) : true;
+    number({ title = '', val, msg }) {
+      return !/^\d+$/.test(val) ? getMsg(msg, 'number', { title }) : true;
     },
     nmax({ title = '', val, msg }, max) {
       if (parseInt(val, 10) > parseInt(max, 10)) {
@@ -1668,7 +1670,10 @@ class Validate {
       let result = !/required/.test(_type) && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
       if (result instanceof Promise) {
         let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__lib_loading__["a" /* default */])(element);
-        result.then(resolve).catch(msg => {
+        result.then(() => {
+          resolve();
+          _loading.hide();
+        }).catch(msg => {
           reject({ msg, valid: false, element });
           _loading.hide();
         });

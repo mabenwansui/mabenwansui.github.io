@@ -19,11 +19,11 @@ export default function rule(){
       }
       return true;
     },
-    number({title='', val, msg}){
-      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'number', {title}) : true;
+    float({title='', val, msg}){
+      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'float', {title}) : true;
     },
-    integer({title='', val, msg}){
-      return !/^\d+$/.test(val) ? getMsg(msg, 'integer', {title}) : true;
+    number({title='', val, msg}){
+      return !/^\d+$/.test(val) ? getMsg(msg, 'number', {title}) : true;
     },
     nmax({title='', val, msg}, max){
       if(parseInt(val, 10) > parseInt(max, 10)){

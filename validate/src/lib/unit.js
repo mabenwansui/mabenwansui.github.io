@@ -14,7 +14,7 @@ export function getJQelement(element, form='form'){
 function formatItem(type, title){
   if(/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{type, msg:''}];
   let [t1, t2] = (type=> {
-    type = type.match(/^(.*?(?:\(.*?\))?)-(.*?(?:\(.*?\))?)$/) || [];
+    type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
     return type.splice(1);
   })(type);
   let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';   //取出类似于n这样的字母
@@ -42,7 +42,7 @@ function formatItem(type, title){
 
 export function jsonFormat(type, title){
   if(!type) return [];
-  if(typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
+  if(typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2(\([^)]*\))?)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
   type = type.reduce((a, b)=> {
     return [].push.apply(a, formatItem(b, title)), a;
   }, []);
