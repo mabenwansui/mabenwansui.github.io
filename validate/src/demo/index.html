@@ -379,7 +379,7 @@
     $(this).addClass('active').siblings().removeClass('active');
     $('.wrap', $article).html( $('#'+page).html() );
   });
-  $('[data-page="'+ (location.hash.replace(/^#/,'') || 'rule') +'"]', $nav).trigger('click');
+  $('[data-page="'+ (location.hash.replace(/^#/,'') || 'home') +'"]', $nav).trigger('click');
 </script>
 </body>
 </html>
