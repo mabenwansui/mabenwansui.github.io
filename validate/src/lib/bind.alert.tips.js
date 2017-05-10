@@ -9,9 +9,6 @@ let defaultStyle = {
   left: 15,
   css: {
     padding: '5px 10px'
-  },
-  show(){
-    this.play();
   }
 }
 class BindAlertTips{

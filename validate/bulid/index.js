@@ -622,9 +622,6 @@ let defaultStyle = {
   left: 15,
   css: {
     padding: '5px 10px'
-  },
-  show() {
-    this.play();
   }
 };
 class BindAlertTips {
@@ -1063,12 +1060,19 @@ if(false) {
       this._timer   = false;
       this._helper  = false;  //_helper代表helper是否已经插入到dom结构中
       this._off     = false;
+      this.scrollElement = this.getScrollElement();
       this.initialAttr();
       this.mergeOptions();
       this.toNumber();
       this.createUi();
       this.bindEvent();
       this.options.callback.init.call(this);
+    }
+    getScrollElement(){
+      return this.element.parents().filter(function(){
+        let val = $(this).css('overflow');
+        return (val==='auto' || val==='scroll') ? true : false;
+      });      
     }
     createUi(){
       let helper = $(`<div class="${className}"></div>`).css(this.options.css).data('plugin_' + pluginName, this.element);
@@ -1117,7 +1121,7 @@ if(false) {
       if(this.options.callback.beforeshow.call(this) === false) return this;
       if(this._visible) return this;
       this._visible = true;
-      this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
+      this.options.act === 'click' && $(document).on(this.eventSpace('click'), event => {
         if (this.helper &&
           this.helper.has(event.target).length === 0 &&
           this.helper[0] != event.target &&
@@ -1126,7 +1130,6 @@ if(false) {
           this.hide();
         };
       });
-
       this.options.timeout && setTimeout( ()=> this.hide(), this.options.timeout );
       if(this._helper){
         this.helper.show();
@@ -1144,12 +1147,17 @@ if(false) {
         default :
           this.options.animation && this.helper.addClass('animated-'+this.options.animation)
       }
+      $(document).on(this.eventSpace('DOMSubtreeModified'), ()=> this.setState());
+      this.scrollElement.on(this.eventSpace('scroll'), ()=> this.rePosition());
       return this;
     }
+    eventSpace(name){ return name + '.' + pluginName + this._id }
     hide(){
       if(!this._visible) return this;
       this._visible = false;
       this.options.act === 'click' && $(document).off('click.' + pluginName + this._id);
+      $(document).off('DOMSubtreeModified.' + pluginName + this._id);
+      this.scrollElement.off('scroll.' + pluginName + this._id);
       this.options.callback.hide.call(this);
       this.helper.removeClass('animated-zoomin');
       this.options.cache ? this.helper.hide() : this.removeTag();
@@ -1297,18 +1305,21 @@ if(false) {
       this.helper.css({left: x + this._left, top: y + this._top});
       return this;
     }
+    setState(callback=$.noop){
+      if(!this.element || !this.helper){
+        callback();
+        return this;
+      };
+      if (!this._visible || !this.element.is(":visible")) {
+        this.helper.hide();
+        callback();
+        return this;
+      };
+      this.rePosition();
+    }
     play(){
       this._timer = setTimeout( ()=> {
-        if(!this.element || !this.helper){
-          this.stop();
-          return this;
-        };
-        if (!this._visible || !this.element.is(":visible")) {
-          this.helper.hide();
-          this.stop();
-          return this;
-        };
-        this.rePosition();
+        this.setState(()=> this.stop());
         this.play();
       }, 250);
       return this;
@@ -1624,13 +1635,14 @@ class Validate {
     this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, this.form));
   }
   scan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
-    var _this = this;
+    var _arguments = arguments,
+        _this = this;
 
     return _asyncToGenerator(function* () {
       if (typeof items === 'function') {
-        failCallback = successCallback;
-        successCallback = items;
-        items = _this.form;
+        [items, successCallback, failCallback] = [..._arguments].reduce(function (a, b) {
+          return a.push(b), a;
+        }, [_this.form]);
       }
       if (items.is('form')) items = items.find('[valid]');
       let failArr = [];

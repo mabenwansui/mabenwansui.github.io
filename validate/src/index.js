@@ -27,9 +27,7 @@ class Validate{
   }
   async scan(items=this.form, successCallback=$.noop, failCallback=$.noop){
     if(typeof items === 'function'){
-      failCallback = successCallback;
-      successCallback = items;
-      items = this.form;
+      [items, successCallback, failCallback] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
     }
     if(items.is('form')) items = items.find('[valid]');
     let failArr = [];
