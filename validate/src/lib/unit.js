@@ -90,10 +90,7 @@ export function attrToJson(element, form){
     return {
       ...obj, 
       type: jsonFormat(type, title), 
-      element: (()=> {
-        let [ele1, ele2] = [element.find(':checkbox'), element.find(':radio')];
-        return ele1.length > ele2.length ? ele1 : ele2;
-      })()
+      element: (()=> [element.find(':checkbox'), element.find(':radio')].reduce((a, b)=> a.length > b.length ? a : b))()
     };
   }
 }
