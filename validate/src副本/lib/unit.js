@@ -69,7 +69,7 @@ export function forElement(element, type, form){
   return forEle;
 }
 
-export function attrToJson(element, form){
+export function attrToJson(element, form, rules){
   element = $(element);
   let prefix = 'valid';
   let attr = element.attr(prefix).split(/\s*\|\s*/);

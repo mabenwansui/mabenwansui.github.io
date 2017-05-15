@@ -149,7 +149,7 @@ function forElement(element, type, form) {
   return forEle;
 }
 
-function attrToJson(element, form, rules) {
+function attrToJson(element, form) {
   element = $(element);
   let prefix = 'valid';
   let attr = element.attr(prefix).split(/\s*\|\s*/);
@@ -603,158 +603,7 @@ function updateLink(linkElement, options, obj) {
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__liepin_jquery_AlertTs__ = __webpack_require__(8);
-/* harmony export (immutable) */ __webpack_exports__["a"] = bindAlertTips;
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-
-let namespace = 'valid';
-let dataMsg = 'valid-error-msg-forplugin';
-let getElement = element => element.is(':radio, :checkbox') ? element.closest('[valid]') : element;
-let defaultStyle = {
-  act: 'hide',
-  cssStyle: 'error',
-  top: 2,
-  left: 15,
-  css: {
-    padding: '5px 10px'
-  }
-};
-class BindAlertTips {
-  constructor(valid) {
-    this.valid = valid;
-    this.form = valid.form;
-    this.options = $.extend({}, true, { ui: defaultStyle }, valid.options);
-    this.lastElement;
-    this.bindEvent();
-    this.submit();
-  }
-  show(element, msg) {
-    element = getElement(element);
-    if (!msg) msg = element.attr(dataMsg) || '';
-    if (this.lastElement) {
-      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
-      this.hide(this.lastElement.element);
-    }
-    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
-    addui = addui ? $.extend({}, true, this.options.ui, addui) : this.options.ui;
-    this.localization(element).AlertTs(_extends({}, addui, { content: msg })).AlertTs('show');
-    this.lastElement = { element, msg };
-  }
-  hide(element) {
-    element = element || this.lastElement && this.lastElement.element || false;
-    if (element) element = this.localization(getElement(element));
-    if (element && element.AlertTs) {
-      element.AlertTs('hide');
-      this.lastElement = null;
-    }
-  }
-  localization(element) {
-    let ui = element.attr('data-ui');
-    if (ui) {
-      switch (ui.toLowerCase()) {
-        case 'selectui':
-          element = element.parent();
-          break;
-        default:
-          element = element.parent().find(`.${ui}`);
-      }
-    }
-    return element;
-  }
-  highlight(element, type) {
-    element = this.localization(getElement(element));
-    type === 'show' ? element.addClass('valid-error') : element.removeClass('valid-error');
-  }
-  bindEvent() {
-    let that = this;
-    function focus(flag) {
-      if (!$(this).hasClass('valid-error') || flag === true) return;
-      that.show($(this));
-    }
-    function change(event, once = false) {
-      let $this = $(this);
-      if ($this.is(':radio, :checkbox')) {
-        $this = $this.closest('[valid]');
-      } else {
-        if ($this.val() === '' && !$this.attr(dataMsg)) return;
-      }
-      //对绑定了for的元素触发相互change
-      that.scan($this, flag => {
-        let ele = $(this).data('valid-for');
-        if (ele && !once) change.call(ele, event, true);
-      });
-    }
-    function blur() {
-      let $this = $(this);
-      let val = $this.val();
-      let dataVal = $this.data('valid-value');
-      if (val !== '' && (!dataVal || val !== dataVal)) {
-        $this.data('valid-value', val);
-        change.call(this);
-      }
-      that.hide();
-    }
-    let eventStr = 'input:not(:submit, :button), textarea, select';
-    this.form.on('focus.' + namespace, eventStr, focus).on('change.' + namespace, eventStr, change).on('blur.' + namespace, eventStr, blur);
-  }
-  scan(validItems = this.form, callback = $.noop, notips) {
-    let that = this;
-    if (typeof validItems === 'function') {
-      [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
-    }
-    this.valid.scan(validItems, items => {
-      items.each(function () {
-        let $this = $(this);
-        that.highlight($this, 'hide');
-        that.hide();
-        getElement($this).removeAttr(dataMsg);
-      });
-      callback(true);
-    }, items => {
-      let isForm = validItems.is('form');
-      if (isForm) {
-        let successItems = that.form.find('.valid-error').removeAttr(dataMsg);;
-        this.highlight(successItems, 'hide');
-      }
-      items = items.map(v => {
-        let element = getElement(v.element).attr(dataMsg, v.msg);
-        element.data('valid-value', element.val());
-        this.highlight(element, 'show');
-        return { element, msg: v.msg };
-      });
-      if (notips !== true) {
-        let [item] = items;
-        isForm && item.element.trigger('focus.' + namespace, [true]);
-        this.show(item.element, item.msg);
-      };
-      this.options.fail(items);
-      callback(false);
-    });
-  }
-  submit() {
-    let that = this;
-    this.form.on('submit', function (event, valid = false) {
-      if (valid === false) {
-        that.scan(flag => {
-          if (flag && that.options.success() === true) that.form.trigger('submit', [true]);
-        });
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-}
-function bindAlertTips() {
-  return new BindAlertTips(...arguments);
-}
-
-/***/ }),
+/* 4 */,
 /* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1599,102 +1448,24 @@ if(false) {
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index_css__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_rules__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_loading__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_unit__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__ = __webpack_require__(4);
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ui_alert_tips_js__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui_none_js__ = __webpack_require__(25);
 
 
+//import DefaultTips from './ui/default.tips.js';
 
+const pluginName = 'validate';
 
-
-
-
-'use strict';
-const [pluginName, className] = ['validate', 'validate'];
-var defaults = {
-  rules: {},
-  fail: () => {},
-  success: () => {},
-  lang: 'cn'
+let selectUI = type => {
+  switch (type) {
+    case 'none':
+      return __WEBPACK_IMPORTED_MODULE_2__ui_none_js__["a" /* default */];
+    //case 'default':
+    //return DefaultTips;
+    default:
+      return __WEBPACK_IMPORTED_MODULE_1__ui_alert_tips_js__["a" /* default */];
+  }
 };
-class Validate {
-  constructor(element, options = {}) {
-    this.element = element;
-    this.form = element.is('form') ? element : element.closest('form');
-    this.options = _extends({}, defaults, options);
-    __WEBPACK_IMPORTED_MODULE_3__lib_unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
-    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_1__lib_rules__["a" /* default */].apply(this), this.options.rules);
-    this.tips = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__lib_bind_alert_tips__["a" /* default */])(this);
-    this.init();
-  }
-  init() {
-    this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, this.form));
-  }
-  scan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
-    var _arguments = arguments,
-        _this = this;
-
-    return _asyncToGenerator(function* () {
-      if (typeof items === 'function') {
-        [items, successCallback, failCallback] = [..._arguments].reduce(function (a, b) {
-          return a.push(b), a;
-        }, [_this.form]);
-      }
-      if (items.is('form')) items = items.find('[valid]');
-      let failArr = [];
-      let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
-        return __WEBPACK_IMPORTED_MODULE_3__lib_unit__["b" /* attrToJson */](v, _this.form);
-      });
-      for (let v of arr) yield function (item) {
-        return new Promise((() => {
-          var _ref = _asyncToGenerator(function* (resolve, reject) {
-            let error;
-            for (let validType of item.type) {
-              yield _this.validItem(validType, item).catch(function (e) {
-                return reject(error = e);
-              });
-              if (error) break;
-            }
-            resolve();
-          });
-
-          return function (_x, _x2) {
-            return _ref.apply(this, arguments);
-          };
-        })());
-      }(v).catch(function (e) {
-        return failArr.push(e);
-      });
-      failArr.length === 0 ? successCallback.call(_this, items) : failCallback.call(_this, failArr);
-    })();
-  }
-  validItem(validType, item) {
-    return new Promise((resolve, reject) => {
-      let { element } = item;
-      let { type, msg } = validType;
-      let [_type, val] = type.split('=');
-      if (!this.rules[_type]) resolve();
-      let obj = _extends({}, item, { type, val: element.val() });
-      let result = !/required/.test(_type) && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
-      if (result instanceof Promise) {
-        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__lib_loading__["a" /* default */])(element);
-        result.then(() => {
-          resolve();
-          _loading.hide();
-        }).catch(msg => {
-          reject({ msg, valid: false, element });
-          _loading.hide();
-        });
-      } else {
-        result === true ? resolve() : reject({ valid: false, msg: result, element });
-      }
-    });
-  }
-}
 
 $.fn[pluginName] = function (...arg) {
   if (typeof arg[0] === 'string') {
@@ -1717,7 +1488,8 @@ $.fn[pluginName] = function (...arg) {
       } else {
         let options = arg[0];
         if (typeof options === 'function') options = { success: options };
-        $(this).data('plugin_' + pluginName, new Validate($(this), options));
+        let curUI = selectUI(options.ui);
+        $(this).data('plugin_' + pluginName, new curUI($(this), options));
       }
     });
   };
@@ -3917,6 +3689,311 @@ try {
 
 module.exports = g;
 
+
+/***/ }),
+/* 19 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__rules__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__loading__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__unit__ = __webpack_require__(0);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+
+
+
+
+'use strict';
+let defaults = {
+  rules: {},
+  fail: () => {},
+  success: () => {},
+  lang: 'cn'
+};
+class Validate {
+  constructor(element, options = {}) {
+    this.element = element;
+    this.form = element.is('form') ? element : element.closest('form');
+    this.options = _extends({}, defaults, options);
+    __WEBPACK_IMPORTED_MODULE_2__unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
+    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_0__rules__["a" /* default */].apply(this), this.options.rules);
+    this.init();
+  }
+  init() {
+    this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, this.form));
+  }
+  validScan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
+    var _arguments = arguments,
+        _this = this;
+
+    return _asyncToGenerator(function* () {
+      if (typeof items === 'function') {
+        [items, successCallback, failCallback] = [..._arguments].reduce(function (a, b) {
+          return a.push(b), a;
+        }, [_this.form]);
+      }
+      if (items.is('form')) items = items.find('[valid]');
+      let failArr = [];
+      let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
+        return __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, _this.form);
+      });
+      for (let v of arr) yield function (item) {
+        return new Promise((() => {
+          var _ref = _asyncToGenerator(function* (resolve, reject) {
+            let error;
+            for (let validType of item.type) {
+              yield _this.validItem(validType, item).catch(function (e) {
+                return reject(error = e);
+              });
+              if (error) break;
+            }
+            resolve();
+          });
+
+          return function (_x, _x2) {
+            return _ref.apply(this, arguments);
+          };
+        })());
+      }(v).catch(function (e) {
+        return failArr.push(e);
+      });
+      failArr.length === 0 ? successCallback.call(_this, items) : failCallback.call(_this, failArr);
+    })();
+  }
+  validItem(validType, item) {
+    return new Promise((resolve, reject) => {
+      let { element } = item;
+      let { type, msg } = validType;
+      let [_type, val] = type.split('=');
+      if (!this.rules[_type]) resolve();
+      let obj = _extends({}, item, { type, val: element.val() });
+      let result = !/required/.test(_type) && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
+      if (result instanceof Promise) {
+        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__loading__["a" /* default */])(element);
+        result.then(() => {
+          resolve();
+          _loading.hide();
+        }).catch(msg => {
+          reject({ msg, valid: false, element });
+          _loading.hide();
+        });
+      } else {
+        result === true ? resolve() : reject({ valid: false, msg: result, element });
+      }
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (Validate);
+
+/***/ }),
+/* 20 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__liepin_jquery_AlertTs__ = __webpack_require__(8);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+
+let dataMsg = 'valid-error-msg-forplugin';
+let defaultStyle = {
+  act: 'hide',
+  cssStyle: 'error',
+  top: 2,
+  left: 15,
+  css: {
+    padding: '5px 10px'
+  }
+};
+class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.options = $.extend(true, { alertTsUI: defaultStyle }, this.options);
+    this.lastElement;
+    this.bindEvent();
+    this.submit();
+  }
+  show(element, msg) {
+    element = this.getElement(element);
+    if (!msg) msg = element.attr(dataMsg) || '';
+    if (this.lastElement) {
+      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
+      this.hide(this.lastElement.element);
+    }
+    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
+    addui = addui ? $.extend({}, true, this.options.alertTsUI, addui) : this.options.alertTsUI;
+    this.localization(element).AlertTs(_extends({}, addui, { content: msg })).AlertTs('show');
+    this.lastElement = { element, msg };
+  }
+  hide(element) {
+    element = element || this.lastElement && this.lastElement.element || false;
+    if (element) element = this.localization(this.getElement(element));
+    if (element && element.AlertTs) {
+      element.AlertTs('hide');
+      this.lastElement = null;
+    }
+  }
+  bindEvent() {
+    let that = this;
+    function focus(flag) {
+      if (!$(this).hasClass('valid-error') || flag === true) return;
+      that.show($(this));
+    }
+    function change(event, once = false) {
+      let $this = $(this);
+      if ($this.is(':radio, :checkbox')) {
+        $this = $this.closest('[valid]');
+      } else {
+        if ($this.val() === '' && !$this.attr(dataMsg)) return;
+      }
+      //对绑定了for的元素触发相互change
+      that.scan($this, flag => {
+        let ele = $(this).data('valid-for');
+        if (ele && !once) change.call(ele, event, true);
+      });
+    }
+    function blur() {
+      let $this = $(this);
+      let val = $this.val();
+      let dataVal = $this.data('valid-value');
+      if (val !== '' && (!dataVal || val !== dataVal)) {
+        $this.data('valid-value', val);
+        change.call(this);
+      }
+      that.hide();
+    }
+    let eventStr = 'input:not(:submit, :button), textarea, select';
+    this.form.on('focus.' + this.namespace, eventStr, focus).on('change.' + this.namespace, eventStr, change).on('blur.' + this.namespace, eventStr, blur);
+  }
+  scan(validItems = this.form, callback = $.noop, notips) {
+    let that = this;
+    if (typeof validItems === 'function') {
+      [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
+    }
+    this.validScan(validItems, items => {
+      items.each(function () {
+        let $this = $(this);
+        that.highlight($this, 'hide');
+        that.hide();
+        that.getElement($this).removeAttr(dataMsg);
+      });
+      callback(true);
+    }, items => {
+      let isForm = validItems.is('form');
+      if (isForm) {
+        let successItems = that.form.find('.valid-error').removeAttr(dataMsg);
+        this.highlight(successItems, 'hide');
+      }
+      items = items.map(v => {
+        let element = this.getElement(v.element).attr(dataMsg, v.msg);
+        element.data('valid-value', element.val());
+        this.highlight(element, 'show');
+        return { element, msg: v.msg };
+      });
+      if (notips !== true) {
+        let [item] = items;
+        isForm && item.element.trigger('focus.' + this.namespace, [true]);
+        this.show(item.element, item.msg);
+      };
+      this.options.fail(items);
+      callback(false);
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (AlertTips);
+
+/***/ }),
+/* 21 */,
+/* 22 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_valid__ = __webpack_require__(19);
+
+class Base extends __WEBPACK_IMPORTED_MODULE_0__lib_valid__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.namespace = 'valid';
+  }
+  getElement(element) {
+    return element.is(':radio, :checkbox') ? element.closest('[valid]') : element;
+  }
+  localization(element) {
+    let ui = element.attr('data-ui');
+    if (ui) {
+      switch (ui.toLowerCase()) {
+        case 'selectui':
+          element = element.parent();
+          break;
+        default:
+          element = element.parent().find(`.${ui}`);
+      }
+    }
+    return element;
+  }
+  highlight(element, type) {
+    element = this.localization(this.getElement(element));
+    type === 'show' ? element.addClass('valid-error') : element.removeClass('valid-error');
+  }
+  submit() {
+    let that = this;
+    this.form.on('submit', function (event, valid = false) {
+      if (valid === false) {
+        that.scan(flag => {
+          if (flag && that.options.success() === true) that.form.trigger('submit', [true]);
+        });
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (Base);
+
+/***/ }),
+/* 23 */,
+/* 24 */,
+/* 25 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(22);
+
+class None extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.bindEvent();
+    this.submit();
+  }
+  bindEvent() {
+    let that = this;
+    function change(event) {
+      let $this = $(this);
+      if ($this.is(':radio, :checkbox')) {
+        $this = $this.closest('[valid]');
+      } else {
+        if ($this.val() === '') return;
+      }
+      that.scan($this);
+    }
+    this.form.on('change.' + this.namespace, 'input:checkbox,input:radio, select', change).on('blur.' + this.namespace, 'input:not(:submit, :button, :radio, :checkbox, select), textarea, select', change);
+  }
+  scan(validItems = this.form, callback = $.noop) {
+    if (typeof validItems === 'function') {
+      [validItems, callback] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
+    }
+    this.validScan(validItems, items => callback(true), items => {
+      this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
+      callback(false);
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (None);
 
 /***/ })
 /******/ ]);
