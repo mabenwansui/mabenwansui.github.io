@@ -37,7 +37,7 @@ function formatItem(type, title){
   }
   return t2 ?
     [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] :
-    [reTypeRange(type, 'min') || reType(type)];
+    [reTypeRange(type, 'min', prefix) || reType(type)];
 }
 
 export function jsonFormat(type, title){
@@ -88,8 +88,8 @@ export function attrToJson(element, form){
     return {...obj, type: jsonFormat(type, title), element};
   }else{
     return {
-      ...obj, 
-      type: jsonFormat(type, title), 
+      ...obj,
+      type: jsonFormat(type, title),
       element: (()=> [element.find(':checkbox'), element.find(':radio')].reduce((a, b)=> a.length > b.length ? a : b))()
     };
   }

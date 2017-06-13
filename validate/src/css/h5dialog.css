@@ -1,0 +1,25 @@
+.valid-h5dialog {
+  position: fixed;
+  padding: 8px 16px;
+  background-color: rgba(0, 0, 0, .75);
+  color: #fff;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 4px;
+  animation: valid-h5dialog-show .5s ease-out;
+  font-size: 14px;
+}
+
+.valid-h5dialog-hide {
+  animation: valid-h5dialog-hide .3s ease-in;
+}
+
+@keyframes valid-h5dialog-show{
+  0% { opacity: 0 }
+  100% { opacity: 1 }
+}
+@keyframes valid-h5dialog-hide{
+  0% { opacity: 1 }
+  100% { opacity: 0 }
+}

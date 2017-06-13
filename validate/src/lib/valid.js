@@ -25,7 +25,13 @@ class Validate{
     if(typeof items === 'function'){
       [items, successCallback, failCallback] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
     }
-    if(items.is('form')) items = items.find('[valid]');
+
+    if(items.is('form')){
+      items = items.find('[valid]');
+    }else{
+      items = items.filter('[valid]');
+    }
+
     let failArr = [];
     let arr = items.filter(':not([ignore],[disabled])').toArray().map(v=> unit.attrToJson(v, this.form));
     for(let v of arr) await (item=> new Promise(async (resolve, reject)=> {
@@ -39,13 +45,22 @@ class Validate{
     failArr.length===0 ? successCallback.call(this, items) : failCallback.call(this, failArr);
   }
   validItem(validType, item){
+    let filterCondition = (_type, val) => {
+      if(this.options.rules[_type]){
+        return false;
+      }else if(!/required/.test(_type) && !/^[\w\W]+$/.test(val)){
+        return true;
+      }else{
+        return false;
+      }
+    }
     return new Promise((resolve, reject)=> {
       let {element} = item;
       let {type, msg} = validType;
       let [_type, val] = type.split('=');
       if(!this.rules[_type]) resolve();
       let obj = {...item, type, val: element.val()};
-      let result = (!/required/.test(_type) && !/^[\w\W]+$/.test(obj.val)) ? true : 
+      let result = filterCondition(_type, obj.val) ? true :
         this.rules[_type].call(
           this,
           msg ? {...obj, msg} : obj,

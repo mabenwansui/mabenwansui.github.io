@@ -72,6 +72,22 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
             </div>
           </td>
         </tr>
+        <tr>
+          <th><i class="text-warning">*</i>业务1</th>
+          <td>
+            <p style="padding-bottom: 10px;"><input type="text" valid="业务1-1|constom1, for=.constom2" class="text constom1" /></p>
+            <p><input type="text" valid="业务1-2|constom2, for=.constom1" class="text constom2" /></p>
+          </td>
+        </tr>
+
+        <tr>
+          <th><i class="text-warning">*</i>业务2</th>
+          <td>
+            <p style="padding-bottom: 10px;"><input type="text" valid="业务2-1|constom3, for=.constom4" class="text constom3" /></p>
+            <p><input type="text" valid="业务2-2|constom4, for=.constom3" class="text constom4" /></p>
+          </td>
+        </tr> 
+
       </table>
       <h3 class="nav-title">
         <span>薪资福利</span>
@@ -98,7 +114,7 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
         <tr>
           <th><i class="text-warning">*</i>薪资构成</th>
           <td>
-            <span valid="薪资构成|*">
+            <span valid="薪资构成|*, maben">
               <label>
                 <input type="checkbox" name="hjobDetailForm.detail_salstructure_dixin" value="1" />
                 基本薪资
@@ -131,12 +147,46 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
   </section>
 </div>
 </body>
-<script src="../../bulid/index.js"></script>
+<script src="../bulid/index.js"></script>
 <script>
 
-$('form').validate(function(){
-  console.log(this.form);
-  console.log('ok');
+$('form').validate({
+  constom1({element, forElement, val, title}){
+    console.log(111111);
+    if(element.val()==='' && forElement.val()!==''){
+      return `请填写${title}`;
+    }else{
+      return true;
+    }
+  },
+  constom2({element, forElement, val, title}){
+    console.log(222222);
+    if(element.val()==='' && forElement.val()!==''){
+      return `请填写${title}`;
+    }else{
+      return true;
+    }
+  },
+  constom3({element, forElement, val, title}){
+    if(element.val()==='' && forElement.val()!==''){
+      return `请填写${title}`;
+    }else{
+      return true;
+    }
+  },
+  constom4({element, forElement, val, title}){
+    if(element.val()==='' && forElement.val()!==''){
+      return `请填写${title}`;
+    }else{
+      return true;
+    }
+  },
+  fail(e){
+    console.log(e);
+  },
+  success(){
+
+  }
 })
 
 </script>

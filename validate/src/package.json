@@ -1,6 +1,6 @@
 {
   "name": "@liepin/jquery-Validate",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "validate for h",
   "main": "./index.js",
   "author": {
@@ -8,9 +8,5 @@
   },
   "readmeFilename": "README.md",
   "license": "MIT",
-  "readme": "## 基本信息\n\n* 功能说明：验证控件 for H\n\n## 使用说明\n   \n\n\n",
-  "_id": "@liepin/jquery-Validate@0.0.3",
-  "scripts": {},
-  "_shasum": "2ae9b9ce9904f56cfec28b8274aab8a3435bfcea",
-  "_from": "@liepin/jquery-Validate@latest"
+  "readme": "## 基本信息\n\n* 功能说明：验证控件 for H\n\n## 使用说明\n   \n\n\n"
 }

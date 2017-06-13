@@ -1,5 +1,6 @@
 import './css/index.css';
 import AlertTips from './ui/alert.tips.js';
+import H5Dialog from './ui/h5.dialog.js'
 //import DefaultTips from './ui/default.tips.js';
 import None from './ui/none.js';
 const pluginName = 'validate';
@@ -10,6 +11,8 @@ let selectUI = (type) => {
       return None;
     //case 'default':
       //return DefaultTips;
+    case 'h5dialog':
+      return H5Dialog;
     default:
       return AlertTips;
   }

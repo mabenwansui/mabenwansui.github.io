@@ -15,15 +15,17 @@ class Base extends Validate{
           element = element.parent();
           break;
         default:
-          element = element.parent().find(`.${ui}`);          
+          element = element.parent().find(`.${ui}`);
       }
+    }else if(element.is(':hidden')){
+      element = element.closest(':not(:hidden)');
     }
     return element;
   }
   highlight(element, type){
     element = this.localization(this.getElement(element));
     type==='show' ? element.addClass('valid-error') : element.removeClass('valid-error');
-  }  
+  }
   submit(){
     let that = this;
     this.form.on('submit', function(event, valid=false){
@@ -36,6 +38,6 @@ class Base extends Validate{
         return true;
       }
     });
-  }  
+  }
 }
 export default Base;

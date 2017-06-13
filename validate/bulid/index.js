@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 10);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,163 +71,53 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(1);
-/* unused harmony export getJQelement */
-/* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
-/* unused harmony export forElement */
-/* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
-/* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_valid__ = __webpack_require__(13);
 
-
-function getJQelement(element, form = 'form') {
-  if (!element) return;
-  if (typeof element === 'string') {
-    element = /^[.#]/.test(element) ? $(element, form) : $(`[name='${element}']`, form);
-  } else if (element instanceof jQuery) {
-    element = element;
-  } else {
-    element = $(element, form);
+class Base extends __WEBPACK_IMPORTED_MODULE_0__lib_valid__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.namespace = 'valid';
   }
-  return element.length > 0 ? element : false;
-}
-
-function formatItem(type, title) {
-  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
-  let [t1, t2] = (type => {
-    type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
-    return type.splice(1);
-  })(type);
-  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
-  let reTypeRange = (type, range, prefix) => {
-    let msg = '',
-        flag = false;
-    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
-      flag = true;
-      if ($4) msg = $4.replace(/\$/g, title);
-      return prefix + range + '=' + $2;
-    });
-    return flag ? { type, msg } : false;
-  };
-  let reType = type => {
-    let msg = '';
-    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
-      if ($3) msg = $3.replace(/\$/g, title);
-      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
-    });
-    return { type, msg };
-  };
-  return t2 ? [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] : [reTypeRange(type, 'min') || reType(type)];
-}
-
-function jsonFormat(type, title) {
-  if (!type) return [];
-  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2(\([^)]*\))?)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
-  type = type.reduce((a, b) => {
-    return [].push.apply(a, formatItem(b, title)), a;
-  }, []);
-  return type;
-}
-/*
-  valid="用户名|*, maben, s10-15"
-  valid-required-msg=""
-  valid-error-msg=""
-*/
-
-//对有for的进行 两个元素相互绑定对象
-function forElement(element, type, form) {
-  let forEle = getJQelement(type.indexOf('for') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
-  if (forEle) {
-    let mergeDataValidFor = (element, forElement) => {
-      let ele = element.data('valid-for');
-      ele = ele ? ele.add(forElement) : forElement;
-      element.data('valid-for', ele);
-    };
-    mergeDataValidFor(forEle, element);
-    mergeDataValidFor(element, forEle);
+  getElement(element) {
+    return element.is(':radio, :checkbox') ? element.closest('[valid]') : element;
   }
-  return forEle;
-}
-
-function attrToJson(element, form) {
-  element = $(element);
-  let prefix = 'valid';
-  let attr = element.attr(prefix).split(/\s*\|\s*/);
-  let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
-  let msg = type => {
-    type = element.attr(`${prefix}-${type}`);
-    return type ? type.replace('$', title) : false;
-  };
-  let obj = {
-    title,
-    forElement: forElement(element, type, form),
-    msg: msg('error') || false
-  };
-
-  if (/input|select|textarea/i.test(element[0].tagName)) {
-    return _extends({}, obj, { type: jsonFormat(type, title), element });
-  } else {
-    return _extends({}, obj, {
-      type: jsonFormat(type, title),
-      element: (() => [element.find(':checkbox'), element.find(':radio')].reduce((a, b) => a.length > b.length ? a : b))()
+  localization(element) {
+    let ui = element.attr('data-ui');
+    if (ui) {
+      switch (ui.toLowerCase()) {
+        case 'selectui':
+          element = element.parent();
+          break;
+        default:
+          element = element.parent().find(`.${ui}`);
+      }
+    } else if (element.is(':hidden')) {
+      element = element.closest(':not(:hidden)');
+    }
+    return element;
+  }
+  highlight(element, type) {
+    element = this.localization(this.getElement(element));
+    type === 'show' ? element.addClass('valid-error') : element.removeClass('valid-error');
+  }
+  submit() {
+    let that = this;
+    this.form.on('submit', function (event, valid = false) {
+      if (valid === false) {
+        that.scan(flag => {
+          if (flag && that.options.success() === true) that.form.trigger('submit', [true]);
+        });
+        return false;
+      } else {
+        return true;
+      }
     });
   }
 }
-/*
-  将options里的自定义规则放到rules里面
-*/
-function rulesMerge(options, defaultOptions, callback) {
-  Object.keys(options).forEach(v => {
-    if (!(v in defaultOptions) && typeof options[v] === 'function') callback(v, options[v]);
-  });
-}
+/* harmony default export */ __webpack_exports__["a"] = (Base);
 
 /***/ }),
 /* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
-const alias = {
-  '*': 'required',
-  'e': 'email',
-  'n': 'number',
-  'm': 'mobile'
-};
-/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
-
-
-function lang(lang = 'cn') {
-  let cn = {
-    required: '请填写$title !',
-    select_required: '请选择$title !',
-    length_max: '$title不能大于$max个字 !',
-    length_min: '$title不能小于$min个字 !',
-    number_max: '$title不能大于$max !',
-    number_min: '$title不能小于$min !',
-    checked_min: '$title至少选择$min项 !',
-    checked_max: '$title最多选择$max项 !',
-    email: '请填写正确的$title !',
-    mobile: '请填写正确的$title !',
-    phone: '请填写正确的$title !',
-    url: '请填写正确的$title !',
-    idcard: '请填写正确的$title !',
-    repeat: '请填写正确的$title',
-    some: '请填写正确的$title',
-    not: '请填写正确的$title',
-    number: '$title请填写整数 !',
-    float: '$title请填写数字 !',
-    mobile: '$title输入不正确 !',
-    pattern: '$title不符合规范 !',
-    higher: '结束$title不能小于开始$title',
-    repassword: '两次填写的密码不一致'
-  };
-  let en = {};
-  return eval(lang);
-};
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {/*
@@ -306,10 +196,10 @@ function toComment(sourceMap) {
   return '/*# ' + data + ' */';
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15).Buffer))
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -341,7 +231,7 @@ var stylesInDom = {},
 	singletonElement = null,
 	singletonCounter = 0,
 	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(16);
+	fixUrls = __webpack_require__(21);
 
 module.exports = function(list, options) {
 	if(typeof DEBUG !== "undefined" && DEBUG) {
@@ -600,232 +490,368 @@ function updateLink(linkElement, options, obj) {
 
 
 /***/ }),
-/* 4 */,
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["b"] = lang;
+const alias = {
+  '*': 'required',
+  'e': 'email',
+  'n': 'number',
+  'm': 'mobile'
+};
+/* harmony export (immutable) */ __webpack_exports__["a"] = alias;
+
+
+function lang(lang = 'cn') {
+  let cn = {
+    required: '请填写$title !',
+    select_required: '请选择$title !',
+    length_max: '$title不能大于$max个字 !',
+    length_min: '$title不能小于$min个字 !',
+    number_max: '$title不能大于$max !',
+    number_min: '$title不能小于$min !',
+    checked_min: '$title至少选择$min项 !',
+    checked_max: '$title最多选择$max项 !',
+    email: '请填写正确的$title !',
+    mobile: '请填写正确的$title !',
+    phone: '请填写正确的$title !',
+    url: '请填写正确的$title !',
+    idcard: '请填写正确的$title !',
+    repeat: '请填写正确的$title',
+    some: '请填写正确的$title',
+    not: '请填写正确的$title',
+    number: '$title请填写整数 !',
+    float: '$title请填写数字 !',
+    mobile: '$title输入不正确 !',
+    pattern: '$title不符合规范 !',
+    higher: '结束$title不能小于开始$title',
+    repassword: '两次填写的密码不一致'
+  };
+  let en = {};
+  return eval(lang);
+};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(3);
+/* unused harmony export getJQelement */
+/* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
+/* unused harmony export forElement */
+/* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
+/* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+function getJQelement(element, form = 'form') {
+  if (!element) return;
+  if (typeof element === 'string') {
+    element = /^[.#]/.test(element) ? $(element, form) : $(`[name='${element}']`, form);
+  } else if (element instanceof jQuery) {
+    element = element;
+  } else {
+    element = $(element, form);
+  }
+  return element.length > 0 ? element : false;
+}
+
+function formatItem(type, title) {
+  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
+  let [t1, t2] = (type => {
+    type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
+    return type.splice(1);
+  })(type);
+  let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
+  let reTypeRange = (type, range, prefix) => {
+    let msg = '',
+        flag = false;
+    type = type.replace(/^([n]?)(\d+)(\((.+)\))?$/, (all, $1, $2, $3, $4) => {
+      flag = true;
+      if ($4) msg = $4.replace(/\$/g, title);
+      return prefix + range + '=' + $2;
+    });
+    return flag ? { type, msg } : false;
+  };
+  let reType = type => {
+    let msg = '';
+    type = type.replace(/^([^()]+)(\((.+)\))?$/, (all, $1, $2, $3) => {
+      if ($3) msg = $3.replace(/\$/g, title);
+      return __WEBPACK_IMPORTED_MODULE_0__config__["a" /* alias */][$1] || $1;
+    });
+    return { type, msg };
+  };
+  return t2 ? [reTypeRange(t1, 'min', prefix), reTypeRange(t2, 'max', prefix)] : [reTypeRange(type, 'min', prefix) || reType(type)];
+}
+
+function jsonFormat(type, title) {
+  if (!type) return [];
+  if (typeof type === 'string') type = type.match(/([^,\s]+=([/'"])[^/'"]+\2(\([^)]*\))?)|([^,\s]+\([^)]*\))|([^,\s]+)/g) || [];
+  type = type.reduce((a, b) => {
+    return [].push.apply(a, formatItem(b, title)), a;
+  }, []);
+  return type;
+}
+/*
+  valid="用户名|*, maben, s10-15"
+  valid-required-msg=""
+  valid-error-msg=""
+*/
+
+//对有for的进行 两个元素相互绑定对象
+function forElement(element, type, form) {
+  let forEle = getJQelement(type.indexOf('for') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
+  if (forEle) {
+    let mergeDataValidFor = (element, forElement) => {
+      let ele = element.data('valid-for');
+      ele = ele ? ele.add(forElement) : forElement;
+      element.data('valid-for', ele);
+    };
+    mergeDataValidFor(forEle, element);
+    mergeDataValidFor(element, forEle);
+  }
+  return forEle;
+}
+
+function attrToJson(element, form) {
+  element = $(element);
+  let prefix = 'valid';
+  let attr = element.attr(prefix).split(/\s*\|\s*/);
+  let [title, type] = attr.length > 1 ? attr : ['', attr[0]];
+  let msg = type => {
+    type = element.attr(`${prefix}-${type}`);
+    return type ? type.replace('$', title) : false;
+  };
+  let obj = {
+    title,
+    forElement: forElement(element, type, form),
+    msg: msg('error') || false
+  };
+
+  if (/input|select|textarea/i.test(element[0].tagName)) {
+    return _extends({}, obj, { type: jsonFormat(type, title), element });
+  } else {
+    return _extends({}, obj, {
+      type: jsonFormat(type, title),
+      element: (() => [element.find(':checkbox'), element.find(':radio')].reduce((a, b) => a.length > b.length ? a : b))()
+    });
+  }
+}
+/*
+  将options里的自定义规则放到rules里面
+*/
+function rulesMerge(options, defaultOptions, callback) {
+  Object.keys(options).forEach(v => {
+    if (!(v in defaultOptions) && typeof options[v] === 'function') callback(v, options[v]);
+  });
+}
+
+/***/ }),
 /* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = loading;
-class Loading {
-  constructor(element) {
-    this.element = element;
-    this.show();
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__liepin_jquery_AlertTs__ = __webpack_require__(9);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+
+let dataMsg = 'valid-error-msg-forplugin';
+let defaultStyle = {
+  act: 'hide',
+  cssStyle: 'error',
+  top: 2,
+  left: 15,
+  css: {
+    padding: '5px 10px'
   }
-  bulid() {
-    this.dom = $(`
-      <div class="loader">
-        <div class="ball-clip-rotate"><div></div></div>
-      </div>
-    `).appendTo('body');
+};
+class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.options = $.extend(true, { alertTsUI: defaultStyle }, this.options);
+    this.lastElement;
+    this.bindEvent();
+    this.submit();
   }
-  resize() {
-    let pos = this.element.offset();
-    this.dom.css({
-      position: 'absolute',
-      top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
-      left: pos.left + this.element.outerWidth() - this.dom.outerWidth() - 3
+  show(element, msg) {
+    element = this.getElement(element);
+    if (!msg) msg = element.attr(dataMsg) || '';
+    if (this.lastElement) {
+      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
+      this.hide(this.lastElement.element);
+    }
+    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
+    addui = addui ? $.extend({}, true, this.options.alertTsUI, addui) : this.options.alertTsUI;
+    this.localization(element).AlertTs(_extends({}, addui, { content: msg })).AlertTs('show');
+    this.lastElement = { element, msg };
+  }
+  hide(element) {
+    element = element || this.lastElement && this.lastElement.element || false;
+    if (element) element = this.localization(this.getElement(element));
+    if (element && element.AlertTs) {
+      element.AlertTs('hide');
+      this.lastElement = null;
+    }
+  }
+  bindEvent() {
+    let that = this;
+    function focus(flag) {
+      if (!$(this).hasClass('valid-error') || flag === true) return;
+      that.show($(this));
+    }
+    function change(event, once = false) {
+      let $this = $(this);
+      if ($this.is(':radio, :checkbox')) {
+        $this = $this.closest('[valid]');
+      } else {
+        if ($this.val() === '' && !$this.attr(dataMsg)) return;
+      }
+      //对绑定了for的元素触发相互change
+      that.scan($this, flag => {
+        let ele = $(this).data('valid-for');
+        if (ele && !once) change.call(ele, event, true);
+      });
+    }
+    function blur() {
+      let $this = $(this);
+      let val = $this.val();
+      let dataVal = $this.data('valid-value');
+      if (val !== '' && (!dataVal || val !== dataVal)) {
+        $this.data('valid-value', val);
+        change.call(this);
+      }
+      that.hide();
+    }
+    let eventStr = 'input:not(:submit, :button), textarea, select';
+    this.form.on('focus.' + this.namespace, eventStr, focus).on('change.' + this.namespace, eventStr, change).on('blur.' + this.namespace, eventStr, blur);
+  }
+  scan(validItems = this.form, callback = $.noop, notips) {
+    let that = this;
+    if (typeof validItems === 'function') {
+      [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
+    }
+    this.validScan(validItems, items => {
+      items.each(function () {
+        let $this = $(this);
+        that.highlight($this, 'hide');
+        that.hide();
+        that.getElement($this).removeAttr(dataMsg);
+      });
+      callback(true);
+    }, items => {
+      let isForm = validItems.is('form');
+      if (isForm) {
+        let successItems = that.form.find('.valid-error').removeAttr(dataMsg);
+        this.highlight(successItems, 'hide');
+      }
+      items = items.map(v => {
+        let element = this.getElement(v.element);
+        element.attr(dataMsg, v.msg);
+        element.data('valid-value', element.val());
+        this.highlight(element, 'show');
+        return { element, msg: v.msg };
+      });
+      if (notips !== true) {
+        let [item] = items;
+        if (isForm) {
+          item.element.trigger('focus.' + this.namespace, [true]);
+          //应该找到它最近的带滚动条的
+          let top = this.localization(item.element).offset().top;
+          window.scrollTo(0, top - 80);
+        }
+        this.show(item.element, item.msg);
+      };
+      if (isForm) this.options.fail.call(this, items);
+      callback(false);
     });
   }
-  show() {
-    this.bulid();
-    this.resize();
-    return this;
-  }
-  hide() {
-    this.dom && this.dom.fadeOut('slow', () => this.dom.remove());
-    return this;
-  }
 }
-
-function loading(element) {
-  return new Loading(...arguments);
-}
+/* harmony default export */ __webpack_exports__["a"] = (AlertTips);
 
 /***/ }),
 /* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unit__ = __webpack_require__(0);
-/* harmony export (immutable) */ __webpack_exports__["a"] = rule;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__css_h5dialog_css__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__css_h5dialog_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__css_h5dialog_css__);
 
 
-function rule() {
-  let that = this;
-  let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
-  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
-  return {
-    required({ element, title = '', val, msg }) {
-      switch (element.attr('type') || element[0].tagName.toLowerCase()) {
-        case 'select':
-          if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
-          break;
-        case 'checkbox':
-        case 'radio':
-          if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
-          break;
-        default:
-          if (!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', { title });
-      }
-      return true;
-    },
-    float({ title = '', val, msg }) {
-      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'float', { title }) : true;
-    },
-    number({ title = '', val, msg }) {
-      return !/^\d+$/.test(val) ? getMsg(msg, 'number', { title }) : true;
-    },
-    nmax({ title = '', val, msg }, max) {
-      if (parseInt(val, 10) > parseInt(max, 10)) {
-        return getMsg(msg, 'number_max', { title, max });
-      }
-      return true;
-    },
-    nmin({ title = '', val, msg }, min) {
-      if (parseInt(val, 10) < parseInt(min, 10)) {
-        return getMsg(msg, 'number_min', { title, min });
-      }
-      return true;
-    },
-    max({ element, title = '', val, msg }, max) {
-      if (element.is(':checkbox')) {
-        if (element.filter(':checked').length > max) {
-          return getMsg(msg, 'checked_max', { title, max });
-        }
-      } else {
-        if (val.length > max) {
-          return getMsg(msg, 'length_max', { title, max });
-        }
-      }
-      return true;
-    },
-    min({ element, title = '', val, msg }, min) {
-      if (element.is(':checkbox')) {
-        if (element.filter(':checked').length < min) {
-          return getMsg(msg, 'checked_min', { title, min });
-        }
-      } else {
-        if (val.length < min) {
-          return getMsg(msg, 'length_min', { title, min });
-        }
-      }
-      return true;
-    },
-    email({ title = '', val, msg }) {
-      if (!/^[a-z_0-9-\.]+@([a-z_0-9-]+\.)+[a-z0-9]{2,8}$/i.test(val)) {
-        return getMsg(msg, 'email', { title });
-      }
-      return true;
-    },
-    mobile({ title = '手机号', val, msg }) {
-      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
-        return getMsg(msg, 'mobile', { title });
-      }
-      return true;
-    },
-    mobilehk({ title = '手机号', val, msg }) {
-      if (!/^[569]\d{7}$/.test(val)) {
-        return getMsg(msg, 'mobile', { title });
-      }
-      return true;
-    },
-    mobiletw({ title = '手机号', val, msg }) {
-      if (!/^9\d{8}$/.test(_value)) {
-        return getMsg(msg, 'mobile', { title });
-      }
-      return true;
-    },
-    phone({ title = '联系方式', val, msg }) {
-      if (!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
-        return getMsg(msg, 'phone', { title });
-      }
-      return true;
-    },
-    url({ title = '', val, msg }) {
-      if (!/^(http:|https:|ftp:)\/\/(?:[0-9a-zA-Z]+|[0-9a-zA-Z][\w-]+)+\.[\w-]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/.test(val)) {
-        return getMsg(msg, 'url', { title });
-      }
-      return true;
-    },
-    idcard({ title = '身份证', val, msg }) {
-      if (!/^\d{17}[xX\d]$|^\d{15}$/.test(val)) {
-        return getMsg(msg, 'idcard', { title });
-      }
-      return true;
-    },
-    repeat({ title = '', val, msg }, max = 5) {
-      if (new RegExp('(\\S)\\1{' + max + '}', 'g').test(val)) {
-        return getMsg(msg, 'repeat', { title });
-      }
-      return true;
-    },
-    pattern({ title = '', val, msg }, reg) {
-      try {
-        if (!eval(reg).test(val)) {
-          return getMsg(msg, 'pattern', { title });
-        }
-      } catch (e) {
-        console.error(title + 'pattern的正则不正确');
-      }
-      return true;
-    },
-    higher({ element, forElement, title = '', val, msg }) {
-      if (forElement.hasClass('valid-error')) return true;
-      if (parseInt(val.replace(/\D/g, '')) < parseInt(forElement.val().replace(/\D/g, ''))) {
-        return getMsg(msg, 'higher', { title });
-      } else {
-        return true;
-      }
-    },
-    checked_required(options) {
-      let { forElement } = options;
-      if (!forElement.is(':checked')) return true;
-      return this.rules.required(options);
-    },
-    repassword({ element, forElement, title = '', val, msg }) {
-      let [v1, v2] = [element.val(), forElement.val()];
-      if (v1 === '') return;
-      if (v1 === v2) {
-        return true;
-      } else {
-        return getMsg(msg, 'repassword', { title });
-      }
-    },
-    some({ element, title, type, val, msg }) {
-      let failArr = [];
-      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
-      for (let v of type) {
-        let [_type, _val] = v.type.split('=');
-        let result = this.rules[_type].call(this, { element, val }, _val);
-        failArr.push(result);
-      }
-      return failArr.some(v => v === true) || getMsg(msg, 'some', { title });
-    },
-    not({ element, title, type, val, msg }) {
-      let failArr = [];
-      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
-      for (let v of type) {
-        let [_type, _val] = v.type.split('=');
-        let result = this.rules[_type].call(this, { element, val }, _val);
-        failArr.push(result);
-      }
-      return failArr.some(v => v === true) ? getMsg(msg, 'not', { title }) : true;
+
+const className = 'valid-h5dialog';
+
+class H5Dialog extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.submit();
+    this.bulidElement;
+  }
+  show(msg) {
+    if (this.bulidElement) return;
+    this.bulidElement = $(`<div class="${className}">${msg}</div>`).appendTo('body');
+    setTimeout(this.hide.bind(this), 2000);
+  }
+  hide() {
+    this.bulidElement.addClass('valid-h5dialog-hide').on('animationend', function () {
+      $(this).remove();
+    });
+    this.bulidElement = null;
+  }
+  scan(validItems = this.form, callback = $.noop) {
+    if (typeof validItems === 'function') {
+      [validItems, callback] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
     }
-  };
+    this.validScan(validItems, items => callback(true), items => {
+      this.show(items[0].msg);
+      this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
+      callback(false);
+    });
+  }
 }
+/* harmony export (immutable) */ __webpack_exports__["a"] = H5Dialog;
+
 
 /***/ }),
 /* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(0);
+
+class None extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.submit();
+  }
+  scan(validItems = this.form, callback = $.noop) {
+    if (typeof validItems === 'function') {
+      [validItems, callback] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
+    }
+    this.validScan(validItems, items => callback(true), items => {
+      this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
+      callback(false);
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (None);
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(13);
+var content = __webpack_require__(18);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(3)(content, {});
+var update = __webpack_require__(2)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -842,11 +868,11 @@ if(false) {
 }
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_style_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_style_css__);
 
 
@@ -1438,15 +1464,17 @@ if(false) {
 }(jQuery, window));
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index_css__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ui_alert_tips_js__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui_none_js__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ui_alert_tips_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui_h5_dialog_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_none_js__ = __webpack_require__(7);
+
 
 
 //import DefaultTips from './ui/default.tips.js';
@@ -1456,9 +1484,11 @@ const pluginName = 'validate';
 let selectUI = type => {
   switch (type) {
     case 'none':
-      return __WEBPACK_IMPORTED_MODULE_2__ui_none_js__["a" /* default */];
+      return __WEBPACK_IMPORTED_MODULE_3__ui_none_js__["a" /* default */];
     //case 'default':
     //return DefaultTips;
+    case 'h5dialog':
+      return __WEBPACK_IMPORTED_MODULE_2__ui_h5_dialog_js__["a" /* default */];
     default:
       return __WEBPACK_IMPORTED_MODULE_1__ui_alert_tips_js__["a" /* default */];
   }
@@ -1493,7 +1523,335 @@ $.fn[pluginName] = function (...arg) {
 };
 
 /***/ }),
-/* 10 */
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = loading;
+class Loading {
+  constructor(element) {
+    this.element = element;
+    this.show();
+  }
+  bulid() {
+    this.dom = $(`
+      <div class="loader">
+        <div class="ball-clip-rotate"><div></div></div>
+      </div>
+    `).appendTo('body');
+  }
+  resize() {
+    let pos = this.element.offset();
+    this.dom.css({
+      position: 'absolute',
+      top: pos.top + this.element.outerHeight() / 2 - this.dom.outerHeight() / 2,
+      left: pos.left + this.element.outerWidth() - this.dom.outerWidth() - 3
+    });
+  }
+  show() {
+    this.bulid();
+    this.resize();
+    return this;
+  }
+  hide() {
+    this.dom && this.dom.fadeOut('slow', () => this.dom.remove());
+    return this;
+  }
+}
+
+function loading(element) {
+  return new Loading(...arguments);
+}
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unit__ = __webpack_require__(4);
+/* harmony export (immutable) */ __webpack_exports__["a"] = rule;
+
+
+function rule() {
+  let that = this;
+  let getMsg = tipMsg => (msg, key, obj) => msg || Object.keys(obj).reduce((a, b) => a.replace(new RegExp('\\$' + b, 'g'), obj[b]), tipMsg[key]);
+  getMsg = getMsg(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__config__["b" /* lang */])());
+  return {
+    required({ element, title = '', val, msg }) {
+      switch (element.attr('type') || element[0].tagName.toLowerCase()) {
+        case 'select':
+          if (element[0].selectedIndex === 0) return getMsg(msg, 'select_required', { title });
+          break;
+        case 'checkbox':
+        case 'radio':
+          if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
+          break;
+        default:
+          if (!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', { title });
+      }
+      return true;
+    },
+    float({ title = '', val, msg }) {
+      return !/^\d+(\.\d+)?$/.test(val) ? getMsg(msg, 'float', { title }) : true;
+    },
+    number({ title = '', val, msg }) {
+      return !/^\d+$/.test(val) ? getMsg(msg, 'number', { title }) : true;
+    },
+    nmax({ title = '', val, msg }, max) {
+      if (parseInt(val, 10) > parseInt(max, 10)) {
+        return getMsg(msg, 'number_max', { title, max });
+      }
+      return true;
+    },
+    nmin({ title = '', val, msg }, min) {
+      if (parseInt(val, 10) < parseInt(min, 10)) {
+        return getMsg(msg, 'number_min', { title, min });
+      }
+      return true;
+    },
+    max({ element, title = '', val, msg }, max) {
+      if (element.is(':checkbox')) {
+        if (element.filter(':checked').length > max) {
+          return getMsg(msg, 'checked_max', { title, max });
+        }
+      } else {
+        if (val.length > max) {
+          return getMsg(msg, 'length_max', { title, max });
+        }
+      }
+      return true;
+    },
+    min({ element, title = '', val, msg }, min) {
+      if (element.is(':checkbox')) {
+        if (element.filter(':checked').length < min) {
+          return getMsg(msg, 'checked_min', { title, min });
+        }
+      } else {
+        if (val.length < min) {
+          return getMsg(msg, 'length_min', { title, min });
+        }
+      }
+      return true;
+    },
+    email({ title = '', val, msg }) {
+      if (!/^[a-z_0-9-\.]+@([a-z_0-9-]+\.)+[a-z0-9]{2,8}$/i.test(val)) {
+        return getMsg(msg, 'email', { title });
+      }
+      return true;
+    },
+    mobile({ title = '手机号', val, msg }) {
+      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    mobilehk({ title = '手机号', val, msg }) {
+      if (!/^[569]\d{7}$/.test(val)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    mobiletw({ title = '手机号', val, msg }) {
+      if (!/^9\d{8}$/.test(_value)) {
+        return getMsg(msg, 'mobile', { title });
+      }
+      return true;
+    },
+    phone({ title = '联系方式', val, msg }) {
+      if (!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
+        return getMsg(msg, 'phone', { title });
+      }
+      return true;
+    },
+    url({ title = '', val, msg }) {
+      if (!/^(http:|https:|ftp:)\/\/(?:[0-9a-zA-Z]+|[0-9a-zA-Z][\w-]+)+\.[\w-]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/.test(val)) {
+        return getMsg(msg, 'url', { title });
+      }
+      return true;
+    },
+    idcard({ title = '身份证', val, msg }) {
+      if (!/^\d{17}[xX\d]$|^\d{15}$/.test(val)) {
+        return getMsg(msg, 'idcard', { title });
+      }
+      return true;
+    },
+    repeat({ title = '', val, msg }, max = 5) {
+      if (new RegExp('(\\S)\\1{' + max + '}', 'g').test(val)) {
+        return getMsg(msg, 'repeat', { title });
+      }
+      return true;
+    },
+    pattern({ title = '', val, msg }, reg) {
+      try {
+        if (!eval(reg).test(val)) {
+          return getMsg(msg, 'pattern', { title });
+        }
+      } catch (e) {
+        console.error(title + 'pattern的正则不正确');
+      }
+      return true;
+    },
+    higher({ element, forElement, title = '', val, msg }) {
+      if (forElement.hasClass('valid-error')) return true;
+      if (parseInt(val.replace(/\D/g, '')) < parseInt(forElement.val().replace(/\D/g, ''))) {
+        return getMsg(msg, 'higher', { title });
+      } else {
+        return true;
+      }
+    },
+    checked_required(options) {
+      let { forElement } = options;
+      if (!forElement.is(':checked')) return true;
+      return this.rules.required(options);
+    },
+    repassword({ element, forElement, title = '', val, msg }) {
+      let [v1, v2] = [element.val(), forElement.val()];
+      if (v1 === '') return;
+      if (v1 === v2) {
+        return true;
+      } else {
+        return getMsg(msg, 'repassword', { title });
+      }
+    },
+    some({ element, title, type, val, msg }) {
+      let failArr = [];
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      for (let v of type) {
+        let [_type, _val] = v.type.split('=');
+        let result = this.rules[_type].call(this, { element, val }, _val);
+        failArr.push(result);
+      }
+      return failArr.some(v => v === true) || getMsg(msg, 'some', { title });
+    },
+    not({ element, title, type, val, msg }) {
+      let failArr = [];
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      for (let v of type) {
+        let [_type, _val] = v.type.split('=');
+        let result = this.rules[_type].call(this, { element, val }, _val);
+        failArr.push(result);
+      }
+      return failArr.some(v => v === true) ? getMsg(msg, 'not', { title }) : true;
+    }
+  };
+}
+
+/***/ }),
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__rules__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__loading__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__unit__ = __webpack_require__(4);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+
+
+
+
+'use strict';
+let defaults = {
+  rules: {},
+  fail: () => {},
+  success: () => {},
+  lang: 'cn'
+};
+class Validate {
+  constructor(element, options = {}) {
+    this.element = element;
+    this.form = element.is('form') ? element : element.closest('form');
+    this.options = _extends({}, defaults, options);
+    __WEBPACK_IMPORTED_MODULE_2__unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
+    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_0__rules__["a" /* default */].apply(this), this.options.rules);
+    this.init();
+  }
+  init() {
+    this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, this.form));
+  }
+  validScan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
+    var _arguments = arguments,
+        _this = this;
+
+    return _asyncToGenerator(function* () {
+      if (typeof items === 'function') {
+        [items, successCallback, failCallback] = [..._arguments].reduce(function (a, b) {
+          return a.push(b), a;
+        }, [_this.form]);
+      }
+
+      if (items.is('form')) {
+        items = items.find('[valid]');
+      } else {
+        items = items.filter('[valid]');
+      }
+
+      let failArr = [];
+      let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
+        return __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, _this.form);
+      });
+      for (let v of arr) yield function (item) {
+        return new Promise((() => {
+          var _ref = _asyncToGenerator(function* (resolve, reject) {
+            let error;
+            for (let validType of item.type) {
+              yield _this.validItem(validType, item).catch(function (e) {
+                return reject(error = e);
+              });
+              if (error) break;
+            }
+            resolve();
+          });
+
+          return function (_x, _x2) {
+            return _ref.apply(this, arguments);
+          };
+        })());
+      }(v).catch(function (e) {
+        return failArr.push(e);
+      });
+      failArr.length === 0 ? successCallback.call(_this, items) : failCallback.call(_this, failArr);
+    })();
+  }
+  validItem(validType, item) {
+    let filterCondition = (_type, val) => {
+      if (this.options.rules[_type]) {
+        return false;
+      } else if (!/required/.test(_type) && !/^[\w\W]+$/.test(val)) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+    return new Promise((resolve, reject) => {
+      let { element } = item;
+      let { type, msg } = validType;
+      let [_type, val] = type.split('=');
+      if (!this.rules[_type]) resolve();
+      let obj = _extends({}, item, { type, val: element.val() });
+      let result = filterCondition(_type, obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
+      if (result instanceof Promise) {
+        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__loading__["a" /* default */])(element);
+        result.then(() => {
+          resolve();
+          _loading.hide();
+        }).catch(msg => {
+          reject({ msg, valid: false, element });
+          _loading.hide();
+        });
+      } else {
+        result === true ? resolve() : reject({ valid: false, msg: result, element });
+      }
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (Validate);
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1614,7 +1972,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 11 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1628,9 +1986,9 @@ function fromByteArray (uint8) {
 
 
 
-var base64 = __webpack_require__(10)
-var ieee754 = __webpack_require__(14)
-var isArray = __webpack_require__(15)
+var base64 = __webpack_require__(14)
+var ieee754 = __webpack_require__(19)
+var isArray = __webpack_require__(20)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -3408,13 +3766,13 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
 
 /***/ }),
-/* 12 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(2)(undefined);
+exports = module.exports = __webpack_require__(1)(undefined);
 // imports
 
 
@@ -3425,10 +3783,24 @@ exports.push([module.i, ".alert-ts {\n  position: absolute;\n  display: none;\n 
 
 
 /***/ }),
-/* 13 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(2)(undefined);
+exports = module.exports = __webpack_require__(1)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".valid-h5dialog {\n  position: fixed;\n  padding: 8px 16px;\n  background-color: rgba(0, 0, 0, 0.75);\n  color: #fff;\n  left: 50%;\n  top: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 4px;\n  animation: valid-h5dialog-show 0.5s ease-out;\n  font-size: 14px;\n}\n.valid-h5dialog-hide {\n  animation: valid-h5dialog-hide 0.3s ease-in;\n}\n@keyframes valid-h5dialog-show {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes valid-h5dialog-hide {\n  0% {\n    opacity: 1;\n  }\n  100% {\n    opacity: 0;\n  }\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(undefined);
 // imports
 
 
@@ -3439,7 +3811,7 @@ exports.push([module.i, ".valid-error {\n  border-color: #ff6555!important;\n  c
 
 
 /***/ }),
-/* 14 */
+/* 19 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -3529,7 +3901,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 15 */
+/* 20 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -3540,7 +3912,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 16 */
+/* 21 */
 /***/ (function(module, exports) {
 
 
@@ -3635,16 +4007,16 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 17 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(12);
+var content = __webpack_require__(16);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(3)(content, {});
+var update = __webpack_require__(2)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -3661,7 +4033,33 @@ if(false) {
 }
 
 /***/ }),
-/* 18 */
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(17);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(2)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./h5dialog.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/less-loader/dist/index.js!./h5dialog.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 24 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3686,311 +4084,6 @@ try {
 
 module.exports = g;
 
-
-/***/ }),
-/* 19 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__rules__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__loading__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__unit__ = __webpack_require__(0);
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-
-
-
-
-'use strict';
-let defaults = {
-  rules: {},
-  fail: () => {},
-  success: () => {},
-  lang: 'cn'
-};
-class Validate {
-  constructor(element, options = {}) {
-    this.element = element;
-    this.form = element.is('form') ? element : element.closest('form');
-    this.options = _extends({}, defaults, options);
-    __WEBPACK_IMPORTED_MODULE_2__unit__["a" /* rulesMerge */](options, defaults, (key, val) => this.options.rules[key] = val);
-    this.rules = _extends({}, __WEBPACK_IMPORTED_MODULE_0__rules__["a" /* default */].apply(this), this.options.rules);
-    this.init();
-  }
-  init() {
-    this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, this.form));
-  }
-  validScan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
-    var _arguments = arguments,
-        _this = this;
-
-    return _asyncToGenerator(function* () {
-      if (typeof items === 'function') {
-        [items, successCallback, failCallback] = [..._arguments].reduce(function (a, b) {
-          return a.push(b), a;
-        }, [_this.form]);
-      }
-      if (items.is('form')) items = items.find('[valid]');
-      let failArr = [];
-      let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
-        return __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, _this.form);
-      });
-      for (let v of arr) yield function (item) {
-        return new Promise((() => {
-          var _ref = _asyncToGenerator(function* (resolve, reject) {
-            let error;
-            for (let validType of item.type) {
-              yield _this.validItem(validType, item).catch(function (e) {
-                return reject(error = e);
-              });
-              if (error) break;
-            }
-            resolve();
-          });
-
-          return function (_x, _x2) {
-            return _ref.apply(this, arguments);
-          };
-        })());
-      }(v).catch(function (e) {
-        return failArr.push(e);
-      });
-      failArr.length === 0 ? successCallback.call(_this, items) : failCallback.call(_this, failArr);
-    })();
-  }
-  validItem(validType, item) {
-    return new Promise((resolve, reject) => {
-      let { element } = item;
-      let { type, msg } = validType;
-      let [_type, val] = type.split('=');
-      if (!this.rules[_type]) resolve();
-      let obj = _extends({}, item, { type, val: element.val() });
-      let result = !/required/.test(_type) && !/^[\w\W]+$/.test(obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
-      if (result instanceof Promise) {
-        let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__loading__["a" /* default */])(element);
-        result.then(() => {
-          resolve();
-          _loading.hide();
-        }).catch(msg => {
-          reject({ msg, valid: false, element });
-          _loading.hide();
-        });
-      } else {
-        result === true ? resolve() : reject({ valid: false, msg: result, element });
-      }
-    });
-  }
-}
-/* harmony default export */ __webpack_exports__["a"] = (Validate);
-
-/***/ }),
-/* 20 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__liepin_jquery_AlertTs__ = __webpack_require__(8);
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-
-
-let dataMsg = 'valid-error-msg-forplugin';
-let defaultStyle = {
-  act: 'hide',
-  cssStyle: 'error',
-  top: 2,
-  left: 15,
-  css: {
-    padding: '5px 10px'
-  }
-};
-class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
-  constructor(element, options = {}) {
-    super(...arguments);
-    this.options = $.extend(true, { alertTsUI: defaultStyle }, this.options);
-    this.lastElement;
-    this.bindEvent();
-    this.submit();
-  }
-  show(element, msg) {
-    element = this.getElement(element);
-    if (!msg) msg = element.attr(dataMsg) || '';
-    if (this.lastElement) {
-      if (this.lastElement.element[0] === element[0] && msg === this.lastElement.msg) return;
-      this.hide(this.lastElement.element);
-    }
-    let addui = (ui => ui ? eval(`(${ui})`) : false)(element.attr('valid-ui'));
-    addui = addui ? $.extend({}, true, this.options.alertTsUI, addui) : this.options.alertTsUI;
-    this.localization(element).AlertTs(_extends({}, addui, { content: msg })).AlertTs('show');
-    this.lastElement = { element, msg };
-  }
-  hide(element) {
-    element = element || this.lastElement && this.lastElement.element || false;
-    if (element) element = this.localization(this.getElement(element));
-    if (element && element.AlertTs) {
-      element.AlertTs('hide');
-      this.lastElement = null;
-    }
-  }
-  bindEvent() {
-    let that = this;
-    function focus(flag) {
-      if (!$(this).hasClass('valid-error') || flag === true) return;
-      that.show($(this));
-    }
-    function change(event, once = false) {
-      let $this = $(this);
-      if ($this.is(':radio, :checkbox')) {
-        $this = $this.closest('[valid]');
-      } else {
-        if ($this.val() === '' && !$this.attr(dataMsg)) return;
-      }
-      //对绑定了for的元素触发相互change
-      that.scan($this, flag => {
-        let ele = $(this).data('valid-for');
-        if (ele && !once) change.call(ele, event, true);
-      });
-    }
-    function blur() {
-      let $this = $(this);
-      let val = $this.val();
-      let dataVal = $this.data('valid-value');
-      if (val !== '' && (!dataVal || val !== dataVal)) {
-        $this.data('valid-value', val);
-        change.call(this);
-      }
-      that.hide();
-    }
-    let eventStr = 'input:not(:submit, :button), textarea, select';
-    this.form.on('focus.' + this.namespace, eventStr, focus).on('change.' + this.namespace, eventStr, change).on('blur.' + this.namespace, eventStr, blur);
-  }
-  scan(validItems = this.form, callback = $.noop, notips) {
-    let that = this;
-    if (typeof validItems === 'function') {
-      [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
-    }
-    this.validScan(validItems, items => {
-      items.each(function () {
-        let $this = $(this);
-        that.highlight($this, 'hide');
-        that.hide();
-        that.getElement($this).removeAttr(dataMsg);
-      });
-      callback(true);
-    }, items => {
-      let isForm = validItems.is('form');
-      if (isForm) {
-        let successItems = that.form.find('.valid-error').removeAttr(dataMsg);
-        this.highlight(successItems, 'hide');
-      }
-      items = items.map(v => {
-        let element = this.getElement(v.element).attr(dataMsg, v.msg);
-        element.data('valid-value', element.val());
-        this.highlight(element, 'show');
-        return { element, msg: v.msg };
-      });
-      if (notips !== true) {
-        let [item] = items;
-        isForm && item.element.trigger('focus.' + this.namespace, [true]);
-        this.show(item.element, item.msg);
-      };
-      this.options.fail(items);
-      callback(false);
-    });
-  }
-}
-/* harmony default export */ __webpack_exports__["a"] = (AlertTips);
-
-/***/ }),
-/* 21 */,
-/* 22 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_valid__ = __webpack_require__(19);
-
-class Base extends __WEBPACK_IMPORTED_MODULE_0__lib_valid__["a" /* default */] {
-  constructor(element, options = {}) {
-    super(...arguments);
-    this.namespace = 'valid';
-  }
-  getElement(element) {
-    return element.is(':radio, :checkbox') ? element.closest('[valid]') : element;
-  }
-  localization(element) {
-    let ui = element.attr('data-ui');
-    if (ui) {
-      switch (ui.toLowerCase()) {
-        case 'selectui':
-          element = element.parent();
-          break;
-        default:
-          element = element.parent().find(`.${ui}`);
-      }
-    }
-    return element;
-  }
-  highlight(element, type) {
-    element = this.localization(this.getElement(element));
-    type === 'show' ? element.addClass('valid-error') : element.removeClass('valid-error');
-  }
-  submit() {
-    let that = this;
-    this.form.on('submit', function (event, valid = false) {
-      if (valid === false) {
-        that.scan(flag => {
-          if (flag && that.options.success() === true) that.form.trigger('submit', [true]);
-        });
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-}
-/* harmony default export */ __webpack_exports__["a"] = (Base);
-
-/***/ }),
-/* 23 */,
-/* 24 */,
-/* 25 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(22);
-
-class None extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
-  constructor(element, options = {}) {
-    super(...arguments);
-    this.bindEvent();
-    this.submit();
-  }
-  bindEvent() {
-    let that = this;
-    function change(event) {
-      let $this = $(this);
-      if ($this.is(':radio, :checkbox')) {
-        $this = $this.closest('[valid]');
-      } else {
-        if ($this.val() === '') return;
-      }
-      that.scan($this);
-    }
-    this.form.on('change.' + this.namespace, 'input:checkbox,input:radio, select', change).on('blur.' + this.namespace, 'input:not(:submit, :button, :radio, :checkbox, select), textarea, select', change);
-  }
-  scan(validItems = this.form, callback = $.noop) {
-    if (typeof validItems === 'function') {
-      [validItems, callback] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
-    }
-    this.validScan(validItems, items => callback(true), items => {
-      this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
-      callback(false);
-    });
-  }
-}
-/* harmony default export */ __webpack_exports__["a"] = (None);
 
 /***/ })
 /******/ ]);

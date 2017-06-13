@@ -93,17 +93,23 @@ class AlertTips extends Base{
         this.highlight(successItems, 'hide');
       }
       items = items.map(v=> {
-        let element = this.getElement(v.element).attr(dataMsg, v.msg);
+        let element = this.getElement(v.element);
+        element.attr(dataMsg, v.msg);
         element.data('valid-value', element.val());
         this.highlight(element, 'show');
         return {element, msg:v.msg};
       });
       if(notips!==true){
         let [item] = items;
-        isForm && item.element.trigger('focus.'+this.namespace, [true]);
+        if(isForm){
+          item.element.trigger('focus.'+this.namespace, [true]);
+          //应该找到它最近的带滚动条的
+          let top = this.localization(item.element).offset().top;
+          window.scrollTo(0, top - 80);
+        }
         this.show(item.element, item.msg);
       };
-      this.options.fail(items);
+      if(isForm) this.options.fail.call(this, items);
       callback(false);
     });
   }
