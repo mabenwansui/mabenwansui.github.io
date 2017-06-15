@@ -9,8 +9,8 @@ export function lang(lang='cn'){
   let cn = {
     required        : '请填写$title !',
     select_required : '请选择$title !',
-    length_max      : '$title不能大于$max个字 !',
-    length_min      : '$title不能小于$min个字 !',
+    length_max      : '$title不能多于$max个字 !',
+    length_min      : '$title不能少于$min个字 !',
     number_max      : '$title不能大于$max !',
     number_min      : '$title不能小于$min !',
     checked_min     : '$title至少选择$min项 !',

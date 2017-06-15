@@ -24,10 +24,15 @@ export default class H5Dialog extends Base{
     if(typeof validItems === 'function'){
       [validItems, callback] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
     }
-    this.validScan(validItems, items=> callback(true), items=> {
-      this.show(items[0].msg);
-      this.options.fail( items.map(v=> ({element: this.getElement(v.element), msg:v.msg})) );
-      callback(false);
+    this.validScan(validItems, items=> {
+      items = items.filter(v=> v.valid===false);
+      if(items.length>0){
+        this.show(items[0].msg);
+        this.options.fail( items.map(v=> ({element: this.getElement(v.element), msg:v.msg})) );
+        callback(false);
+      }else{
+        callback(true);
+      }
     });
   }
 }

@@ -508,8 +508,8 @@ function lang(lang = 'cn') {
   let cn = {
     required: '请填写$title !',
     select_required: '请选择$title !',
-    length_max: '$title不能大于$max个字 !',
-    length_min: '$title不能小于$min个字 !',
+    length_max: '$title不能多于$max个字 !',
+    length_min: '$title不能少于$min个字 !',
     number_max: '$title不能大于$max !',
     number_min: '$title不能小于$min !',
     checked_min: '$title至少选择$min项 !',
@@ -540,10 +540,11 @@ function lang(lang = 'cn') {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(3);
 /* unused harmony export getJQelement */
-/* harmony export (immutable) */ __webpack_exports__["c"] = jsonFormat;
+/* harmony export (immutable) */ __webpack_exports__["d"] = jsonFormat;
 /* unused harmony export forElement */
 /* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
 /* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
+/* harmony export (immutable) */ __webpack_exports__["c"] = arrMerge;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -563,7 +564,7 @@ function formatItem(type, title) {
   if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
   let [t1, t2] = (type => {
     type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
-    return type.splice(1);
+    return type.slice(1);
   })(type);
   let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : ''; //取出类似于n这样的字母
   let reTypeRange = (type, range, prefix) => {
@@ -649,6 +650,20 @@ function rulesMerge(options, defaultOptions, callback) {
   });
 }
 
+function arrMerge(a1, a2) {
+  a2.forEach((v2, index2) => {
+    if (!a1.some((v1, index1) => {
+      if (v1.element[0] === v2.element[0]) {
+        a1[index1] = v2;
+        return true;
+      }
+    })) {
+      a1.push(v2);
+    }
+  });
+  return a1;
+}
+
 /***/ }),
 /* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -706,58 +721,53 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
     }
     function change(event, once = false) {
       let $this = $(this);
+      let notShowTips = $this.is(':radio, :checkbox, :hidden') ? false : true;
       if ($this.is(':radio, :checkbox')) {
         $this = $this.closest('[valid]');
       } else {
         if ($this.val() === '' && !$this.attr(dataMsg)) return;
       }
-      //对绑定了for的元素触发相互change
       that.scan($this, flag => {
+        //对绑定了for的元素触发相互change
         let ele = $(this).data('valid-for');
         if (ele && !once) change.call(ele, event, true);
-      });
+      }, notShowTips);
     }
-    function blur() {
-      let $this = $(this);
-      let val = $this.val();
-      let dataVal = $this.data('valid-value');
-      if (val !== '' && (!dataVal || val !== dataVal)) {
-        $this.data('valid-value', val);
-        change.call(this);
+    function blur(event, once = false) {
+      if (!$(this).is(':radio, :checkbox, select')) {
+        change.call($(this), event);
       }
       that.hide();
     }
     let eventStr = 'input:not(:submit, :button), textarea, select';
-    this.form.on('focus.' + this.namespace, eventStr, focus).on('change.' + this.namespace, eventStr, change).on('blur.' + this.namespace, eventStr, blur);
+    this.form.on('focus.' + this.namespace, eventStr, focus).on('change.' + this.namespace, ':radio, :checkbox, select', change).on('blur.' + this.namespace, eventStr, blur);
   }
   scan(validItems = this.form, callback = $.noop, notips) {
     let that = this;
     if (typeof validItems === 'function') {
       [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
     }
+
     this.validScan(validItems, items => {
-      items.each(function () {
-        let $this = $(this);
-        that.highlight($this, 'hide');
-        that.hide();
-        that.getElement($this).removeAttr(dataMsg);
-      });
-      callback(true);
-    }, items => {
       let isForm = validItems.is('form');
-      if (isForm) {
-        let successItems = that.form.find('.valid-error').removeAttr(dataMsg);
-        this.highlight(successItems, 'hide');
-      }
-      items = items.map(v => {
+      if (isForm) this.highlight(this.form.find('.valid-error').removeAttr(dataMsg), 'hide');
+      let fail = items.reduce((a, v) => {
         let element = this.getElement(v.element);
-        element.attr(dataMsg, v.msg);
-        element.data('valid-value', element.val());
-        this.highlight(element, 'show');
-        return { element, msg: v.msg };
-      });
-      if (notips !== true) {
-        let [item] = items;
+        if (v.valid === true) {
+          this.highlight(v.element, 'hide');
+          element.removeAttr(dataMsg);
+          this.hide();
+        } else {
+          if (element.val() === '' && !element.attr(dataMsg) && !isForm && !v.element.is(':checkbox, :radio')) {} else {
+            element.attr(dataMsg, v.msg);
+            this.highlight(element, 'show');
+          }
+          a.push({ element, msg: v.msg });
+        }
+        return a;
+      }, []);
+      if (notips !== true && fail.length > 0) {
+        let [item] = fail;
         if (isForm) {
           item.element.trigger('focus.' + this.namespace, [true]);
           //应该找到它最近的带滚动条的
@@ -766,8 +776,8 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
         }
         this.show(item.element, item.msg);
       };
-      if (isForm) this.options.fail.call(this, items);
-      callback(false);
+      if (isForm) this.options.fail.call(this, fail);
+      callback.call(this, fail.length > 0 ? false : true);
     });
   }
 }
@@ -807,10 +817,15 @@ class H5Dialog extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
     if (typeof validItems === 'function') {
       [validItems, callback] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
     }
-    this.validScan(validItems, items => callback(true), items => {
-      this.show(items[0].msg);
-      this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
-      callback(false);
+    this.validScan(validItems, items => {
+      items = items.filter(v => v.valid === false);
+      if (items.length > 0) {
+        this.show(items[0].msg);
+        this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
+        callback(false);
+      } else {
+        callback(true);
+      }
     });
   }
 }
@@ -833,9 +848,14 @@ class None extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
     if (typeof validItems === 'function') {
       [validItems, callback] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
     }
-    this.validScan(validItems, items => callback(true), items => {
-      this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
-      callback(false);
+    this.validScan(validItems, items => {
+      items = items.filter(v => v.valid === false);
+      if (items.length > 0) {
+        this.options.fail(items.map(v => ({ element: this.getElement(v.element), msg: v.msg })));
+        callback(false);
+      } else {
+        callback(true);
+      }
     });
   }
 }
@@ -1688,7 +1708,7 @@ function rule() {
           return getMsg(msg, 'pattern', { title });
         }
       } catch (e) {
-        console.error(title + 'pattern的正则不正确');
+        throw title + 'pattern的正则不正确';
       }
       return true;
     },
@@ -1716,7 +1736,7 @@ function rule() {
     },
     some({ element, title, type, val, msg }) {
       let failArr = [];
-      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["d" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
       for (let v of type) {
         let [_type, _val] = v.type.split('=');
         let result = this.rules[_type].call(this, { element, val }, _val);
@@ -1726,7 +1746,7 @@ function rule() {
     },
     not({ element, title, type, val, msg }) {
       let failArr = [];
-      type = __WEBPACK_IMPORTED_MODULE_1__unit__["c" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
+      type = __WEBPACK_IMPORTED_MODULE_1__unit__["d" /* jsonFormat */](type.replace(/^[a-z]+=(['"])([^'"]+)\1/, '$2'), title);
       for (let v of type) {
         let [_type, _val] = v.type.split('=');
         let result = this.rules[_type].call(this, { element, val }, _val);
@@ -1752,12 +1772,12 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 
 
-
 'use strict';
 let defaults = {
   rules: {},
   fail: () => {},
   success: () => {},
+  scan: false,
   lang: 'cn'
 };
 class Validate {
@@ -1772,24 +1792,23 @@ class Validate {
   init() {
     this.form.find('[valid]').toArray().forEach(v => __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, this.form));
   }
-  validScan(items = this.form, successCallback = $.noop, failCallback = $.noop) {
+  validScan(items = this.form, scanResult = $.noop) {
     var _arguments = arguments,
         _this = this;
 
     return _asyncToGenerator(function* () {
       if (typeof items === 'function') {
-        [items, successCallback, failCallback] = [..._arguments].reduce(function (a, b) {
+        [items, scanResult] = [..._arguments].reduce(function (a, b) {
           return a.push(b), a;
         }, [_this.form]);
       }
-
-      if (items.is('form')) {
+      let isForm = items.is('form');
+      if (isForm) {
         items = items.find('[valid]');
       } else {
         items = items.filter('[valid]');
       }
-
-      let failArr = [];
+      let resultArr = [];
       let arr = items.filter(':not([ignore],[disabled])').toArray().map(function (v) {
         return __WEBPACK_IMPORTED_MODULE_2__unit__["b" /* attrToJson */](v, _this.form);
       });
@@ -1803,17 +1822,39 @@ class Validate {
               });
               if (error) break;
             }
-            resolve();
+            resolve({ element: item.element, valid: true });
           });
 
           return function (_x, _x2) {
             return _ref.apply(this, arguments);
           };
         })());
-      }(v).catch(function (e) {
-        return failArr.push(e);
+      }(v).then(function (obj) {
+        return resultArr.push(obj);
+      }).catch(function (obj) {
+        return resultArr.push(obj);
       });
-      failArr.length === 0 ? successCallback.call(_this, items) : failCallback.call(_this, failArr);
+
+      if (_this.options.scan) {
+        let result = _this.options.scan.call(_this);
+        if ($.isPlainObject(result)) result = [result];
+        if (isForm) {
+          try {
+            resultArr = __WEBPACK_IMPORTED_MODULE_2__unit__["c" /* arrMerge */](resultArr, result);
+          } catch (e) {
+            throw 'validate scan的返回值必须为{element:"", valid:"", msg:""}或数组';
+          }
+        } else {
+          if (result.some(function (v) {
+            for (let vv of arr) {
+              if (v.element[0] === vv.element[0]) return true;
+            }
+          })) {
+            resultArr = result;
+          }
+        }
+      }
+      scanResult.call(_this, resultArr);
     })();
   }
   validItem(validType, item) {

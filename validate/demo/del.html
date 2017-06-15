@@ -75,8 +75,8 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
         <tr>
           <th><i class="text-warning">*</i>业务1</th>
           <td>
-            <p style="padding-bottom: 10px;"><input type="text" valid="业务1-1|constom1, for=.constom2" class="text constom1" /></p>
-            <p><input type="text" valid="业务1-2|constom2, for=.constom1" class="text constom2" /></p>
+            <p style="padding-bottom: 10px;"><input type="text" valid="业务1|constom1, for=.constom2" class="text constom1" /></p>
+            <p><input type="text" valid="业务2|constom2, for=.constom1" class="text constom2" /></p>
           </td>
         </tr>
 
@@ -86,7 +86,12 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
             <p style="padding-bottom: 10px;"><input type="text" valid="业务2-1|constom3, for=.constom4" class="text constom3" /></p>
             <p><input type="text" valid="业务2-2|constom4, for=.constom3" class="text constom4" /></p>
           </td>
-        </tr> 
+        </tr>
+
+        <tr>
+          <th><i class="text-warning">*</i>简介</th>
+          <td><textarea name="" class="text maben" valid="简介|*, 5-20" cols="30" rows="10"></textarea></td>
+        </tr>
 
       </table>
       <h3 class="nav-title">
@@ -152,15 +157,15 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
 
 $('form').validate({
   constom1({element, forElement, val, title}){
-    console.log(111111);
     if(element.val()==='' && forElement.val()!==''){
+      return `请填写${title}`;
+    }else if($('.constom1').val()==='' && $('.constom2').val()==='' && $('.constom3').val()==='' && $('.constom4').val()===''){
       return `请填写${title}`;
     }else{
       return true;
     }
   },
   constom2({element, forElement, val, title}){
-    console.log(222222);
     if(element.val()==='' && forElement.val()!==''){
       return `请填写${title}`;
     }else{
@@ -181,13 +186,44 @@ $('form').validate({
       return true;
     }
   },
+  // scan(){
+  //   let constom1 = $('.constom1');
+  //   let constom2 = $('.constom2');
+  //   let constom3 = $('.constom3');
+  //   let constom4 = $('.constom4');
+  //   if(constom1.val()==='' && constom2.val()==='' && constom3.val()==='' && constom4.val()===''){
+  //     return {element: constom1, valid: false, msg: '11必填'}
+  //   }else if(constom1.val()==='' && constom2.val()!==''){
+  //     return {element: constom1, valid: false, msg: '1必填'}
+  //   }else if(constom2.val()==='' && constom1.val()!==''){
+  //     return [
+  //       {element: constom2, valid: false, msg: '2必填'}
+  //     ]
+  //   }else{
+  //     return [
+  //       {element: constom1, valid: true},
+  //       {element: constom2, valid: true},
+  //       {element: constom3, valid: true},
+  //       {element: constom4, valid: true},
+  //     ]
+  //   }
+
+  // },
+  //ui: 'none',
   fail(e){
     console.log(e);
   },
   success(){
-
+    console.log('ok');
   }
 })
+
+$('.maben').on('input', function(){
+  if($(this).val().length===20 || $(this).val().length===20+1){
+    $('form').validate('scan', $('.maben'));
+  }
+})
+
 
 </script>
 </html>

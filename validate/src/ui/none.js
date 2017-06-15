@@ -8,9 +8,14 @@ class None extends Base{
     if(typeof validItems === 'function'){
       [validItems, callback] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
     }
-    this.validScan(validItems, items=> callback(true), items=> {
-      this.options.fail( items.map(v=> ({element: this.getElement(v.element), msg:v.msg})) );
-      callback(false);
+    this.validScan(validItems, items=> {
+      items = items.filter(v=> v.valid === false);
+      if(items.length>0){
+        this.options.fail( items.map(v=> ({element: this.getElement(v.element), msg:v.msg})) );
+        callback(false);
+      }else{
+        callback(true);
+      }
     });
   }
 }

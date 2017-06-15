@@ -1,12 +1,12 @@
 import rules from './rules';
 import loading from './loading';
 import * as unit from './unit';
-
 'use strict';
 let defaults = {
   rules   : {},
   fail    : ()=>{},
   success : ()=>{},
+  scan    : false,
   lang    : 'cn'
 }
 class Validate{
@@ -21,18 +21,17 @@ class Validate{
   init(){
     this.form.find('[valid]').toArray().forEach(v=> unit.attrToJson(v, this.form));
   }
-  async validScan(items=this.form, successCallback=$.noop, failCallback=$.noop){
+  async validScan(items=this.form, scanResult=$.noop){
     if(typeof items === 'function'){
-      [items, successCallback, failCallback] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
+      [items, scanResult] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
     }
-
-    if(items.is('form')){
+    let isForm = items.is('form');
+    if(isForm){
       items = items.find('[valid]');
     }else{
       items = items.filter('[valid]');
     }
-
-    let failArr = [];
+    let resultArr = [];
     let arr = items.filter(':not([ignore],[disabled])').toArray().map(v=> unit.attrToJson(v, this.form));
     for(let v of arr) await (item=> new Promise(async (resolve, reject)=> {
       let error;
@@ -40,9 +39,27 @@ class Validate{
         await this.validItem(validType, item).catch(e=> reject(error=e));
         if(error) break;
       }
-      resolve();
-    }))(v).catch(e=> failArr.push(e));
-    failArr.length===0 ? successCallback.call(this, items) : failCallback.call(this, failArr);
+      resolve({element: item.element, valid: true});
+    }))(v).then(obj => resultArr.push(obj)).catch(obj=> resultArr.push(obj));
+
+    if(this.options.scan){
+      let result = this.options.scan.call(this);
+      if($.isPlainObject(result)) result = [result];
+      if(isForm){
+        try{
+          resultArr = unit.arrMerge(resultArr, result);
+        }catch(e){ throw('validate scan的返回值必须为{element:"", valid:"", msg:""}或数组') }
+      }else{
+        if(result.some(v=> {
+          for(let vv of arr){
+            if(v.element[0]===vv.element[0]) return true;
+          }
+        })){
+          resultArr = result;
+        }   
+      }
+    }
+    scanResult.call(this, resultArr);
   }
   validItem(validType, item){
     let filterCondition = (_type, val) => {
@@ -68,7 +85,7 @@ class Validate{
         );
       if(result instanceof Promise){
         let _loading = loading(element);
-        result.then(()=>{
+        result.then(()=> {
           resolve();
           _loading.hide();
         }).catch(msg=> {

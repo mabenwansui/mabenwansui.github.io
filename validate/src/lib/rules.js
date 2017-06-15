@@ -115,7 +115,7 @@ export default function rule(){
           return getMsg(msg, 'pattern', {title});
         }
       }catch(e){
-        console.error(title+'pattern的正则不正确');
+        throw(title+'pattern的正则不正确');
       }
       return true;
     },

@@ -15,7 +15,7 @@ function formatItem(type, title){
   if(/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{type, msg:''}];
   let [t1, t2] = (type=> {
     type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
-    return type.splice(1);
+    return type.slice(1);
   })(type);
   let prefix = t2 ? type.replace(/^(\D*).*/, '$1') : '';   //取出类似于n这样的字母
   let reTypeRange = (type, range, prefix) => {
@@ -101,4 +101,16 @@ export function rulesMerge(options, defaultOptions, callback){
   Object.keys(options).forEach(v=> {
     if(!(v in defaultOptions) && typeof options[v]==='function') callback(v, options[v]);
   })
+}
+
+export function arrMerge(a1, a2){
+  a2.forEach((v2, index2)=> {
+    if(!a1.some((v1, index1)=> {
+      if(v1.element[0] === v2.element[0]){
+        a1[index1] = v2;
+        return true;
+      } 
+    })){ a1.push(v2) }
+  })
+  return a1;
 }
