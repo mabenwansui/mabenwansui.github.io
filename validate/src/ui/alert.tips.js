@@ -10,6 +10,7 @@ let defaultStyle = {
     padding: '5px 10px'
   }
 }
+
 class AlertTips extends Base{
   constructor(element, options={}){
     super(...arguments);
@@ -98,7 +99,6 @@ class AlertTips extends Base{
         let [item] = fail;
         if(isForm){
           item.element.trigger('focus.'+this.namespace, [true]);
-          //应该找到它最近的带滚动条的
           let top = this.localization(item.element).offset().top;
           window.scrollTo(0, top - 80);
         }

@@ -114,3 +114,11 @@ export function arrMerge(a1, a2){
   })
   return a1;
 }
+
+export function getScrollElement(element){
+  element = element.parents().filter(function(){
+    let val = $(this).css('overflow');
+    return (val==='auto' || val==='scroll') ? true : false;
+  });
+  return element.length>0 ? element : $('html, body');
+}

@@ -545,6 +545,7 @@ function lang(lang = 'cn') {
 /* harmony export (immutable) */ __webpack_exports__["b"] = attrToJson;
 /* harmony export (immutable) */ __webpack_exports__["a"] = rulesMerge;
 /* harmony export (immutable) */ __webpack_exports__["c"] = arrMerge;
+/* unused harmony export getScrollElement */
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -664,6 +665,14 @@ function arrMerge(a1, a2) {
   return a1;
 }
 
+function getScrollElement(element) {
+  element = element.parents().filter(function () {
+    let val = $(this).css('overflow');
+    return val === 'auto' || val === 'scroll' ? true : false;
+  });
+  return element.length > 0 ? element : $('html, body');
+}
+
 /***/ }),
 /* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -685,6 +694,7 @@ let defaultStyle = {
     padding: '5px 10px'
   }
 };
+
 class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
   constructor(element, options = {}) {
     super(...arguments);
@@ -770,7 +780,6 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
         let [item] = fail;
         if (isForm) {
           item.element.trigger('focus.' + this.namespace, [true]);
-          //应该找到它最近的带滚动条的
           let top = this.localization(item.element).offset().top;
           window.scrollTo(0, top - 80);
         }

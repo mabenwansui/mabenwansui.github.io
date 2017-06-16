@@ -18,6 +18,9 @@
 <script type="text/javascript">
 FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.savehcompandhjob.css');
 </script>
+<style>
+  .section{height: 500px; overflow-y: auto; position: relative;}
+</style>
 <body id="job-savehcompandhjob">
 <div class="wrap main wrap-shadow">
   <section class="section" data-selector="step2">
@@ -90,7 +93,7 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
 
         <tr>
           <th><i class="text-warning">*</i>简介</th>
-          <td><textarea name="" class="text maben" valid="简介|*, 5-20" cols="30" rows="10"></textarea></td>
+          <td><textarea name="" class="text maben" valid="简介|*, phone" cols="30" rows="10"></textarea></td>
         </tr>
 
       </table>
@@ -151,10 +154,30 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
     </form>
   </section>
 </div>
+<style>
+  .scroll{
+    margin: 50px;
+    height: 100px;
+    background: #ccc;
+    overflow: auto;
+  }
+</style>
+<div class="scroll">
+  <div>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+    <p>111</p>
+  </div>
+</div>
 </body>
 <script src="../bulid/index.js"></script>
 <script>
-
 $('form').validate({
   constom1({element, forElement, val, title}){
     if(element.val()==='' && forElement.val()!==''){
@@ -218,12 +241,6 @@ $('form').validate({
   }
 })
 
-$('.maben').on('input', function(){
-  if($(this).val().length===20 || $(this).val().length===20+1){
-    $('form').validate('scan', $('.maben'));
-  }
-})
-
-
+//$('html, body').animate({scrollTop: 100}, 300); 
 </script>
 </html>
