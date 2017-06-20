@@ -36,7 +36,7 @@ class Validate{
     for(let v of arr) await (item=> new Promise(async (resolve, reject)=> {
       let error;
       for(let validType of item.type){
-        await this.validItem(validType, item).catch(e=> reject(error=e));
+        await this.validItem(validType, item, isForm).catch(e=> reject(error=e));
         if(error) break;
       }
       resolve({element: item.element, valid: true});
@@ -61,7 +61,7 @@ class Validate{
     }
     scanResult.call(this, resultArr);
   }
-  validItem(validType, item){
+  validItem(validType, item, isForm){
     let filterCondition = (_type, val) => {
       if(this.options.rules[_type]){
         return false;
@@ -76,7 +76,7 @@ class Validate{
       let {type, msg} = validType;
       let [_type, val] = type.split('=');
       if(!this.rules[_type]) resolve();
-      let obj = {...item, type, val: element.val()};
+      let obj = {...item, type, val: element.val(), isFormSubmit: isForm};
       let result = filterCondition(_type, obj.val) ? true :
         this.rules[_type].call(
           this,

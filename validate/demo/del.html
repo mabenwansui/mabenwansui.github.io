@@ -18,9 +18,7 @@
 <script type="text/javascript">
 FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.savehcompandhjob.css');
 </script>
-<style>
-  .section{height: 500px; overflow-y: auto; position: relative;}
-</style>
+
 <body id="job-savehcompandhjob">
 <div class="wrap main wrap-shadow">
   <section class="section" data-selector="step2">
@@ -39,7 +37,7 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
           <th><i class="text-warning">*</i> 职能分类</th>
           <td>
             <input type="text" name="hjob_jobtitle" class="text" placeholder="请选择" data-selector="jobs" 
-              valid="职能分类|*" />
+              valid="职能分类|*, validcode" />
           </td>
         </tr>
         <tr>
@@ -154,31 +152,26 @@ FeLoader.get('https://concat.lietou-static.com/dev/h/pc/v3/build/css/page/job.sa
     </form>
   </section>
 </div>
-<style>
-  .scroll{
-    margin: 50px;
-    height: 100px;
-    background: #ccc;
-    overflow: auto;
-  }
-</style>
-<div class="scroll">
-  <div>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-    <p>111</p>
-  </div>
-</div>
+
 </body>
 <script src="../bulid/index.js"></script>
 <script>
 $('form').validate({
+  validcode({element, val, isFormSubmit}){
+    if(isFormSubmit){
+      return new Promise((resolve, reject)=> {
+        setTimeout(()=> {
+          if(val==='maben'){
+            resolve();
+          }else{
+            reject('不正确');
+          }          
+        }, 1000)
+      })
+    }else{
+      return true;
+    }
+  },
   constom1({element, forElement, val, title}){
     if(element.val()==='' && forElement.val()!==''){
       return `请填写${title}`;

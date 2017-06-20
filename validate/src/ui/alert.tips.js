@@ -75,7 +75,6 @@ class AlertTips extends Base{
     if(typeof validItems === 'function'){
       [validItems, callback, notips] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
     }
-
     this.validScan(validItems, items=> {
       let isForm = validItems.is('form');
       if(isForm) this.highlight(this.form.find('.valid-error').removeAttr(dataMsg), 'hide');

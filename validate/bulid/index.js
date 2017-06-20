@@ -757,7 +757,6 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
     if (typeof validItems === 'function') {
       [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
     }
-
     this.validScan(validItems, items => {
       let isForm = validItems.is('form');
       if (isForm) this.highlight(this.form.find('.valid-error').removeAttr(dataMsg), 'hide');
@@ -1826,7 +1825,7 @@ class Validate {
           var _ref = _asyncToGenerator(function* (resolve, reject) {
             let error;
             for (let validType of item.type) {
-              yield _this.validItem(validType, item).catch(function (e) {
+              yield _this.validItem(validType, item, isForm).catch(function (e) {
                 return reject(error = e);
               });
               if (error) break;
@@ -1866,7 +1865,7 @@ class Validate {
       scanResult.call(_this, resultArr);
     })();
   }
-  validItem(validType, item) {
+  validItem(validType, item, isForm) {
     let filterCondition = (_type, val) => {
       if (this.options.rules[_type]) {
         return false;
@@ -1881,7 +1880,7 @@ class Validate {
       let { type, msg } = validType;
       let [_type, val] = type.split('=');
       if (!this.rules[_type]) resolve();
-      let obj = _extends({}, item, { type, val: element.val() });
+      let obj = _extends({}, item, { type, val: element.val(), isFormSubmit: isForm });
       let result = filterCondition(_type, obj.val) ? true : this.rules[_type].call(this, msg ? _extends({}, obj, { msg }) : obj, val);
       if (result instanceof Promise) {
         let _loading = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__loading__["a" /* default */])(element);
