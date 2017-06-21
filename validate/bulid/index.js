@@ -1844,7 +1844,7 @@ class Validate {
       });
 
       if (_this.options.scan) {
-        let result = _this.options.scan.call(_this);
+        let result = yield _this.options.scan.call(_this);
         if ($.isPlainObject(result)) result = [result];
         if (isForm) {
           try {

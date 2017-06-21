@@ -43,7 +43,7 @@ class Validate{
     }))(v).then(obj => resultArr.push(obj)).catch(obj=> resultArr.push(obj));
 
     if(this.options.scan){
-      let result = this.options.scan.call(this);
+      let result = await this.options.scan.call(this);
       if($.isPlainObject(result)) result = [result];
       if(isForm){
         try{
