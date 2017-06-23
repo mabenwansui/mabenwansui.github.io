@@ -67,7 +67,7 @@ class AlertTips extends Base{
     let eventStr = 'input:not(:submit, :button), textarea, select';
     this.form
       .on('focus.'+this.namespace, eventStr, focus)
-      .on('change.'+this.namespace, ':radio, :checkbox, select', change)
+      .on('change.'+this.namespace, eventStr, change)
       .on('blur.'+this.namespace, eventStr, blur);
   }
   scan(validItems=this.form, callback=$.noop, notips){
