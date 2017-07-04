@@ -98,8 +98,11 @@ class AlertTips extends Base{
         let [item] = fail;
         if(isForm){
           item.element.trigger('focus.'+this.namespace, [true]);
+
           let top = this.localization(item.element).offset().top;
-          window.scrollTo(0, top - 80);
+          if (top < (document.documentElement.scrollTop || document.body.scrollTop)) {
+            window.scrollTo(0, top - 80);
+          }
         }
         this.show(item.element, item.msg);
       };

@@ -56,12 +56,19 @@ import './css/style.css';
       this._timer   = false;
       this._helper  = false;  //_helper代表helper是否已经插入到dom结构中
       this._off     = false;
+      this.scrollElement = this.getScrollElement();
       this.initialAttr();
       this.mergeOptions();
       this.toNumber();
       this.createUi();
       this.bindEvent();
       this.options.callback.init.call(this);
+    }
+    getScrollElement(){
+      return this.element.parents().filter(function(){
+        let val = $(this).css('overflow');
+        return (val==='auto' || val==='scroll') ? true : false;
+      });      
     }
     createUi(){
       let helper = $(`<div class="${className}"></div>`).css(this.options.css).data('plugin_' + pluginName, this.element);
@@ -110,7 +117,7 @@ import './css/style.css';
       if(this.options.callback.beforeshow.call(this) === false) return this;
       if(this._visible) return this;
       this._visible = true;
-      this.options.act === 'click' && $(document).on('click.' + pluginName + this._id, event => {
+      (this.options.act === 'click' || this.options.act === 'toggle') && $(document).on(this.eventSpace('click'), event => {
         if (this.helper &&
           this.helper.has(event.target).length === 0 &&
           this.helper[0] != event.target &&
@@ -119,6 +126,12 @@ import './css/style.css';
           this.hide();
         };
       });
+
+      if(this.options.act==='toggle'){
+        this.element.on(this.eventSpace('click', 'toggle'), ()=> {
+          if(this._visible === true) this.hide();
+        })
+      }
 
       this.options.timeout && setTimeout( ()=> this.hide(), this.options.timeout );
       if(this._helper){
@@ -137,12 +150,18 @@ import './css/style.css';
         default :
           this.options.animation && this.helper.addClass('animated-'+this.options.animation)
       }
+      $(document).on(this.eventSpace('DOMSubtreeModified'), ()=> this.setState());
+      this.scrollElement.on(this.eventSpace('scroll'), ()=> this.rePosition());
       return this;
     }
+    eventSpace(name, add=''){ return name + '.' + pluginName + add + this._id }
     hide(){
       if(!this._visible) return this;
       this._visible = false;
-      this.options.act === 'click' && $(document).off('click.' + pluginName + this._id);
+      (this.options.act === 'click' || this.options.act === 'toggle') && $(document).off(this.eventSpace('click'));
+      this.options.act === 'toggle' && this.element.off(this.eventSpace('click', 'toggle'));
+      $(document).off('DOMSubtreeModified.' + pluginName + this._id);
+      this.scrollElement.off('scroll.' + pluginName + this._id);
       this.options.callback.hide.call(this);
       this.helper.removeClass('animated-zoomin');
       this.options.cache ? this.helper.hide() : this.removeTag();
@@ -290,18 +309,21 @@ import './css/style.css';
       this.helper.css({left: x + this._left, top: y + this._top});
       return this;
     }
+    setState(callback=$.noop){
+      if(!this.element || !this.helper){
+        callback();
+        return this;
+      };
+      if (!this._visible || !this.element.is(":visible")) {
+        this.helper.hide();
+        callback();
+        return this;
+      };
+      this.rePosition();
+    }
     play(){
       this._timer = setTimeout( ()=> {
-        if(!this.element || !this.helper){
-          this.stop();
-          return this;
-        };
-        if (!this._visible || !this.element.is(":visible")) {
-          this.helper.hide();
-          this.stop();
-          return this;
-        };
-        this.rePosition();
+        this.setState(()=> this.stop());
         this.play();
       }, 250);
       return this;
@@ -339,6 +361,7 @@ import './css/style.css';
       let that = this;
       let proxy = this.options.proxy;
       switch(this.options.act){
+        case 'toggle':
         case 'click' :
           let eventFunc = function(options){ that.show(options) }
           if(proxy){
@@ -462,7 +485,7 @@ import './css/style.css';
         return maxindex + (++$[pluginName].zindex);
       };
       let zindex = this.options.zindex;
-      if (zindex.indexOf('auto') > -1) {
+      if (zindex.toString().indexOf('auto') > -1) {
         this.helper.css('z-index', getAutoIndex());
       }else if(typeof zindex === 'string' && /^(\-|\+)/.test(zindex)){
         this.helper.css('z-index', getAutoIndex() + parseInt(zindex, 10));
