@@ -73,18 +73,42 @@ export default function rule(){
       }
       return true;
     },
-    mobilehk({title='手机号', val, msg}){
+    mobileHK({title='手机号', val, msg}){
       if(!/^[569]\d{7}$/.test(val)){
         return getMsg(msg, 'mobile', {title});
       }
       return true;
-    },    
-    mobiletw({title='手机号', val, msg}){
-      if(!/^9\d{8}$/.test(_value)){
+    },
+    mobileMO({title='手机号', val, msg}){
+      if(!/^6\d{7}$/.test(val)){
         return getMsg(msg, 'mobile', {title});
       }
       return true;
     },
+    mobileTW({title='手机号', val, msg}){
+      if(!/^9\d{8}$/.test(val)){
+        return getMsg(msg, 'mobile', {title});
+      }
+      return true;
+    },
+    mobileSG({title='手机号', val, msg}){
+      if(!/^[89]\d{7}$/.test(val)){
+        return getMsg(msg, 'mobile', {title});
+      }
+      return true;
+    },
+    mobileUS({title='手机号', val, msg}){
+      if(!/^[2-9]\d{9}$/.test(val)){
+        return getMsg(msg, 'mobile', {title});
+      }
+      return true;
+    },
+    mobileCA({title='手机号', val, msg}){
+      if(!/^[2-9]\d{9}$/.test(val)){
+        return getMsg(msg, 'mobile', {title});
+      }
+      return true;
+    },      
     phone({title='联系方式', val, msg}){
       if(!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
         return getMsg(msg, 'phone', {title});

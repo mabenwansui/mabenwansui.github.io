@@ -25,6 +25,7 @@
       <li data-page="home">简介</li>
       <li data-page="example">示例</li>
       <li data-page="rules">高级</li>
+      <li data-page="theme">主题</li>
     </ul>
   </nav>
   <article id="article">
@@ -370,6 +371,45 @@
   </script>
 </script>
 
+<script type="text/template" id="theme">
+  <div class="example-box" id="theme-form1">
+    <h2>移动端 主题</h2>
+    <section class="dom box">
+      <form action="">
+        <table>
+          <tbody>
+            <tr>
+              <th>标题 :</th>
+              <td><input type="text" valid="标题|*, 1-20" name="title" class="text" /></td>
+              <td style="padding-left: 5px; padding-right: 20px;"><input type="submit" value="提交" /></td>
+              <td class="muted">( 会在中间提示tips )</td>
+            </tr>                                  
+          </tbody>
+        </table>
+      </form>
+    </section>
+    <section class="code-container">
+      <pre class="brush:js;">
+          $('form', box).validate({
+            ui: 'h5dialog',
+            success(){
+              alert('success');  
+            }
+          });
+      </pre>      
+    </section>
+  </div>
+  <script>
+    var box = $('#theme-form1');
+    $('form', box).validate({
+      ui: 'h5dialog',
+      success(){
+        alert('success');  
+      }
+    });
+    SyntaxHighlighter.highlight();
+  </script>  
+</script>
 
 <script>
   var $nav = $('#nav'),

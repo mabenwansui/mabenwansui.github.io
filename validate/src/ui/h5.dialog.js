@@ -6,11 +6,13 @@ const className = 'valid-h5dialog';
 export default class H5Dialog extends Base{
   constructor(element, options={}){
     super(...arguments);
-    this.submit();
     this.bulidElement;
+    this.bindEvent();
+    this.submit();
   }
-  show(msg){
+  show({element, msg}){
     if(this.bulidElement) return;
+    this.highlight(element, 'show');
     this.bulidElement = $(`<div class="${className}">${msg}</div>`).appendTo('body');
     setTimeout(this.hide.bind(this), 2000);
   }
@@ -20,6 +22,12 @@ export default class H5Dialog extends Base{
     });
     this.bulidElement = null;
   }
+  bindEvent(){
+    let that = this;
+    this.form.on('input.'+this.namespace, 'input:not(:submit, :button), textarea, select', function(){
+      that.highlight($(this), 'hide');
+    });
+  }
   scan(validItems=this.form, callback=$.noop){
     if(typeof validItems === 'function'){
       [validItems, callback] = [...arguments].reduce((a, b)=> (a.push(b), a), [this.form])
@@ -27,7 +35,7 @@ export default class H5Dialog extends Base{
     this.validScan(validItems, items=> {
       items = items.filter(v=> v.valid===false);
       if(items.length>0){
-        this.show(items[0].msg);
+        this.show(items[0]);
         this.options.fail( items.map(v=> ({element: this.getElement(v.element), msg:v.msg})) );
         callback(false);
       }else{
