@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>es6浏览器</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<script src="/Users/maben/Documents/jquery.js"></script>
+<link href="https://concat.lietou-static.com/core/pc/css/port/h/common.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body id='mmm'>
+<style>
+body{ padding: 10px 0px 0px 100px; 
+  position: relative;
+  z-index:500;
+}
+input{
+  width: 200px;
+  height: 32px;
+  line-height: 32px;
+  margin-left: 100px;
+
+} 
+
+</style>
+<input type="text" class="text1" />
+<span>-</span>
+<input type="text" class="text2" />
+
+</body>
+<script src="index.js"></script>
+<script>
+
+$('.text1').DatePicker({
+  h: true,
+  m: true,
+  s: true,
+  callback : function(date){
+    $('.text2').DatePicker('refresh', {
+      startdate : date
+    });
+  }
+});
+ 
+//结束日期
+$('.text2').DatePicker({
+  callback : function(date){
+    $('.text1').DatePicker('refresh', {
+      enddate : date
+    });
+  }
+});
+
+
+//$('input').DatePicker({
+//  //startdate: '2016-06-05',
+//  //enddate: '2016-10-28',
+//  //display: 'inline',
+//  //cssstyle: 'light',
+//  btnbar: true,
+//  h:true,
+//  m:true,
+//  s:true,
+//  init: function(){
+//    //this.helper.on('mouseenter', 'td', function(){
+//    //  var tr = $(this).closest('tr');
+//    //  if(tr.find('.disabled').length === 0){
+//    //    $(this).closest('tr').addClass('select-range');
+//    //  }
+//    //}).on('mouseleave', 'td', function(){
+//    //  $(this).closest('tr').removeClass('select-range');
+//    //})
+//  },
+//  callback: function(val, data){
+//    //var tr = data.element.closest('tr');
+//    //data.element.removeClass('active');
+//    //if(tr.find('.disabled').length === 0){
+//    //  tr.addClass('active');
+//    //  var start = tr.find('td').first().attr('data-value');
+//    //  var end = tr.find('td').last().attr('data-value');
+//    //};
+//    //return false;
+//    
+//  }
+//}).trigger('click');
+
+
+
+</script>
+</html>

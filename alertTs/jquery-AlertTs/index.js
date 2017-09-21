@@ -438,7 +438,7 @@ import './css/style.css';
           }
         } else {
           if(this.element.attr("data-" + v) ) {
-            this.options[v] = obj[arr[v]] = this.element.attr("data-" + v);
+            this.options[v] = obj[arr[0]] = this.element.attr("data-" + v);
           }
         }
       });

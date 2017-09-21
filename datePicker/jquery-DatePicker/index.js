@@ -20,6 +20,9 @@ import './css/style.css';
     h_range   : false,
     m_range   : false,
     s_range   : false,
+    h_scale   : false,
+    m_scale   : false,
+    s_scale   : false,
     zindex    : 'auto',
     cssstyle  : false,
     init      : $.noop,
@@ -52,7 +55,7 @@ import './css/style.css';
     createUi(){
       let html = `
         <div class="${className}-ui">
-          <div class="title">
+          <div class="${className}-title">
             <div class="prev"><i></i></div>
             <div class="year">
               <h2></h2><i class="arrow"></i>
@@ -194,9 +197,11 @@ import './css/style.css';
       ul.html(html);
 
       //高亮可选择的日历
+      let _startdate = that.options.startdate ? that.options.startdate.replace(/\s\d+:.*$/, '') : that.options.startdate;
+      let _enddate = that.options.enddate ? that.options.enddate.replace(/\s\d+:.*$/, '') : that.options.enddate;
       ul.find('td').each(function(){
         let v = $(this).data('value');
-        if(v < that.options.startdate || v > that.options.enddate) 
+        if(v < _startdate || v > _enddate) 
           $(this).addClass('disabled');
         else if(v === that.format(that.element.val().trim(), 'yyyy-MM-dd') ){
           $(this).trigger('click', [true]);
@@ -229,7 +234,7 @@ import './css/style.css';
       if( this.options.enddate ) this._enddate = this._stringToDate(this.options.enddate);
       this.element.prop('readonly', this.options.readonly);
       
-      if(this.options.h || this.options.m || this.options.s) {
+      if(this.options.h!==false || this.options.m!==false || this.options.s!==false) {
         let d = new Date();
         this.h = /^\d+$/.test(this.options.h) ? this.options.h : d.getHours();
         this.m = /^\d+$/.test(this.options.m) ? this.options.m : this.options.m===true ? d.getMinutes() : false;
@@ -253,9 +258,13 @@ import './css/style.css';
         this.element.hide();
         this.show();
       }else{
-        this.element.add(this.icon).on('click.' + pluginName, () => {
+        this.element.on('click.' + pluginName, () => {
           if(this.element.prop('disabled')) return this;
           this.show();
+        });
+        this.icon.on('click.' + pluginName, () => {
+          this.element.trigger('click');
+          return false;
         });
       }
       //选择日期
@@ -263,19 +272,22 @@ import './css/style.css';
         let $this = $(this);
         $this.closest('table').addClass('selected').find('.active').removeClass('active');
         $this.addClass('active');
-        let {year, month, day} = that._stringToDate($this.data('value'));
-        that.year = year;
-        that.month = month;
-        that.day = day;
-        if(that.helper.find('a.ok').length === 0){
-          let value = $this.data('value');
-          that.element.val( value );
-          !flag && that.options.callback.call(that, value, {
-            element : $this,
-            year    : that.year,
-            month   : that.month,
-            day     : that.day
-          }) !== false && that.hide();
+
+        if(!flag){
+          let {year, month, day} = that._stringToDate($this.data('value'));
+          that.year = year;
+          that.month = month;
+          that.day = day;
+          if(that.helper.find('a.ok').length === 0){
+            let value = $this.data('value');
+            that.element.val( value ).trigger('change');
+            that.options.callback.call(that, value, {
+              element : $this,
+              year    : that.year,
+              month   : that.month,
+              day     : that.day
+            }) !== false && that.hide();
+          }
         }
       });
 
@@ -309,7 +321,7 @@ import './css/style.css';
             $(this).off('animationend').removeClass('today-effect');
           });
         }else if($this.hasClass('clear')){  //清空
-          that.element.val('');
+          that.element.val('').trigger('change');
           that.helper.find('table.selected').removeClass('selected');
           [that.year, that.month, that.day] = [];
           that.refresh();
@@ -322,7 +334,17 @@ import './css/style.css';
             let obj = {};
             ['year', 'month', 'day', 'h', 'm', 's'].forEach( v => (that[v]||that[v]===0) && (obj[v]=that[v]) );
             let value = that.format(obj,'yyyy-MM-dd hh:mm:ss');
-            that.element.val(value);
+
+            let timestamp = new Date(value).getTime();
+            if(that.options.enddate && timestamp > new Date(that.options.enddate)){
+              that.errorTips(`请选择${that.options.enddate}之前的时间`);
+              return;
+            }else if(that.options.startdate && timestamp < new Date(that.options.startdate)){
+              that.errorTips(`请选择${that.options.startdate}之后的时间`);
+              return;
+            }
+
+            that.element.val(value).trigger('change');
             that.options.callback.call(that, value, obj) !== false && that.hide();            
           }
         }
@@ -387,7 +409,7 @@ import './css/style.css';
         s: ['秒', 59]
       };
       let html = `
-        <div class="section">
+        <div class="${className}-section">
           <h4><span></span>${map[type][0]}</h4>
           <div class="slider">
             <div class="handle"></div>
@@ -414,6 +436,7 @@ import './css/style.css';
         total: map[type][1],
         start,
         end,
+        scale: this.options[`${type}_scale`],
         defaultValue: this[type],
         callback: time => {
           this[type] = time;
@@ -425,7 +448,7 @@ import './css/style.css';
       let i = 0;
       this.helper.find('.hms-bar').empty();
       ['h', 'm', 's'].forEach( v => {
-        if( this.options[v] ) {
+        if( this.options[v] !== false ) {
           this.createHms(v);
           i++;
         }
@@ -439,7 +462,7 @@ import './css/style.css';
         }
       }
     }
-    drag({element, total, start, end, defaultValue, callback}){
+    drag({element, total, start, end, scale, defaultValue, callback}){
       let that = this;
       let box = element.find('.slider');
       let handle = element.find('.handle');
@@ -452,7 +475,6 @@ import './css/style.css';
         let x = e.pageX - box.offset().left - handle_w/2;
         handle.trigger('position', [x, v => callback(v)]);
       });
-
       handle.on({
         'selectstart': function(){ return false },
         'position' : function(e, x, callback){
@@ -463,8 +485,31 @@ import './css/style.css';
             loc = _start;
           else if(x>_end)
             loc = _end;
-          $(this).css('left', loc);
-          callback && callback(getV(loc));
+
+          if(scale!==false){
+            let getVal = (arr, val) => {
+              let outVal;
+              val = getV(val);
+              for(let i=0, len=arr.length; i<len; i++){
+                if(arr[i]>=val){
+                  let _i = i-1;
+                  if(arr[i]+(arr[i]-arr[_i])/2 >= val){
+                    outVal = arr[i];
+                  }else{
+                    outVal = arr[_i<0 ? 0 : _i];
+                  }
+                  break;
+                }
+              }
+              return outVal;
+            };
+            loc = getVal(scale, loc);
+            $(this).css('left', getX(loc));
+            callback && callback(loc);
+          }else{
+            $(this).css('left', loc);
+            callback && callback(getV(loc));
+          }
         },
         'mousedown': function(e){
           var $this = $(this).addClass('active');
@@ -567,8 +612,9 @@ import './css/style.css';
         }else if( this.options.errortext === false ){
           return false;
         }
-        text = text.replace('$start', this.options.startdate || '' )
-                   .replace('$end', this.options.enddate || '' );
+        let $start = (this.options.startdate && this.options.startdate.replace(/\s\d+:.*$/, '')) || '';
+        let $end = (this.options.enddate && this.options.enddate.replace(/\s\d+:.*$/, '')) || '';
+        text = text.replace('$start', $start).replace('$end', $end);
       }
       if(tips.length === 0){
         tips = $(`<div class="error-tips">${text}</div>`).appendTo(this.helper);
@@ -647,6 +693,9 @@ import './css/style.css';
           if(this.element.attr("data-" + v) ) this.options[v] = this.element.attr("data-" + v);
         }
       });
+
+      //this.options.startdate = '2017-08-02 19:25:00';
+      //this.options.enddate = false;
       return this;
     }    
   }

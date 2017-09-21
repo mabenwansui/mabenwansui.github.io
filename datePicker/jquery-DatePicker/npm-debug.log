@@ -1,0 +1,104 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/lib/node_modules/cnpm/node_modules/.bin/npm',
+1 verbose cli   '--userconfig=/Users/maben/.cnpmrc',
+1 verbose cli   '--disturl=https://npm.taobao.org/mirrors/node',
+1 verbose cli   '--cache=/Users/maben/.cnpm',
+1 verbose cli   '--registry=http://registry.cnpm.lietou.com/',
+1 verbose cli   '--node-gyp=/usr/local/lib/node_modules/cnpm/node_modules/node-gyp/bin/node-gyp.js',
+1 verbose cli   'publish' ]
+2 info using npm@2.14.22
+3 info using node@v6.2.0
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/Users/maben/work/git/mabenwansui.github.io/datePicker/jquery-DatePicker',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package.tgz not in flight; packing
+9 verbose correctMkdir /Users/maben/.cnpm correctMkdir not in flight; initializing
+10 verbose tar pack [ '/Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package.tgz',
+10 verbose tar pack   '/Users/maben/work/git/mabenwansui.github.io/datePicker/jquery-DatePicker' ]
+11 verbose tarball /Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package.tgz
+12 verbose folder /Users/maben/work/git/mabenwansui.github.io/datePicker/jquery-DatePicker
+13 info prepublish @liepin/jquery-DatePicker@0.2.1
+14 verbose addLocalTarball adding from inside cache /Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package.tgz
+15 verbose correctMkdir /Users/maben/.cnpm correctMkdir not in flight; initializing
+16 silly cache afterAdd @liepin/jquery-DatePicker@0.2.1
+17 verbose afterAdd /Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package/package.json not in flight; writing
+18 verbose correctMkdir /Users/maben/.cnpm correctMkdir not in flight; initializing
+19 verbose afterAdd /Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package/package.json written
+20 silly publish { name: '@liepin/jquery-DatePicker',
+20 silly publish   version: '0.2.1',
+20 silly publish   description: '日期插件',
+20 silly publish   main: './index.js',
+20 silly publish   author: { name: 'maben@liepin.com' },
+20 silly publish   readmeFilename: 'README.md',
+20 silly publish   license: 'MIT',
+20 silly publish   devDependencies: { 'babel-preset-es2015': '^6.9.0' },
+20 silly publish   _id: '@liepin/jquery-DatePicker@0.2.1',
+20 silly publish   scripts: {},
+20 silly publish   _shasum: '89bcbdcd20657150237ee7eb9feb612bf3b4486a',
+20 silly publish   _from: '.',
+20 silly publish   _npmVersion: '2.14.22',
+20 silly publish   _nodeVersion: '6.2.0',
+20 silly publish   _npmUser: { name: 'maben', email: 'maben@liepin.com' },
+20 silly publish   maintainers: [ { name: 'maben', email: 'maben@liepin.com' } ],
+20 silly publish   dist:
+20 silly publish    { shasum: '3f6b8f0dd43e738ebe16f5bcc5f3831e82f233d7',
+20 silly publish      size: 10748,
+20 silly publish      key: '/@liepin/jquery-DatePicker/-/@liepin/jquery-DatePicker-0.0.9.tgz',
+20 silly publish      tarball: 'http://registry.cnpm.lietou.com/@liepin/jquery-DatePicker/download/@liepin/jquery-DatePicker-0.0.9.tgz' },
+20 silly publish   _publish_on_cnpm: true,
+20 silly publish   _cnpm_publish_time: 1470625057044,
+20 silly publish   _resolved: 'http://registry.cnpm.lietou.com/@liepin/jquery-DatePicker/download/@liepin/jquery-DatePicker-0.0.9.tgz',
+20 silly publish   readme: 'ERROR: No README data found!' }
+21 verbose getPublishConfig undefined
+22 silly mapToRegistry name @liepin/jquery-DatePicker
+23 silly mapToRegistry scope (from package name) @liepin
+24 verbose mapToRegistry no registry URL found in name for scope @liepin
+25 silly mapToRegistry using default registry
+26 silly mapToRegistry registry http://registry.cnpm.lietou.com/
+27 silly mapToRegistry uri http://registry.cnpm.lietou.com/@liepin%2fjquery-DatePicker
+28 verbose publish registryBase http://registry.cnpm.lietou.com/
+29 silly publish uploading /Users/maben/.cnpm/@liepin/jquery-DatePicker/0.2.1/package.tgz
+30 verbose request uri http://registry.cnpm.lietou.com/@liepin%2fjquery-DatePicker
+31 verbose request sending authorization for write operation
+32 info attempt registry request try #1 at 14:08:40
+33 verbose request id 472ca61b7779e529
+34 http request PUT http://registry.cnpm.lietou.com/@liepin%2fjquery-DatePicker
+35 http 403 http://registry.cnpm.lietou.com/@liepin%2fjquery-DatePicker
+36 verbose headers { date: 'Mon, 28 Aug 2017 06:08:04 GMT',
+36 verbose headers   'content-type': 'application/json; charset=utf-8',
+36 verbose headers   'content-length': '74',
+36 verbose headers   connection: 'keep-alive',
+36 verbose headers   'x-readtime': '33' }
+37 verbose request invalidating /Users/maben/.cnpm/registry.cnpm.lietou.com/_40liepin_252fjquery-DatePicker on PUT
+38 error publish Failed PUT 403
+39 verbose stack Error: forbidden cannot modify pre-existing version: 0.2.1: @liepin/jquery-DatePicker
+39 verbose stack     at makeError (/usr/local/lib/node_modules/cnpm/node_modules/npm/node_modules/npm-registry-client/lib/request.js:264:12)
+39 verbose stack     at CachingRegistryClient.<anonymous> (/usr/local/lib/node_modules/cnpm/node_modules/npm/node_modules/npm-registry-client/lib/request.js:252:14)
+39 verbose stack     at Request._callback (/usr/local/lib/node_modules/cnpm/node_modules/npm/node_modules/npm-registry-client/lib/request.js:172:14)
+39 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/cnpm/node_modules/npm/node_modules/request/request.js:199:22)
+39 verbose stack     at emitTwo (events.js:106:13)
+39 verbose stack     at Request.emit (events.js:191:7)
+39 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/cnpm/node_modules/npm/node_modules/request/request.js:1036:10)
+39 verbose stack     at emitOne (events.js:101:20)
+39 verbose stack     at Request.emit (events.js:188:7)
+39 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/cnpm/node_modules/npm/node_modules/request/request.js:963:12)
+40 verbose statusCode 403
+41 verbose pkgid @liepin/jquery-DatePicker
+42 verbose cwd /Users/maben/work/git/mabenwansui.github.io/datePicker/jquery-DatePicker
+43 error Darwin 15.6.0
+44 error argv "/usr/local/bin/node" "/usr/local/lib/node_modules/cnpm/node_modules/.bin/npm" "--userconfig=/Users/maben/.cnpmrc" "--disturl=https://npm.taobao.org/mirrors/node" "--cache=/Users/maben/.cnpm" "--registry=http://registry.cnpm.lietou.com/" "--node-gyp=/usr/local/lib/node_modules/cnpm/node_modules/node-gyp/bin/node-gyp.js" "publish"
+45 error node v6.2.0
+46 error npm  v2.14.22
+47 error code E403
+48 error forbidden cannot modify pre-existing version: 0.2.1: @liepin/jquery-DatePicker
+49 error If you need help, you may report this error at:
+49 error     <https://github.com/npm/npm/issues>
+50 verbose exit [ 1, true ]

@@ -557,9 +557,8 @@ function getJQelement(element, form = 'form') {
   }
   return element.length > 0 ? element : false;
 }
-
 function formatItem(type, title) {
-  if (/^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
+  if (/^for=|^[a-z]+\s*=\s*(['"])[^'"]+\1$/.test(type)) return [{ type, msg: '' }];
   let [t1, t2] = (type => {
     type = type.match(/^([^()]*?(?:\(.*?\))?)-([^()]*?(?:\(.*?\))?)$/) || [];
     return type.slice(1);
