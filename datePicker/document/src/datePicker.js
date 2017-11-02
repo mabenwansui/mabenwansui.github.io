@@ -86,6 +86,9 @@
       h_range: false,
       m_range: false,
       s_range: false,
+      h_scale: false,
+      m_scale: false,
+      s_scale: false,
       zindex: 'auto',
       cssstyle: false,
       init: $.noop,
@@ -198,7 +201,6 @@
             this.helper.find('.year h2').html(this.year + '年');
             this.helper.find('.month h2').html(this.month + '月');
           }
-
           //补齐前面的日
           {
             var _getPrevMonth2 = this._getPrevMonth(),
@@ -217,15 +219,15 @@
 
           //填充日
           {
-            for (var _i = 0, _d = this._getDay(this.year, this.month); _i < _d; _i++, j++) {
+            for (var _i2 = 0, _d = this._getDay(this.year, this.month); _i2 < _d; _i2++, j++) {
               if (j === 7) {
                 j = 0;
                 html += '</tr><tr>';
               };
               if (j === 5 || j === 6) {
-                html += '<td class="weekend" data-value="' + this.year + '-' + this._pad(this.month) + '-' + this._pad(_i + 1) + '">' + (_i + 1) + '</td>';
+                html += '<td class="weekend" data-value="' + this.year + '-' + this._pad(this.month) + '-' + this._pad(_i2 + 1) + '">' + (_i2 + 1) + '</td>';
               } else {
-                html += '<td data-value="' + this.year + '-' + this._pad(this.month) + '-' + this._pad(_i + 1) + '">' + (_i + 1) + '</td>';
+                html += '<td data-value="' + this.year + '-' + this._pad(this.month) + '-' + this._pad(_i2 + 1) + '">' + (_i2 + 1) + '</td>';
               }
             }
           }
@@ -237,8 +239,8 @@
                 _year = _getNextMonth3[0],
                 _month = _getNextMonth3[1];
 
-            for (var _i2 = 1; j < 7; j++, _i2++) {
-              html += '<td class="text-gray" data-value="' + _year + '-' + this._pad(_month) + '-' + this._pad(_i2) + '">' + _i2 + '</td>';
+            for (var _i3 = 1; j < 7; j++, _i3++) {
+              html += '<td class="text-gray" data-value="' + _year + '-' + this._pad(_month) + '-' + this._pad(_i3) + '">' + _i3 + '</td>';
             }
           }
 
@@ -246,9 +248,11 @@
           ul.html(html);
 
           //高亮可选择的日历
+          var _startdate = that.options.startdate ? that.options.startdate.replace(/\s\d+:.*$/, '') : that.options.startdate;
+          var _enddate = that.options.enddate ? that.options.enddate.replace(/\s\d+:.*$/, '') : that.options.enddate;
           ul.find('td').each(function () {
             var v = $(this).data('value');
-            if (v < that.options.startdate || v > that.options.enddate) $(this).addClass('disabled');else if (v === that.format(that.element.val().trim(), 'yyyy-MM-dd')) {
+            if (v < _startdate || v > _enddate) $(this).addClass('disabled');else if (v === that.format(that.element.val().trim(), 'yyyy-MM-dd')) {
               $(this).trigger('click', [true]);
             }
           });
@@ -295,7 +299,7 @@
           if (this.options.enddate) this._enddate = this._stringToDate(this.options.enddate);
           this.element.prop('readonly', this.options.readonly);
 
-          if (this.options.h || this.options.m || this.options.s) {
+          if (this.options.h !== false || this.options.m !== false || this.options.s !== false) {
             var d = new Date();
             this.h = /^\d+$/.test(this.options.h) ? this.options.h : d.getHours();
             this.m = /^\d+$/.test(this.options.m) ? this.options.m : this.options.m === true ? d.getMinutes() : false;
@@ -333,16 +337,26 @@
             var $this = $(this);
             $this.closest('table').addClass('selected').find('.active').removeClass('active');
             $this.addClass('active');
-            that.day = parseInt($this.text(), 10);
-            if (that.helper.find('a.ok').length === 0) {
-              var value = $this.data('value');
-              that.element.val(value);
-              !flag && that.options.callback.call(that, value, {
-                element: $this,
-                year: that.year,
-                month: that.month,
-                day: that.day
-              }) !== false && that.hide();
+
+            if (!flag) {
+              var _that$_stringToDate = that._stringToDate($this.data('value')),
+                  year = _that$_stringToDate.year,
+                  month = _that$_stringToDate.month,
+                  day = _that$_stringToDate.day;
+
+              that.year = year;
+              that.month = month;
+              that.day = day;
+              if (that.helper.find('a.ok').length === 0) {
+                var value = $this.data('value');
+                that.element.val(value).trigger('change');
+                that.options.callback.call(that, value, {
+                  element: $this,
+                  year: that.year,
+                  month: that.month,
+                  day: that.day
+                }) !== false && that.hide();
+              }
             }
           });
 
@@ -397,7 +411,7 @@
               });
             } else if ($this.hasClass('clear')) {
               //清空
-              that.element.val('');
+              that.element.val('').trigger('change');
               that.helper.find('table.selected').removeClass('selected');
               var _ref2 = [];
               that.year = _ref2[0];
@@ -416,7 +430,17 @@
                   return (that[v] || that[v] === 0) && (obj[v] = that[v]);
                 });
                 var value = that.format(obj, 'yyyy-MM-dd hh:mm:ss');
-                that.element.val(value);
+
+                var timestamp = new Date(value).getTime();
+                if (that.options.enddate && timestamp > new Date(that.options.enddate)) {
+                  that.errorTips('\u8BF7\u9009\u62E9' + that.options.enddate + '\u4E4B\u524D\u7684\u65F6\u95F4');
+                  return;
+                } else if (that.options.startdate && timestamp < new Date(that.options.startdate)) {
+                  that.errorTips('\u8BF7\u9009\u62E9' + that.options.startdate + '\u4E4B\u540E\u7684\u65F6\u95F4');
+                  return;
+                }
+
+                that.element.val(value).trigger('change');
                 that.options.callback.call(that, value, obj) !== false && that.hide();
               }
             }
@@ -477,7 +501,7 @@
             m: ['分', 59],
             s: ['秒', 59]
           };
-          var html = '\n        <div class="section">\n          <h4><span></span>' + map[type][0] + '</h4>\n          <div class="slider">\n            <div class="handle"></div>\n            <div class="line e-disabled start" title="\u8D85\u51FA\u53EF\u9009\u62E9\u7684\u65F6\u95F4\u8303\u56F4"></div>\n            <div class="line e-disabled end" title="\u8D85\u51FA\u53EF\u9009\u62E9\u7684\u65F6\u95F4\u8303\u56F4"></div>\n            <div class="line"></div>\n          </div>\n        </div>\n      ';
+          var html = '\n        <div class="' + className + '-section">\n          <h4><span></span>' + map[type][0] + '</h4>\n          <div class="slider">\n            <div class="handle"></div>\n            <div class="line e-disabled start" title="\u8D85\u51FA\u53EF\u9009\u62E9\u7684\u65F6\u95F4\u8303\u56F4"></div>\n            <div class="line e-disabled end" title="\u8D85\u51FA\u53EF\u9009\u62E9\u7684\u65F6\u95F4\u8303\u56F4"></div>\n            <div class="line"></div>\n          </div>\n        </div>\n      ';
           this['$' + type] = $(html).appendTo(this.helper.find('.hms-bar').show());
 
           var start = 0,
@@ -496,6 +520,7 @@
             total: map[type][1],
             start: start,
             end: end,
+            scale: this.options[type + '_scale'],
             defaultValue: this[type],
             callback: function callback(time) {
               _this2[type] = time;
@@ -511,7 +536,7 @@
           var i = 0;
           this.helper.find('.hms-bar').empty();
           ['h', 'm', 's'].forEach(function (v) {
-            if (_this3.options[v]) {
+            if (_this3.options[v] !== false) {
               _this3.createHms(v);
               i++;
             }
@@ -532,6 +557,7 @@
               total = _ref3.total,
               start = _ref3.start,
               end = _ref3.end,
+              scale = _ref3.scale,
               defaultValue = _ref3.defaultValue,
               callback = _ref3.callback;
 
@@ -553,7 +579,6 @@
               return callback(v);
             }]);
           });
-
           handle.on({
             'selectstart': function selectstart() {
               return false;
@@ -563,8 +588,31 @@
               var _end = getX(end);
               var loc = x;
               if (x < _start) loc = _start;else if (x > _end) loc = _end;
-              $(this).css('left', loc);
-              callback && callback(getV(loc));
+
+              if (scale !== false) {
+                var getVal = function getVal(arr, val) {
+                  var outVal = void 0;
+                  val = getV(val);
+                  for (var i = 0, len = arr.length; i < len; i++) {
+                    if (arr[i] >= val) {
+                      var _i = i - 1;
+                      if (arr[i] + (arr[i] - arr[_i]) / 2 >= val) {
+                        outVal = arr[i];
+                      } else {
+                        outVal = arr[_i < 0 ? 0 : _i];
+                      }
+                      break;
+                    }
+                  }
+                  return outVal;
+                };
+                loc = getVal(scale, loc);
+                $(this).css('left', getX(loc));
+                callback && callback(loc);
+              } else {
+                $(this).css('left', loc);
+                callback && callback(getV(loc));
+              }
             },
             'mousedown': function mousedown(e) {
               var $this = $(this).addClass('active');
@@ -683,7 +731,9 @@
             } else if (this.options.errortext === false) {
               return false;
             }
-            text = text.replace('$start', this.options.startdate || '').replace('$end', this.options.enddate || '');
+            var $start = this.options.startdate && this.options.startdate.replace(/\s\d+:.*$/, '') || '';
+            var $end = this.options.enddate && this.options.enddate.replace(/\s\d+:.*$/, '') || '';
+            text = text.replace('$start', $start).replace('$end', $end);
           }
           if (tips.length === 0) {
             tips = $('<div class="error-tips">' + text + '</div>').appendTo(this.helper);
@@ -796,6 +846,9 @@
               if (_this6.element.attr("data-" + v)) _this6.options[v] = _this6.element.attr("data-" + v);
             }
           });
+
+          //this.options.startdate = '2017-08-02 19:25:00';
+          //this.options.enddate = false;
           return this;
         }
       }]);
