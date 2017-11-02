@@ -43,26 +43,24 @@
 /******/ ({
 
 /***/ 0:
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
 
-  __webpack_require__(201);
+  __webpack_require__(330);
 
-/***/ },
+/***/ }),
 
-/***/ 201:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 330:
+/***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
-
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
   var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
   var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-  __webpack_require__(202);
+  __webpack_require__(331);
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -200,6 +198,7 @@
             this.helper.find('.year h2').html(this.year + '年');
             this.helper.find('.month h2').html(this.month + '月');
           }
+
           //补齐前面的日
           {
             var _getPrevMonth2 = this._getPrevMonth(),
@@ -334,15 +333,7 @@
             var $this = $(this);
             $this.closest('table').addClass('selected').find('.active').removeClass('active');
             $this.addClass('active');
-
-            var _that$_stringToDate = that._stringToDate($this.data('value')),
-                year = _that$_stringToDate.year,
-                month = _that$_stringToDate.month,
-                day = _that$_stringToDate.day;
-
-            that.year = year;
-            that.month = month;
-            that.day = day;
+            that.day = parseInt($this.text(), 10);
             if (that.helper.find('a.ok').length === 0) {
               var value = $this.data('value');
               that.element.val(value);
@@ -420,15 +411,13 @@
               if (that.helper.find('table.selected').length === 0) {
                 that.errorTips('请选择日期');
               } else {
-                (function () {
-                  var obj = {};
-                  ['year', 'month', 'day', 'h', 'm', 's'].forEach(function (v) {
-                    return (that[v] || that[v] === 0) && (obj[v] = that[v]);
-                  });
-                  var value = that.format(obj, 'yyyy-MM-dd hh:mm:ss');
-                  that.element.val(value);
-                  that.options.callback.call(that, value, obj) !== false && that.hide();
-                })();
+                var obj = {};
+                ['year', 'month', 'day', 'h', 'm', 's'].forEach(function (v) {
+                  return (that[v] || that[v] === 0) && (obj[v] = that[v]);
+                });
+                var value = that.format(obj, 'yyyy-MM-dd hh:mm:ss');
+                that.element.val(value);
+                that.options.callback.call(that, value, obj) !== false && that.hide();
               }
             }
           });
@@ -747,31 +736,25 @@
 
           if (typeof date === 'string') date = this._stringToDate(date);
           if (date) {
-            var _ret2 = function () {
-              var obj = {
-                M: 'month',
-                d: 'day',
-                h: 'h',
-                m: 'm',
-                s: 's'
-              };
-              Object.keys(obj).forEach(function (v) {
-                return !date[obj[v]] && date[obj[v]] !== 0 && (_format = _format.replace(new RegExp('[^a-zA-z]' + v + '+'), ''));
+            var obj = {
+              M: 'month',
+              d: 'day',
+              h: 'h',
+              m: 'm',
+              s: 's'
+            };
+            Object.keys(obj).forEach(function (v) {
+              return !date[obj[v]] && date[obj[v]] !== 0 && (_format = _format.replace(new RegExp('[^a-zA-z]' + v + '+'), ''));
+            });
+            _format = _format.replace(/y{1,4}/g, function ($1) {
+              return date.year.toString().substr(date.year.toString().length - $1.length);
+            });
+            Object.keys(obj).forEach(function (v, i) {
+              _format = _format.replace(new RegExp(v + '{1,2}', 'g'), function ($1) {
+                return $1.length == 2 ? _this5._pad(date[obj[v]]) : date[obj[v]];
               });
-              _format = _format.replace(/y{1,4}/g, function ($1) {
-                return date.year.toString().substr(date.year.toString().length - $1.length);
-              });
-              Object.keys(obj).forEach(function (v, i) {
-                _format = _format.replace(new RegExp(v + '{1,2}', 'g'), function ($1) {
-                  return $1.length == 2 ? _this5._pad(date[obj[v]]) : date[obj[v]];
-                });
-              });
-              return {
-                v: _format
-              };
-            }();
-
-            if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+            });
+            return _format;
           }
         }
       }, {
@@ -784,23 +767,17 @@
         value: function _stringToDate(str) {
           str = str.trim();
           if (this._dateRE(str) || this._timeRE(str)) {
-            var _ret3 = function () {
-              str = str.split(' ');
-              var date = str[0].split('-');
-              var time = str[1] ? str[1].split(':') : false;
-              var obj = {};
-              ['year', 'month', 'day'].forEach(function (v, i) {
-                return obj[v] = parseInt(date[i], 10);
-              });
-              if (time) ['h', 'm', 's'].forEach(function (v, i) {
-                return time[i] && (obj[v] = parseInt(time[i], 10));
-              });
-              return {
-                v: obj
-              };
-            }();
-
-            if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+            str = str.split(' ');
+            var date = str[0].split('-');
+            var time = str[1] ? str[1].split(':') : false;
+            var obj = {};
+            ['year', 'month', 'day'].forEach(function (v, i) {
+              return obj[v] = parseInt(date[i], 10);
+            });
+            if (time) ['h', 'm', 's'].forEach(function (v, i) {
+              return time[i] && (obj[v] = parseInt(time[i], 10));
+            });
+            return obj;
           } else {
             return false;
           }
@@ -827,31 +804,20 @@
     }();
 
     $.fn[pluginName] = function (options) {
-      var _arguments = arguments,
-          _this7 = this;
-
       options = options || {};
       if (typeof options == 'string') {
-        var _ret4 = function () {
-          var args = _arguments,
-              method = options;
-          Array.prototype.shift.call(args);
-          switch (method) {
-            case "getClass":
-              return {
-                v: $(_this7).data('plugin_' + pluginName)
-              };
-            default:
-              return {
-                v: _this7.each(function () {
-                  var plugin = $(this).data('plugin_' + pluginName);
-                  if (plugin && plugin[method]) plugin[method].apply(plugin, args);
-                })
-              };
-          };
-        }();
-
-        if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
+        var args = arguments,
+            method = options;
+        Array.prototype.shift.call(args);
+        switch (method) {
+          case "getClass":
+            return $(this).data('plugin_' + pluginName);
+          default:
+            return this.each(function () {
+              var plugin = $(this).data('plugin_' + pluginName);
+              if (plugin && plugin[method]) plugin[method].apply(plugin, args);
+            });
+        };
       } else {
         return this.each(function () {
           var plugin = $(this).data('plugin_' + pluginName);
@@ -866,13 +832,13 @@
     };
   })(jQuery, window);
 
-/***/ },
+/***/ }),
 
-/***/ 202:
-/***/ function(module, exports) {
+/***/ 331:
+/***/ (function(module, exports) {
 
   // removed by extract-text-plus-webpack-plugin
 
-/***/ }
+/***/ })
 
 /******/ });
