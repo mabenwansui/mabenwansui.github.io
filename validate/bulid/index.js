@@ -601,7 +601,7 @@ function jsonFormat(type, title) {
 
 //对有for的进行 两个元素相互绑定对象
 function forElement(element, type, form) {
-  let forEle = getJQelement(type.indexOf('for') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
+  let forEle = getJQelement(type.indexOf('for=') > -1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
   if (forEle) {
     let mergeDataValidFor = (element, forElement) => {
       let ele = element.data('valid-for');
@@ -2956,7 +2956,9 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
     if (element) element = this.localization(this.getElement(element));
     if (element && element.AlertTs) {
       element.AlertTs('hide');
-      this.lastElement = null;
+      if (this.lastElement && this.lastElement.element[0] === element[0]) {
+        this.lastElement = null;
+      }
     }
   }
   bindEvent() {
@@ -3001,7 +3003,7 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
         if (v.valid === true) {
           this.highlight(v.element, 'hide');
           element.removeAttr(dataMsg);
-          this.hide();
+          this.hide(element);
         } else {
           if (element.val() === '' && !element.attr(dataMsg) && !isForm && !v.element.is(':checkbox, :radio')) {} else {
             element.attr(dataMsg, v.msg);

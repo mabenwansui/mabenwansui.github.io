@@ -185,6 +185,38 @@
               <th>标题 :</th>
               <td><input type="text" valid="标题|*, 1-20" name="title" class="text" /></td>
             </tr>
+
+            <tr>
+              <th>时间 :</th>
+              <td>
+                 <select name="timeyear">
+                    <option value="2000">2000</option>
+                    <option value="1999">1999</option>
+                    <option value="1998">1998</option>
+                    <option value="1997">1997</option>
+                  </select>
+                  <select name="timemonth">
+                    <option value="12">12</option>
+                    <option value="11">11</option>
+                    <option value="10">10</option>
+                    <option value="9">9</option>
+                  </select>
+                  -
+                  <select name="" valid="年|year, for=timeyear">
+                    <option value="2000">2000</option>
+                    <option value="1999">1999</option>
+                    <option value="1998">1998</option>
+                    <option value="1997">1997</option>
+                  </select>
+                  <select name="" class='month' valid="月|month, for=timemonth">
+                    <option value="12">12</option>
+                    <option value="11">11</option>
+                    <option value="10">10</option>
+                    <option value="9">9</option>
+                  </select>  
+              </td>
+            </tr>
+
             <tr>
               <th>年薪 :</th>
               <td>
@@ -240,8 +272,25 @@
   </div>
   <script>
     var box = $('#example-form1');
-    $('form', box).validate(()=>{
-      alert('success');
+    $('form', box).validate({
+      year({element, forElement}){
+        console.log('*******year*****');
+        console.log(element.val());
+        console.log(forElement.val());
+        console.log('*******year end*****');
+        //$('.month').change();
+        return true;
+      },
+      month({element, forElement}){
+        console.log('*******month*****');
+        console.log(element.val());
+        console.log(forElement.val());
+        console.log('*******month end*****');
+        return true;
+      },
+      success(){
+        alert('success');
+      }
     });
     $('.code-container pre', box).html( $('.dom', box).html() );
     SyntaxHighlighter.highlight();

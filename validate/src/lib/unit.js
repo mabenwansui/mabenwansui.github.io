@@ -55,7 +55,7 @@ export function jsonFormat(type, title){
 
 //对有for的进行 两个元素相互绑定对象
 export function forElement(element, type, form){
-  let forEle = getJQelement(type.indexOf('for')>-1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
+  let forEle = getJQelement(type.indexOf('for=')>-1 ? type.replace(/^.*for=([^,]+).*$/, '$1') : '', form);
   if(forEle) {
     let mergeDataValidFor = (element, forElement) => {
       let ele = element.data('valid-for');

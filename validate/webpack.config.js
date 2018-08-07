@@ -3,10 +3,6 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = {
     //插件项
-    //plugins: [
-    //  new webpack.optimize.CommonsChunkPlugin('common'),
-    //  new ExtractTextPlugin("maben.css")
-    //],
     //页面入口文件配置
     entry: {
       index: path.join(__dirname, 'src/index.js')

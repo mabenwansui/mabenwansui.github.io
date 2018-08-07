@@ -36,7 +36,9 @@ class AlertTips extends Base{
     if(element) element = this.localization(this.getElement(element));
     if(element && element.AlertTs){
       element.AlertTs('hide');
-      this.lastElement = null;
+      if(this.lastElement && this.lastElement.element[0]===element[0]){
+        this.lastElement = null;  
+      }
     }
   }
   bindEvent(){
@@ -83,7 +85,7 @@ class AlertTips extends Base{
         if(v.valid===true){
           this.highlight(v.element, 'hide');
           element.removeAttr(dataMsg);          
-          this.hide();
+          this.hide(element);
         }else{
           if(element.val()==='' && !element.attr(dataMsg) && !isForm && !v.element.is(':checkbox, :radio')){
           }else{
