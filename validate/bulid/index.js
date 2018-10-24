@@ -679,20 +679,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_index_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_index_css__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ui_alert_tips_js__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui_h5_dialog_js__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_none_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_tips_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ui_none_js__ = __webpack_require__(27);
 
 
 
-//import DefaultTips from './ui/default.tips.js';
+
+
 
 const pluginName = 'validate';
-
 let selectUI = type => {
   switch (type) {
     case 'none':
-      return __WEBPACK_IMPORTED_MODULE_3__ui_none_js__["a" /* default */];
-    //case 'default':
-    //return DefaultTips;
+      return __WEBPACK_IMPORTED_MODULE_4__ui_none_js__["a" /* default */];
+    case 'tips':
+      return __WEBPACK_IMPORTED_MODULE_3__ui_tips_js__["a" /* default */];
     case 'h5dialog':
       return __WEBPACK_IMPORTED_MODULE_2__ui_h5_dialog_js__["a" /* default */];
     default:
@@ -2953,9 +2954,10 @@ class AlertTips extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
   }
   hide(element) {
     element = element || this.lastElement && this.lastElement.element || false;
-    if (element) element = this.localization(this.getElement(element));
-    if (element && element.AlertTs) {
-      element.AlertTs('hide');
+    let _element;
+    if (element) _element = this.localization(this.getElement(element));
+    if (_element && _element.AlertTs) {
+      _element.AlertTs('hide');
       if (this.lastElement && this.lastElement.element[0] === element[0]) {
         this.lastElement = null;
       }
@@ -3191,7 +3193,13 @@ function rule() {
           if (element.filter(':checked').length === 0) return getMsg(msg, 'select_required', { title });
           break;
         default:
-          if (!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', { title });
+          if (!/^[\w\W]+$/.test(val.trim())) {
+            if (element.attr('data-ui') === 'SelectUI') {
+              return getMsg(msg, 'select_required', { title });
+            } else {
+              return getMsg(msg, 'required', { title });
+            }
+          }
       }
       return true;
     },
@@ -3244,7 +3252,7 @@ function rule() {
       return true;
     },
     mobile({ title = '手机号', val, msg }) {
-      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
+      if (!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[2-9]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
         return getMsg(msg, 'mobile', { title });
       }
       return true;
@@ -3286,7 +3294,7 @@ function rule() {
       return true;
     },
     phone({ title = '联系方式', val, msg }) {
-      if (!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
+      if (!/^((\d{11})|((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})))$/.test(val)) {
         return getMsg(msg, 'phone', { title });
       }
       return true;
@@ -4152,6 +4160,124 @@ exports.push([module.i, ".valid-h5dialog {\n  position: fixed;\n  padding: 10px 
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_tips_css__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__css_tips_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__css_tips_css__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__base__ = __webpack_require__(2);
+
+
+
+let dataMsg = 'valid-error-msg-forplugin';
+let className = 'valid-tips';
+class Tips extends __WEBPACK_IMPORTED_MODULE_1__base__["a" /* default */] {
+  constructor(element, options = {}) {
+    super(...arguments);
+    this.lastElement;
+    this.bindEvent();
+    this.submit();
+  }
+  build(msg) {
+    return $(`<div class="${className}">${msg}</div>`);
+  }
+  show(element, msg) {
+    element = this.localization(this.getElement(element));
+    let tipsName = element.attr('data-tips');
+    let tipsElement = $(`.valid-tips[data-tips="${tipsName}"]`);
+
+    tipsElement.html(function (index, v) {
+      let $this = $(this);
+      !$this.data('html') && $this.data('html', v);
+      $this.attr('data-tips-status', '1');
+      return $this.data('html').replace(/\{msg\}/, msg);
+    });
+
+    let group = tipsElement.parents('.valid-tips-group');
+    if (group.length > 0) group.show();
+    tipsElement.show();
+  }
+  hide(element) {
+    if (element) {
+      element = this.localization(this.getElement(element));
+      let tipsName = element.attr('data-tips');
+      $(`.valid-tips[data-tips="${tipsName}"]`).hide().html(function () {
+        let $this = $(this);
+        $this.removeAttr('data-tips-status').html($this.data('html'));
+      });
+    } else {
+      this.form.find('.valid-tips').each(function () {
+        let $this = $(this);
+        $this.removeAttr('data-tips-status').html($this.data('html'));
+      });
+    }
+  }
+  groupTipsShow() {
+    $('.valid-tips-group').each(function () {
+      $(this).show().find('.valid-tips[data-tips-status="1"]:first').show().siblings('.valid-tips').hide();
+    });
+  }
+  bindEvent() {
+    let that = this;
+    function change(event) {
+      let $this = $(this);
+      if ($this.is(':radio, :checkbox')) {
+        $this = $this.closest('[valid]');
+      } else {
+        if ($this.val() === '') return;
+      }
+      that.scan($this);
+    }
+    let eventStr = 'input:not(:submit, :button), textarea, select';
+    this.form.on('change.' + this.namespace, eventStr, change).on('blur.' + this.namespace, eventStr, change);
+  }
+  scan(validItems = this.form, callback = $.noop, notips) {
+    let that = this;
+    if (typeof validItems === 'function') {
+      [validItems, callback, notips] = [...arguments].reduce((a, b) => (a.push(b), a), [this.form]);
+    }
+    this.validScan(validItems, items => {
+      let isForm = validItems.is('form');
+      if (isForm) this.highlight(this.form.find('.valid-error').removeAttr(dataMsg), 'hide');
+      let fail = items.reduce((a, v) => {
+        let element = this.getElement(v.element);
+        if (v.valid === true) {
+          this.highlight(v.element, 'hide');
+          element.removeAttr(dataMsg);
+          this.hide(element);
+        } else {
+          if (element.val() === '' && !element.attr(dataMsg) && !isForm && !v.element.is(':checkbox, :radio')) {} else {
+            element.attr(dataMsg, v.msg);
+            this.highlight(element, 'show');
+            this.show(element, v.msg);
+          }
+          a.push({ element, msg: v.msg });
+        }
+        return a;
+      }, []);
+      if (notips !== true && fail.length > 0) {
+        let [item] = fail;
+        if (isForm) {
+          item.element.trigger('focus.' + this.namespace, [true]);
+
+          let top = this.localization(item.element).offset().top;
+          if (top < (document.documentElement.scrollTop || document.body.scrollTop)) {
+            window.scrollTo(0, top - 80);
+          }
+        }
+      };
+      if (isForm) this.options.fail.call(this, fail);
+      this.groupTipsShow();
+      callback.call(this, fail.length > 0 ? false : true);
+    });
+  }
+}
+/* harmony default export */ __webpack_exports__["a"] = (Tips);
+
+/***/ }),
+/* 25 */,
+/* 26 */,
+/* 27 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__base__ = __webpack_require__(2);
 
 class None extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
@@ -4175,6 +4301,46 @@ class None extends __WEBPACK_IMPORTED_MODULE_0__base__["a" /* default */] {
   }
 }
 /* harmony default export */ __webpack_exports__["a"] = (None);
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(29);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(1)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!./tips.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!./tips.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(0)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".valid-tips-group{\n  display: none;\n}\n.valid-tips {\n  display: none;\n  color: #cc0000;\n  margin: 6px 0 0 10px;\n}\n", ""]);
+
+// exports
+
 
 /***/ })
 /******/ ]);

@@ -15,7 +15,13 @@ export default function rule(){
           if(element.filter(':checked').length === 0) return getMsg(msg, 'select_required', {title});
           break;
         default:
-          if(!/^[\w\W]+$/.test(val)) return getMsg(msg, 'required', {title});
+          if(!/^[\w\W]+$/.test(val.trim())){
+            if(element.attr('data-ui')==='SelectUI'){
+              return getMsg(msg, 'select_required', {title});
+            }else{
+              return getMsg(msg, 'required', {title});
+            }
+          }
       }
       return true;
     },
@@ -68,7 +74,7 @@ export default function rule(){
       return true;
     },
     mobile({title='手机号', val, msg}){
-      if(!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[34578]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
+      if(!/^(((\(\d{2,3}\))|(\d{3}\-))?(1[2-9]\d{9}))$|^((001)[2-9]\d{9})$/.test(val)) {
         return getMsg(msg, 'mobile', {title});
       }
       return true;
@@ -110,7 +116,7 @@ export default function rule(){
       return true;
     },      
     phone({title='联系方式', val, msg}){
-      if(!/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test(val)) {
+      if(!/^((\d{11})|((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})))$/.test(val)) {
         return getMsg(msg, 'phone', {title});
       }
       return true;

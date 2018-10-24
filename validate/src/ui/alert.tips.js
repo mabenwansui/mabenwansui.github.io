@@ -33,9 +33,10 @@ class AlertTips extends Base{
   }
   hide(element){
     element = element || (this.lastElement && this.lastElement.element) || false;
-    if(element) element = this.localization(this.getElement(element));
-    if(element && element.AlertTs){
-      element.AlertTs('hide');
+    let _element;
+    if(element) _element = this.localization(this.getElement(element));
+    if(_element && _element.AlertTs){
+      _element.AlertTs('hide');
       if(this.lastElement && this.lastElement.element[0]===element[0]){
         this.lastElement = null;  
       }

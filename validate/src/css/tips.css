@@ -1,0 +1,8 @@
+.valid-tips-group{
+  display: none;
+}
+.valid-tips {
+  display: none;
+  color: #cc0000;
+  margin: 6px 0 0 10px;
+}

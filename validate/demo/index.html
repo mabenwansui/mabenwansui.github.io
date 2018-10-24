@@ -55,7 +55,7 @@
             <input type="text" valid="结束年薪|*, n, n1-99, higher, for=low" name="high" class="text" />
           </div>
           <div valid="性别|*"> <!--必填, 多选按钮同理-->
-            性别: 
+            性别:
             <label><input type="radio" name="sex">男</label>
             <label><input type="radio" name="sex">女</label>
             <label><input type="radio" name="sex">不限</label>
@@ -103,30 +103,30 @@
           <th>n</th>
           <td>整数</td>
           <th>1-10</th>
-          <td>1-10个字</td>                 
+          <td>1-10个字</td>
         </tr>
         <tr>
           <th>e</th>
-          <td>邮箱</td> 
+          <td>邮箱</td>
           <th>float</th>
-          <td>小数</td>  
+          <td>小数</td>
           <th>n10-99</th>
-          <td>输入的数字不能小于10大于99</td>            
-               
+          <td>输入的数字不能小于10大于99</td>
+
         </tr>
         <tr>
           <th>m</th>
-          <td>手机</td>    
+          <td>手机</td>
           <th>url</th>
           <td>网址</td>
           <th>idcard</th>
-          <td>身份证</td>         
+          <td>身份证</td>
         </tr>
         <tr>
           <th>phone</th>
-          <td colspan="5">电话</td>  
-        </tr>                              
-      </tbody>   
+          <td colspan="5">电话</td>
+        </tr>
+      </tbody>
     </table>
   </section>
 
@@ -143,7 +143,7 @@
         <tr>
           <th>repeat</th>
           <td>不能连续出现6次重复的字符。 <span class="muted">repeat=3 (可以指定重复的次数)</span></td>
-        </tr>      
+        </tr>
         <tr>
           <th>pattern=/^[a-z]$/</th>
           <td>指定一个正则表达式做为规则</td>
@@ -151,7 +151,7 @@
         <tr>
           <th>for</th>
           <td>指定相关联的元素。<span class="muted">for=name for=.name for=#name 分别指查找name、class、id</span></td>
-        </tr>        
+        </tr>
         <tr>
           <th>repassword</th>
           <td>检验两次密码是否输入一致。 <span class="muted">valid="重复密码|*,repassword,for=.password"</span></td>
@@ -167,8 +167,8 @@
         <tr>
           <th>some</th>
           <td>只要满足其中任意一项，则视为验证通过。 <span class="muted">valid="联系方式|some='mobile, phone'"</span></td>
-        </tr>        
-      </tbody>     
+        </tr>
+      </tbody>
     </table>
   </section>
   <script>SyntaxHighlighter.highlight();</script>
@@ -213,7 +213,7 @@
                     <option value="11">11</option>
                     <option value="10">10</option>
                     <option value="9">9</option>
-                  </select>  
+                  </select>
               </td>
             </tr>
 
@@ -255,7 +255,7 @@
                 </span>
                 <input type="text" name="salaryelse" valid="其它|checked_required, for=.else" class="text" />
               </td>
-            </tr>                                     
+            </tr>
           </tbody>
           <tfoot>
             <tr>
@@ -330,15 +330,15 @@
               <td>
                 <input type="text" valid="不验证|*" ignore class="text" />
                 <span class="muted ml">包含ignore或disabled则不会触发验证规则，可动态随时修改attr上的ignore(任何)属性</span>
-              </td> 
+              </td>
             </tr>
             <tr>
               <th>定义气泡 :</th>
               <td>
                 <input type="text" valid-ui="{top:7, left:10, position:'right'}" valid="气泡|*" class="text" />
                 <span class="muted ml">气泡的规则同alertTs的API</span>
-              </td> 
-            </tr>                      
+              </td>
+            </tr>
           </tbody>
           <tfoot>
             <tr>
@@ -383,7 +383,7 @@
           }
         });
       </pre>
-    </section>    
+    </section>
   </div>
   <script id="rules-script">
     var box = $('#rules-form1');
@@ -432,7 +432,7 @@
               <td><input type="text" valid="标题|*, 1-20" name="title" class="text" /></td>
               <td style="padding-left: 5px; padding-right: 20px;"><input type="submit" value="提交" /></td>
               <td class="muted">( 会在中间提示tips )</td>
-            </tr>                                  
+            </tr>
           </tbody>
         </table>
       </form>
@@ -442,22 +442,118 @@
         $('form', box).validate({
           ui: 'h5dialog',
           success(){
-            alert('success');  
+            alert('success');
           }
         });
-      </pre>      
+      </pre>
     </section>
   </div>
+  <div class="example-box" id="theme-form2">
+    <h2>右侧显示错误信息</h2>
+    <section class="dom box">
+      <form action="">
+        <table>
+          <tbody>
+            <tr>
+              <th>标题 :</th>
+              <td>
+
+                <!--
+                  data-tips 设置要关联的valid-tips
+                  如下：
+                -->
+                <input type="text" data-tips="title" valid="标题|*, 1-5" name="title" class="text" placeholder="必填, 1-5个字" />
+
+                <!--
+                  valid-tips 代表tips提示框 {msg}代表出错的提示信息
+                  data-tips 设置要关联的表单项
+                  如下：
+                -->
+                <span class="valid-tips" data-tips="title"><i>❤</i> {msg}</span>
+
+              </td>
+            </tr>
+            <tr>
+              <th>年薪 :</th>
+              <td>
+                <input type="text" data-tips="salary-start" valid="开始年薪|*, n, n1-99" name="low" class="text" placeholder="必填，1-99数字" /> -
+                <input type="text" data-tips="salary-end" valid="结束年薪|*, n, n1-99, higher, for=low" name="high" class="text" placeholder="必填，1-99数字" />
+
+                <!--
+                  如果一行有多项，默认提示第一个出错的项，那么要把valid-tips放入到一个组里面
+                  如下：
+                -->
+                <span class="valid-tips-group">
+                  <span class="valid-tips" data-tips="salary-start"><i>❤</i> {msg}</span>
+                  <span class="valid-tips" data-tips="salary-end"><i>❤</i> {msg}</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>薪资构成 :</th>
+              <td>
+                <span data-tips="salary" valid="薪资构成|*, 1-2">
+                  <label>
+                    <input type="checkbox" name="salary" value="1" /> 基本薪资
+                  </label>
+                  <label>
+                    <input type="checkbox" name="salary" value="2" /> 奖金/提成
+                  </label>
+                  <label>
+                    <input type="checkbox" name="salary" value="3" /> 期权
+                  </label>
+                  <label>
+                    <input type="checkbox" name="salary" class="else" value="4" /> 其他
+                  </label>
+                </span>
+                <input type="text" data-tips="salaryelse" valid="其它|checked_required, for=.else" name="salaryelse" class="text" />
+                <span class="valid-tips-group">
+                  <span class="valid-tips" data-tips="salary"><i>❤</i> {msg}</span>
+                  <span class="valid-tips" data-tips="salaryelse"><i>❤</i> {msg}</span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th></th>
+              <td><input type="submit" value="提交" /></td>
+            </tr>
+          </tfoot>
+        </table>
+      </form>
+    </section>
+    <section class="code-container">
+      <pre data-selector="html" class="brush:xml;">1</pre>
+      <pre class="brush:js;">
+        $('form', box).validate({
+          ui: 'tips',
+          success(){
+            alert('success');
+          }
+        });
+      </pre>
+    </section>
+  </div>
+
   <script>
     var box = $('#theme-form1');
     $('form', box).validate({
       ui: 'h5dialog',
       success(){
-        alert('success');  
+        alert('success');
       }
     });
+    var box2 = $('#theme-form2');
+    $('form', box2).validate({
+      ui: 'tips',
+      success(){
+        alert('success');
+      }
+    });
+    $('.code-container pre[data-selector="html"]', box2).html( $('.dom', box2).html() );
     SyntaxHighlighter.highlight();
-  </script>  
+  </script>
 </script>
 
 <script>
