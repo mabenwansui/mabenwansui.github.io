@@ -33,20 +33,27 @@ class Tips extends Base{
     if(element){
       element = this.localization(this.getElement(element));
       let tipsName = element.attr('data-tips');
-      $(`.valid-tips[data-tips="${tipsName}"]`).hide().html(function(){
+      let tipsElement = $(`.valid-tips[data-tips="${tipsName}"]`);
+      tipsElement.hide().html(function(){
         let $this = $(this);
         $this.removeAttr('data-tips-status').html($this.data('html'));
       });
     }else{
       this.form.find('.valid-tips').each(function(){
         let $this = $(this);
-        $this.removeAttr('data-tips-status').html($this.data('html'));
+        $this.hide().removeAttr('data-tips-status').html($this.data('html'));
       });
     }
   }
   groupTipsShow(){
     $('.valid-tips-group').each(function(){
-      $(this).show().find('.valid-tips[data-tips-status="1"]:first').show().siblings('.valid-tips').hide();
+      let element = $(this).find('.valid-tips[data-tips-status="1"]:first');
+      if(element.length>0){
+        $(this).show();
+        element.show().siblings('.valid-tips').hide();
+      }else{
+        $(this).hide();
+      }
     });
   }
   bindEvent(){
